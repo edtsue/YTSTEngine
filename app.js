@@ -31,6 +31,16 @@ const ACTION = {
   TE: 'powering through contact after a catch over the middle',
 };
 
+// Real player photos (Wikimedia Commons, freely licensed) keyed by ESPN pid.
+// Players without a clean, team-correct free photo fall back to the Gemini shot.
+const PHOTO = {
+  4362628: 'https://upload.wikimedia.org/wikipedia/commons/7/74/Ja%27Marr_Chase.jpg',                                                            // Ja'Marr Chase (CIN)
+  4262921: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Jefferson_2022.jpg/1280px-Jefferson_2022.jpg',                              // Justin Jefferson (MIN)
+  4430807: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Bijan_Robinson_2025.jpg/1280px-Bijan_Robinson_2025.jpg',                    // Bijan Robinson (ATL)
+  3139477: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Patrick_Mahomes_%2851615475056%29.jpg/1280px-Patrick_Mahomes_%2851615475056%29.jpg', // Patrick Mahomes (KC)
+  3040151: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/George_Kittle_DSC08082_%2848940368597%29_%28cropped%29.jpg/1280px-George_Kittle_DSC08082_%2848940368597%29_%28cropped%29.jpg', // George Kittle (SF)
+};
+
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
   { icon: '📍', key: 'geo', name: 'Geography', source: 'IP → DMA + weekly blackout map',
@@ -207,8 +217,8 @@ function renderMixer() {
     `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Player: ${p.name} (${p.team.toUpperCase()})`;
   renderVariants(m, d, p);
 
-  // reuse a cached render for this exact signal combo; otherwise show the styled plate
-  applyMedia(imagePrompt(m, d, p));
+  // generated shot → real photo → team backdrop, in that order
+  applyMedia(imagePrompt(m, d, p), p);
 }
 
 /* three copy versions of the same mockup — click to load one into the asset */
@@ -229,14 +239,21 @@ function renderVariants(m, d, p) {
 
 /* client-side cache: re-viewing a combo is instant, no re-generation */
 const imgCache = {};
-function applyMedia(prompt) {
+function applyMedia(prompt, p) {
   const media = document.getElementById('ctvMedia');
   const ctv = document.getElementById('ctv');
-  if (imgCache[prompt]) {
+  const photo = p && PHOTO[p.pid];
+  if (imgCache[prompt]) {                 // a generated Gemini shot wins
     media.style.backgroundImage = `url(${imgCache[prompt]})`;
+    media.style.backgroundPosition = 'center';
     ctv.classList.add('has-img');
-  } else {
+  } else if (photo) {                      // real player photo by default
+    media.style.backgroundImage = `url("${photo}")`;
+    media.style.backgroundPosition = 'right center';
+    ctv.classList.add('has-img');
+  } else {                                 // team-tinted backdrop
     media.style.backgroundImage = '';
+    media.style.backgroundPosition = '';
     ctv.classList.remove('has-img');
   }
 }
@@ -263,7 +280,7 @@ async function generateAsset() {
 
   // already rendered this exact combo — show it instantly
   if (imgCache[prompt]) {
-    applyMedia(prompt);
+    applyMedia(prompt, p);
     status.textContent = '✓ Showing saved render — change a signal for a new one.';
     return;
   }
@@ -299,7 +316,7 @@ async function generateAsset() {
       throw new Error(reason);
     }
     imgCache[prompt] = data.image;
-    applyMedia(prompt);
+    applyMedia(prompt, p);
     status.textContent = `✓ Hero generated in ${((Date.now() - t0) / 1000).toFixed(1)}s.`;
   } catch (e) {
     status.textContent = e.name === 'AbortError'
