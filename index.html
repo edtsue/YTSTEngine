@@ -23,6 +23,7 @@
     </div>
     <nav class="nav__links">
       <a href="#arc">The Arc</a>
+      <a href="#engine">The Engine</a>
       <a href="#week">The Week</a>
       <a href="#sunday">Sunday</a>
       <a href="#product">The Payoff</a>
@@ -63,10 +64,65 @@
     </p>
   </section>
 
+  <!-- ░░ THE ENGINE ░░ -->
+  <section class="engine" id="engine">
+    <div class="section-head">
+      <span class="section-head__num">02</span>
+      <h2>The contextual creative engine</h2>
+      <p>One truth, triangulated. Three live signals pour into one template — producing creative that feels personal at billboard scale, and that only Sunday Ticket can resolve.</p>
+    </div>
+
+    <!-- the three signals -->
+    <div class="signals" id="signals"></div>
+
+    <!-- the template -->
+    <div class="formula">
+      <span class="formula__chip is-day">DAY · EMOTION tone</span><i>+</i>
+      <span class="formula__chip is-player">the player they drafted</span><i>+</i>
+      <span class="formula__chip is-geo">playing where they can't see it</span>
+    </div>
+
+    <!-- interactive builder -->
+    <div class="builder">
+      <div class="builder__controls">
+        <label>Market
+          <div class="sel"><select id="selMarket"></select></div>
+        </label>
+        <label>Day · signal
+          <div class="sel"><select id="selDay"></select></div>
+        </label>
+        <span class="builder__live"><span class="builder__livedot"></span>generating live</span>
+      </div>
+      <div class="builder__readout" id="readout"></div>
+      <div class="builder__output">
+        <span class="builder__outlabel">The creative</span>
+        <p class="builder__creative" id="creative"></p>
+        <div class="builder__gate" id="gate"></div>
+      </div>
+    </div>
+
+    <!-- Most Wanted poster -->
+    <div class="mostwanted">
+      <div class="mostwanted__head">
+        <h3 id="mwTitle">Cleveland's Most Wanted</h3>
+        <span class="mostwanted__wk">Out of market — uncatchable without Sunday Ticket</span>
+      </div>
+      <div class="mostwanted__grid" id="mwGrid"></div>
+      <p class="mostwanted__note">Top player per position, geo-stamped and pulled live from Yahoo. They're “on the run” — out of market. <em>The metaphor is the product.</em></p>
+    </div>
+
+    <!-- compounding payoff -->
+    <div class="payoff">
+      <span class="payoff__tag">The compounding payoff</span>
+      <p class="payoff__line" id="payoffLine"></p>
+      <p class="payoff__sub">Three signals → one locally-true sentence → and only Sunday Ticket resolves it.</p>
+    </div>
+  </section>
+
   <!-- ░░ THE WEEK (cards) ░░ -->
   <section class="week" id="week">
     <div class="section-head">
-      <span class="section-head__num">02</span>
+      <span class="section-head__num">03</span>
       <h2>The week, day by day</h2>
       <p>Rituals, feelings, and where the opening for Sunday Ticket lives.</p>
     </div>
@@ -76,7 +132,7 @@
   <!-- ░░ SUNDAY ░░ -->
   <section class="sunday" id="sunday">
     <div class="section-head">
-      <span class="section-head__num">03</span>
+      <span class="section-head__num">04</span>
       <h2>Sunday — the reckoning, part II</h2>
       <p>The day everything builds toward. Three distinct phases, three distinct hells.</p>
     </div>
@@ -91,7 +147,7 @@
   <!-- ░░ PRODUCT ░░ -->
   <section class="product" id="product">
     <div class="section-head">
-      <span class="section-head__num">04</span>
+      <span class="section-head__num">05</span>
       <h2>Where the product lands</h2>
       <p>The FOMO is the hook. The features are the proof.</p>
     </div>

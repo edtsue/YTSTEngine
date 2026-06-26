@@ -138,6 +138,145 @@ const PRODUCT = [
   { beat: '9 starters, 1–2 visible', truth: 'Multiview — watch up to 4 of your guys at once, built from your lineup.', feat: 'Multiview' },
 ];
 
+/* ════════════════════════════════════════════════════════════════════
+   THE CONTEXTUAL CREATIVE ENGINE
+   Three signals — geography, day→emotion, top player — fill one template.
+   Geography does double duty: who's popular in-market AND what's blacked out.
+   Players are illustrative; the live engine pulls real most-drafted names
+   per position from Yahoo, geo-filtered.
+   ════════════════════════════════════════════════════════════════════ */
+const SIGNALS = [
+  { icon: '📍', key: 'geo', name: 'Geography', source: 'IP → DMA + weekly blackout map', job: 'Double duty — who’s popular here, and what’s blacked out here', read: m => `${m.dma} · ${m.wr.city} is out-of-market` },
+  { icon: '📅', key: 'day', name: 'Day → Emotion', source: 'Calendar lookup', job: 'The frame — the tone of the message', read: (m, p) => `${p.name.replace(' Afternoon', '')} · ${p.emotion}` },
+  { icon: '🏈', key: 'player', name: 'Top player', source: 'Yahoo aggregate ownership, geo-filtered', job: 'The hook — the named subject', read: m => `${m.wr.name} (${m.wr.team}) — most-drafted WR` },
+];
+
+// city held as the constant; day flips the tone, player stays the hook.
+const MARKETS = [
+  {
+    id: 'cle', city: 'Cleveland', dma: 'Cleveland-Akron',
+    wr: { name: "Ja'Marr Chase", city: 'Cincinnati', team: 'CIN' },
+    distance: '250 miles down I-71', shortBlackout: 'Same state.',
+    geoJab: 'Same state — you live in Ohio.', punchline: 'Same state. Different screen.',
+    blackoutTail: 'same state, and your channels still didn’t pick it',
+    roster: [
+      { pos: 'QB', name: 'Joe Burrow', team: 'CIN' },
+      { pos: 'RB', name: 'Bijan Robinson', team: 'ATL' },
+      { pos: 'WR', name: "Ja'Marr Chase", team: 'CIN', hook: true },
+      { pos: 'TE', name: 'Trey McBride', team: 'ARI' },
+    ],
+  },
+  {
+    id: 'nyc', city: 'New York', dma: 'New York',
+    wr: { name: "Ja'Marr Chase", city: 'Cincinnati', team: 'CIN' },
+    distance: 'out of your market', shortBlackout: 'Not on local Fox/CBS.',
+    geoJab: 'Your own market, and the broadcast skipped it.', punchline: 'Different screen entirely.',
+    blackoutTail: 'not on your local Fox or CBS',
+    roster: [
+      { pos: 'QB', name: 'Josh Allen', team: 'BUF' },
+      { pos: 'RB', name: 'Bijan Robinson', team: 'ATL' },
+      { pos: 'WR', name: "Ja'Marr Chase", team: 'CIN', hook: true },
+      { pos: 'TE', name: 'George Kittle', team: 'SF' },
+    ],
+  },
+  {
+    id: 'la', city: 'Los Angeles', dma: 'Los Angeles',
+    wr: { name: 'Justin Jefferson', city: 'Minnesota', team: 'MIN' },
+    distance: '1,900 miles away', shortBlackout: '1,900 miles out.',
+    geoJab: 'Nineteen hundred miles out of your market.', punchline: 'A different time zone, a different screen.',
+    blackoutTail: '1,900 miles out, and your channels still didn’t pick it',
+    roster: [
+      { pos: 'QB', name: 'Patrick Mahomes', team: 'KC' },
+      { pos: 'RB', name: 'Saquon Barkley', team: 'PHI' },
+      { pos: 'WR', name: 'Justin Jefferson', team: 'MIN', hook: true },
+      { pos: 'TE', name: 'George Kittle', team: 'SF' },
+    ],
+  },
+];
+
+// the template, filled per (day-beat, market). day = tone, player = hook, geo = the wall.
+const CREATIVE = {
+  'mon':       m => `All of ${m.city} drafted ${m.wr.name}. None of ${m.city} got to watch him. He plays in ${m.wr.city}. ${m.geoJab} Make it make sense.`,
+  'tue':       m => `The WR ${m.city} loves is back Sunday. ${m.shortBlackout} Still not on your TV. There’s a fix.`,
+  'wed':       m => `${m.city}’s most-drafted WR plays Sunday in ${m.wr.city}. You know the drill by now.`,
+  'thu':       m => `Tonight you actually get to watch your guy. Enjoy it — Sunday, ${m.wr.name} is back out of reach in ${m.wr.city}.`,
+  'fri':       m => `You’ll study ${m.wr.name} all weekend. Come Sunday, ${m.city}’s channels still won’t carry ${m.wr.city}.`,
+  'sat':       m => `Start ${m.wr.name}? You’ve changed your mind three times. Doesn’t matter — ${m.city} can’t see ${m.wr.city} anyway.`,
+  'sun-am':    m => `Lineups lock in 1 hour. ${m.city}’s favorite WR is ${m.distance} in ${m.wr.city}. Your channels didn’t pick it.`,
+  'sun-pm':    m => `Right now: the receiver all of ${m.city} drafted is playing a game all of ${m.city} can’t see. ${m.punchline}`,
+  'sun-night': m => `One WR left, primetime. ${m.wr.name} could carry ${m.city}’s whole week — from a screen ${m.city} never got.`,
+};
+
+let engineState = { market: 'cle', day: 'sun-pm' };
+
+function buildSignals() {
+  document.getElementById('signals').innerHTML = SIGNALS.map(s => `
+    <article class="sig sig--${s.key}">
+      <div class="sig__icon">${s.icon}</div>
+      <h3>${s.name}</h3>
+      <div class="sig__src">${s.source}</div>
+      <p class="sig__job">${s.job}</p>
+    </article>`).join('');
+}
+
+function buildBuilder() {
+  const mSel = document.getElementById('selMarket');
+  mSel.innerHTML = MARKETS.map(m => `<option value="${m.id}">${m.city}</option>`).join('');
+  const dSel = document.getElementById('selDay');
+  dSel.innerHTML = POINTS.map(p => `<option value="${p.id}">${p.name.replace(' Afternoon', '').replace(' Morning', ' AM').replace(' Night', ' Night')}</option>`).join('');
+
+  // default day = today's beat
+  const todayBeat = beatForToday();
+  engineState.day = todayBeat;
+  dSel.value = todayBeat;
+
+  mSel.addEventListener('change', e => { engineState.market = e.target.value; renderEngine(); });
+  dSel.addEventListener('change', e => { engineState.day = e.target.value; renderEngine(); });
+  renderEngine();
+}
+
+function beatForToday() {
+  const dow = new Date().getDay(); // 0 Sun … 6 Sat
+  if (dow === 0) return 'sun-pm';
+  const hit = POINTS.find(p => p.dow === dow && !p.phase);
+  return hit ? hit.id : 'sun-pm';
+}
+
+function renderEngine() {
+  const m = MARKETS.find(x => x.id === engineState.market);
+  const p = POINTS.find(x => x.id === engineState.day);
+
+  // signal readout
+  document.getElementById('readout').innerHTML = SIGNALS.map(s => `
+    <div class="ro ro--${s.key}">
+      <span class="ro__icon">${s.icon}</span>
+      <span class="ro__name">${s.name}</span>
+      <span class="ro__val">${s.read(m, p)}</span>
+    </div>`).join('<span class="ro__plus">+</span>');
+
+  // generated creative
+  document.getElementById('creative').textContent = '“' + CREATIVE[p.id](m) + '”';
+
+  // logic gate
+  document.getElementById('gate').innerHTML =
+    `<span class="gate__ok">✓ logic gate</span> ${m.wr.name} is out-of-market in ${m.city} — eligible to serve. If the top guy were on a national broadcast, the engine swaps to the next blacked-out player.`;
+
+  // Most Wanted poster
+  document.getElementById('mwTitle').textContent = `${m.city}'s Most Wanted`;
+  document.getElementById('mwGrid').innerHTML = m.roster.map(r => `
+    <article class="mw ${r.hook ? 'mw--hook' : ''}">
+      ${r.hook ? '<span class="mw__hook">The hook</span>' : ''}
+      <span class="mw__pos">${r.pos}</span>
+      <span class="mw__name">${r.name}</span>
+      <span class="mw__team">${r.team}</span>
+      <span class="mw__stamp">Out of market</span>
+    </article>`).join('');
+
+  // compounding payoff (Sunday framing, annotated by signal)
+  document.getElementById('payoffLine').innerHTML =
+    `“It’s Sunday, lineups just locked<sup class="pf pf--day">day</sup>. The WR all of ${m.city} drafted<sup class="pf pf--player">player</sup> is playing in ${m.wr.city} — ${m.blackoutTail}<sup class="pf pf--geo">geo</sup>.”`;
+}
+
 /* ─────────────────────────────  ARC CHART  ───────────────────────────── */
 function buildChart() {
   const el = document.getElementById('chart');
@@ -296,6 +435,8 @@ function buildToday() {
 
 /* ─────────────────────────────  INIT  ───────────────────────────── */
 buildChart();
+buildSignals();
+buildBuilder();
 buildWeek();
 buildSunday();
 buildProduct();
