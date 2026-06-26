@@ -32,21 +32,31 @@ const ACTION = {
 };
 
 // Real player photos (Wikimedia Commons, freely licensed) keyed by ESPN pid.
-// Prefer genuine in-game ACTION frames (All-Pro Reels game photography) over
-// posed portraits. Every roster player gets a photo: a direct shot of the
-// player where one exists, otherwise a same-team action shot (the chrome
-// supplies the player's name, so a teammate in the right uniform reads right).
+// Values are bare Commons file titles; commonsUrl() resolves them through
+// Special:FilePath, which Wikimedia redirects to the live CDN file and clamps
+// ?width to the original (so it never 404s on a portrait narrower than 1280,
+// the way a hand-built /thumb/.../1280px- URL does).
+//
+// Prefer genuine in-game ACTION frames (All-Pro Reels game photography). Every
+// roster player gets a photo: a direct shot where one exists, else a same-team
+// action shot (the chrome supplies the player's name, so a teammate in the
+// right uniform reads right).
 const PHOTO = {
-  4362628: 'https://upload.wikimedia.org/wikipedia/commons/7/74/Ja%27Marr_Chase.jpg',                                                            // Ja'Marr Chase (CIN) — portrait; no free in-game shot on Commons yet
-  4262921: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Justin_Jefferson_Commanders_vs_Vikings_NOV2022.jpg/1280px-Justin_Jefferson_Commanders_vs_Vikings_NOV2022.jpg', // Justin Jefferson (MIN) — in-game, Vikings purple (Nov 2022 vs WAS)
-  4430807: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Bijan_Robinson_2025.jpg/1280px-Bijan_Robinson_2025.jpg',                    // Bijan Robinson (ATL) — portrait; no free in-game shot on Commons yet
-  3139477: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Patrick_Mahomes_%2851616341245%29.jpg/1280px-Patrick_Mahomes_%2851616341245%29.jpg', // Patrick Mahomes (KC) — in-game (replaces a pregame warmup frame)
-  3040151: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/George_Kittle_2019_%2848940368597%29.jpg/1280px-George_Kittle_2019_%2848940368597%29.jpg', // George Kittle (SF) — in-game, 49ers red (uncropped action frame)
-  3915511: 'https://upload.wikimedia.org/wikipedia/commons/0/03/Joe_Burrow_Bengals.jpg',                                                          // Joe Burrow (CIN) — direct, Bengals
-  3918298: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Josh_Allen_%2843569465444%29.jpg/1280px-Josh_Allen_%2843569465444%29.jpg', // Josh Allen (BUF) — in-game, Bills (rookie-year All-Pro Reels frame)
-  3929630: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Saquon_Barkley_112024.jpg/1280px-Saquon_Barkley_112024.jpg',               // Saquon Barkley (PHI) — in-game, Eagles (Nov 2024)
-  4361307: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Kyler_Murray_passing.png',                                                        // Trey McBride (ARI) slot — no free McBride photo; same-team Cardinals action shot (Kyler Murray)
+  4362628: "Ja'Marr Chase.jpg",                              // Ja'Marr Chase (CIN) — Bengals (portrait; no free in-game shot yet)
+  4262921: 'Justin Jefferson Commanders vs Vikings NOV2022.jpg', // Justin Jefferson (MIN) — in-game, Vikings purple
+  4430807: 'Bijan Robinson 2025.jpg',                        // Bijan Robinson (ATL) — Falcons (portrait; no free in-game shot yet)
+  3139477: 'Patrick Mahomes (51616341245).jpg',             // Patrick Mahomes (KC) — in-game
+  3040151: 'George Kittle 2019 (48940368597).jpg',          // George Kittle (SF) — in-game, 49ers red
+  3915511: 'Joe Burrow Bengals.jpg',                        // Joe Burrow (CIN) — direct, Bengals
+  3918298: 'Josh Allen (43569465444).jpg',                  // Josh Allen (BUF) — in-game, Bills (rookie-year frame)
+  3929630: 'Saquon Barkley 112024.jpg',                     // Saquon Barkley (PHI) — in-game, Eagles (Nov 2024)
+  4361307: 'Kyler Murray passing.png',                      // Trey McBride (ARI) slot — same-team Cardinals action shot (Kyler Murray)
 };
+const commonsUrl = (file, w = 1280) =>
+  `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${w}`;
+// ESPN headshot (deterministic by pid, same host as the team logos) — a
+// guaranteed last-resort so a mockup is never blank if a Commons file fails.
+const HEADSHOT = pid => `https://a.espncdn.com/i/headshots/nfl/players/full/${pid}.png`;
 
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
@@ -249,31 +259,51 @@ const imgCache = {};
 function applyMedia(prompt, p) {
   const media = document.getElementById('ctvMedia');
   const ctv = document.getElementById('ctv');
-  const photo = p && PHOTO[p.pid];
-  media.dataset.photo = '';               // invalidate any in-flight photo probe
-  if (imgCache[prompt]) {                 // a generated Gemini shot wins
-    media.style.backgroundImage = `url(${imgCache[prompt]})`;
-    media.style.backgroundPosition = 'center';
-    ctv.classList.add('has-img');
-  } else if (photo) {                      // real player photo by default
-    media.style.backgroundImage = `url("${photo}")`;
-    media.style.backgroundPosition = 'right center';
-    ctv.classList.add('has-img');
-    media.dataset.photo = photo;
-    // Guard: if the (external) photo 404s, fall back to the tinted backdrop
-    // rather than leaving a blank hero. Only act if this combo is still showing.
-    const probe = new Image();
-    probe.onerror = () => {
-      if (media.dataset.photo !== photo) return;
-      media.style.backgroundImage = '';
-      media.style.backgroundPosition = '';
-      ctv.classList.remove('has-img');
-    };
-    probe.src = photo;
-  } else {                                 // team-tinted backdrop
-    media.style.backgroundImage = '';
-    media.style.backgroundPosition = '';
+  // Monotonic token: a probe that resolves after the user has moved on is stale
+  // and must not overwrite the newer selection.
+  const token = (media._mediaToken = (media._mediaToken || 0) + 1);
+  const current = () => media._mediaToken === token;
+
+  const backdrop = () => {                 // last resort: team-tinted plate
+    media.style.cssText = '';
     ctv.classList.remove('has-img');
+  };
+  // ESPN headshot composited over a team-tinted plate. Guaranteed to render
+  // (deterministic per pid), so a mockup is never left blank.
+  const headshot = () => {
+    if (!p) return backdrop();
+    const url = HEADSHOT(p.pid);
+    media.style.backgroundImage =
+      `url("${url}"),` +
+      'radial-gradient(120% 120% at 74% 14%, color-mix(in srgb, var(--team, var(--accent)) 55%, transparent), transparent 62%),' +
+      'linear-gradient(160deg, #14232f, #060a10 72%)';
+    media.style.backgroundSize = 'auto 96%, cover, cover';
+    media.style.backgroundPosition = 'right 4% bottom, center, center';
+    media.style.backgroundRepeat = 'no-repeat';
+    ctv.classList.add('has-img');
+    const probe = new Image();
+    probe.onerror = () => { if (current()) backdrop(); };
+    probe.src = url;
+  };
+  // A full-bleed photo (curated Commons shot, or a generated Gemini shot).
+  const fill = (url, pos, onfail) => {
+    media.style.backgroundImage = `url("${url}")`;
+    media.style.backgroundSize = 'cover';
+    media.style.backgroundPosition = pos;
+    media.style.backgroundRepeat = 'no-repeat';
+    ctv.classList.add('has-img');
+    if (!onfail) return;
+    const probe = new Image();
+    probe.onerror = () => { if (current()) onfail(); };
+    probe.src = url;
+  };
+
+  if (imgCache[prompt]) {                  // a generated Gemini shot wins
+    fill(imgCache[prompt], 'center');
+  } else if (p && PHOTO[p.pid]) {          // curated real photo, headshot on failure
+    fill(commonsUrl(PHOTO[p.pid]), 'right center', headshot);
+  } else {                                 // no curated entry → headshot
+    headshot();
   }
 }
 
