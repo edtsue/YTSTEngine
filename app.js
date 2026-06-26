@@ -12,6 +12,8 @@
    ════════════════════════════════════════════════════════════════════ */
 
 const ESPN_LOGO = abbr => `https://a.espncdn.com/i/teamlogos/nfl/500/${abbr}.png`;
+// real player headshot cutout (transparent bg) via ESPN's image combiner
+const HEADSHOT = p => `https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/${p.pid}.png&w=600&h=438`;
 
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
@@ -42,40 +44,40 @@ const MARKETS = [
     id: 'cle', city: 'Cleveland', dma: 'Cleveland-Akron',
     geoClause: 'same state, still out of market', punchline: 'Same state. Different screen.',
     roster: [
-      { pos: 'QB', name: 'Joe Burrow',     team: 'cin', city: 'Cincinnati' },
-      { pos: 'RB', name: 'Bijan Robinson',  team: 'atl', city: 'Atlanta' },
-      { pos: 'WR', name: "Ja'Marr Chase",   team: 'cin', city: 'Cincinnati', hook: true },
-      { pos: 'TE', name: 'Trey McBride',    team: 'ari', city: 'Arizona' },
+      { pos: 'QB', name: 'Joe Burrow',     team: 'cin', city: 'Cincinnati',   pid: 3915511 },
+      { pos: 'RB', name: 'Bijan Robinson',  team: 'atl', city: 'Atlanta',      pid: 4430807 },
+      { pos: 'WR', name: "Ja'Marr Chase",   team: 'cin', city: 'Cincinnati',   pid: 4362628, hook: true },
+      { pos: 'TE', name: 'Trey McBride',    team: 'ari', city: 'Arizona',      pid: 4361307 },
     ],
   },
   {
     id: 'nyc', city: 'New York', dma: 'New York',
     geoClause: 'off your local Fox and CBS', punchline: 'Different screen entirely.',
     roster: [
-      { pos: 'QB', name: 'Josh Allen',     team: 'buf', city: 'Buffalo' },
-      { pos: 'RB', name: 'Bijan Robinson', team: 'atl', city: 'Atlanta' },
-      { pos: 'WR', name: "Ja'Marr Chase",  team: 'cin', city: 'Cincinnati', hook: true },
-      { pos: 'TE', name: 'George Kittle',  team: 'sf',  city: 'San Francisco' },
+      { pos: 'QB', name: 'Josh Allen',     team: 'buf', city: 'Buffalo',       pid: 3918298 },
+      { pos: 'RB', name: 'Bijan Robinson', team: 'atl', city: 'Atlanta',       pid: 4430807 },
+      { pos: 'WR', name: "Ja'Marr Chase",  team: 'cin', city: 'Cincinnati',    pid: 4362628, hook: true },
+      { pos: 'TE', name: 'George Kittle',  team: 'sf',  city: 'San Francisco', pid: 3040151 },
     ],
   },
   {
     id: 'la', city: 'Los Angeles', dma: 'Los Angeles',
     geoClause: '1,900 miles out of market', punchline: 'A different time zone, a different screen.',
     roster: [
-      { pos: 'QB', name: 'Patrick Mahomes',  team: 'kc',  city: 'Kansas City' },
-      { pos: 'RB', name: 'Saquon Barkley',   team: 'phi', city: 'Philadelphia' },
-      { pos: 'WR', name: 'Justin Jefferson', team: 'min', city: 'Minnesota', hook: true },
-      { pos: 'TE', name: 'George Kittle',    team: 'sf',  city: 'San Francisco' },
+      { pos: 'QB', name: 'Patrick Mahomes',  team: 'kc',  city: 'Kansas City',  pid: 3139477 },
+      { pos: 'RB', name: 'Saquon Barkley',   team: 'phi', city: 'Philadelphia', pid: 3929630 },
+      { pos: 'WR', name: 'Justin Jefferson', team: 'min', city: 'Minnesota',    pid: 4262921, hook: true },
+      { pos: 'TE', name: 'George Kittle',    team: 'sf',  city: 'San Francisco', pid: 3040151 },
     ],
   },
   {
     id: 'chi', city: 'Chicago', dma: 'Chicago',
     geoClause: 'a division rival you still can’t watch', punchline: 'Same division. Still blacked out.',
     roster: [
-      { pos: 'QB', name: 'Josh Allen',       team: 'buf', city: 'Buffalo' },
-      { pos: 'RB', name: 'Bijan Robinson',   team: 'atl', city: 'Atlanta' },
-      { pos: 'WR', name: 'Justin Jefferson', team: 'min', city: 'Minnesota', hook: true },
-      { pos: 'TE', name: 'Trey McBride',     team: 'ari', city: 'Arizona' },
+      { pos: 'QB', name: 'Josh Allen',       team: 'buf', city: 'Buffalo',    pid: 3918298 },
+      { pos: 'RB', name: 'Bijan Robinson',   team: 'atl', city: 'Atlanta',    pid: 4430807 },
+      { pos: 'WR', name: 'Justin Jefferson', team: 'min', city: 'Minnesota',  pid: 4262921, hook: true },
+      { pos: 'TE', name: 'Trey McBride',     team: 'ari', city: 'Arizona',    pid: 4361307 },
     ],
   },
 ];
@@ -85,7 +87,7 @@ const MARKETS = [
    this market — and you'll miss him without Sunday Ticket. ── */
 const firstName = p => p.name.split(' ')[0];
 // eyebrow: the popularity-in-this-geography fact
-const EYEBROW = (m, p) => `${p.name} — ${m.city}’s most-drafted ${p.pos} this week`;
+const EYEBROW = (m, p) => `${p.name} — ${m.city}’s most-drafted fantasy ${p.pos} this week`;
 // one clever headline, with three selectable versions sharing the same image
 const EMO_HEADLINE = {
   'mon':       'Monday grief, brought to you by a game you couldn’t see.',
@@ -183,6 +185,13 @@ function renderMixer() {
 
   document.getElementById('ctvEyebrow').textContent = EYEBROW(m, p);
   document.getElementById('ctvHeadline').textContent = VARIANTS[variantIdx](m, d, p);
+
+  const pic = document.getElementById('ctvPlayer');
+  pic.style.visibility = 'hidden';
+  pic.onload = () => { pic.style.visibility = 'visible'; };
+  pic.onerror = () => { pic.style.visibility = 'hidden'; };
+  pic.src = HEADSHOT(p);
+  pic.alt = p.name;
   document.getElementById('stageCap').textContent =
     `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Player: ${p.name} (${p.team.toUpperCase()})`;
   renderVariants(m, d, p);
@@ -224,11 +233,11 @@ function applyMedia(prompt) {
 /* image prompt — a clean photographic plate; our chrome supplies all text/branding */
 function imagePrompt(m, d, p) {
   return [
-    'Cinematic, photoreal 16:9 connected-TV advertisement background plate for an NFL broadcast product.',
-    `Scene: a dramatic, stadium-lit American-football moment evoking a star ${p.pos}, in ${p.city} team colors, broadcast-grade lighting, shallow depth of field, motion and intensity, premium sports-marketing mood.`,
+    'Cinematic, photoreal 16:9 connected-TV background plate of an EMPTY NFL stadium at game time.',
+    `Mood: dramatic floodlights, ${p.city} team-color stadium lighting, atmospheric haze and bokeh, shallow depth of field, premium broadcast aesthetic.`,
     `Emotional tone: ${d.emotion.toLowerCase()} — ${d.register.toLowerCase()}.`,
-    'Composition: keep the left third darker and clean as copy space for an overlaid headline.',
-    'Do NOT render any text, words, numbers, logos, team names, jersey lettering or sponsor marks. No watermarks. Photographic scene only.',
+    'No players, no people, no crowd faces, no text, no numbers, no logos, no jersey lettering, no sponsor marks, no watermarks.',
+    'Keep the left third darker and clean as copy space for an overlaid headline.',
   ].join(' ');
 }
 

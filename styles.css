@@ -170,7 +170,18 @@ em { font-style: normal; color: var(--ink); }
     linear-gradient(160deg, #12202c, #060a10 70%);
 }
 .ctv.has-img .ctv__media { background-blend-mode: normal; }
-.ctv__scrim { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4,6,10,.92) 0%, rgba(4,6,10,.4) 42%, rgba(4,6,10,.15) 100%), linear-gradient(0deg, rgba(4,6,10,.85), transparent 55%); }
+.ctv__scrim { position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(4,6,10,.92) 0%, rgba(4,6,10,.4) 42%, rgba(4,6,10,.15) 100%), linear-gradient(0deg, rgba(4,6,10,.85), transparent 55%); }
+
+/* real player headshot cutout, anchored bottom-right, fading into the scene on the left */
+.ctv__player {
+  position: absolute; right: 1%; bottom: 0; height: 98%; width: auto; max-width: 56%; z-index: 2;
+  object-fit: contain; object-position: bottom right;
+  filter: drop-shadow(-14px 8px 26px rgba(0,0,0,.55));
+  -webkit-mask-image: linear-gradient(to left, #000 72%, transparent 100%);
+  mask-image: linear-gradient(to left, #000 72%, transparent 100%);
+}
+.ctv__player-scrim { position: absolute; inset: 0; z-index: 2; pointer-events: none;
+  background: linear-gradient(0deg, rgba(4,6,10,.6), transparent 30%); }
 .ctv__loader { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(4,6,10,.7); color: #fff; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .08em; font-size: 14px; }
 .ctv__loader .spin { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.25); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -191,7 +202,7 @@ em { font-style: normal; color: var(--ink); }
   font-size: 12px; letter-spacing: .12em; color: var(--accent); border: 2px solid var(--accent);
   padding: 5px 10px; border-radius: 6px; transform: rotate(6deg); opacity: .92;
 }
-.ctv__body { position: absolute; left: 0; right: 0; bottom: 32px; z-index: 3; padding: 0 30px; max-width: 82%; }
+.ctv__body { position: absolute; left: 0; bottom: 32px; z-index: 3; padding: 0 30px; max-width: 62%; }
 .ctv__eyebrow { font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .08em; font-size: clamp(11px, 1.4vw, 14px); color: var(--accent); margin-bottom: 12px; text-shadow: 0 1px 8px rgba(0,0,0,.8); }
 .ctv__headline { font-family: 'Oswald'; font-weight: 700; color: #fff; font-size: clamp(24px, 4.2vw, 44px); line-height: 1.02; letter-spacing: -.01em; text-transform: uppercase; text-wrap: balance; text-shadow: 0 2px 18px rgba(0,0,0,.8); }
 .ctv__cta-btn { display: inline-block; margin-top: 18px; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(12px, 1.5vw, 15px); color: #fff; background: var(--red); padding: 11px 18px; border-radius: 999px; box-shadow: 0 6px 22px rgba(255,45,45,.4); }

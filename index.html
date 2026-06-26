@@ -120,8 +120,8 @@
           <p class="ctrl__note" id="playerNote"></p>
         </div>
 
-        <button class="btn btn--solid btn--gen" id="genBtn">✨ Generate hero image</button>
-        <p class="genstatus" id="genStatus">Powered by Gemini · add <code>YTST_KEY</code> on Vercel to enable.</p>
+        <button class="btn btn--solid btn--gen" id="genBtn">✨ Generate stadium backdrop</button>
+        <p class="genstatus" id="genStatus">Real player photo + a Gemini-generated stadium backdrop.</p>
       </aside>
 
       <!-- the CTV asset -->
@@ -130,6 +130,8 @@
           <div class="ctv__screen">
             <div class="ctv__media" id="ctvMedia"></div>
             <div class="ctv__scrim"></div>
+            <img class="ctv__player" id="ctvPlayer" alt="" />
+            <div class="ctv__player-scrim"></div>
             <div class="ctv__loader" id="ctvLoader" hidden><span class="spin"></span><span id="ctvLoaderTxt">Generating with Gemini…</span></div>
             <header class="ctv__chrome">
               <div class="st-lockup">
