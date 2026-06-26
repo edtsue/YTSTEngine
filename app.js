@@ -12,8 +12,24 @@
    ════════════════════════════════════════════════════════════════════ */
 
 const ESPN_LOGO = abbr => `https://a.espncdn.com/i/teamlogos/nfl/500/${abbr}.png`;
-// real player headshot cutout (transparent bg) via ESPN's image combiner
-const HEADSHOT = p => `https://a.espncdn.com/combiner/i?img=/i/headshots/nfl/players/full/${p.pid}.png&w=600&h=438`;
+
+// team colors drive both the action-shot prompt and the default backdrop tint
+const TEAMS = {
+  cin: { colors: 'black and bright orange tiger-stripe', glow: '#fb4f14' },
+  atl: { colors: 'black, red and white',                 glow: '#a71930' },
+  ari: { colors: 'cardinal red and white',               glow: '#97233f' },
+  buf: { colors: 'royal blue, red and white',            glow: '#00338d' },
+  sf:  { colors: 'scarlet red and metallic gold',        glow: '#aa0000' },
+  kc:  { colors: 'bright red, gold and white',           glow: '#e31837' },
+  phi: { colors: 'midnight green, black and white',      glow: '#1a5f57' },
+  min: { colors: 'deep purple and gold',                 glow: '#4f2683' },
+};
+const ACTION = {
+  WR: 'leaping to make a dramatic one-handed catch',
+  RB: 'breaking a tackle on an explosive run, ball tucked tight',
+  QB: 'firing a deep pass downfield, throwing arm cocked back',
+  TE: 'powering through contact after a catch over the middle',
+};
 
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
@@ -114,6 +130,7 @@ function buildSignals() {
       <h3>${s.name}</h3>
       <div class="sig__src">${s.source}</div>
       <p class="sig__job">${s.job}</p>
+      ${s.key === 'player' ? '<img class="sig__yahoo" src="assets/yahoo-fantasy.jpg" alt="Yahoo Fantasy" />' : ''}
     </article>`).join('');
 }
 
@@ -178,6 +195,7 @@ function renderMixer() {
   const { m, d, p } = currentSel();
   const ctv = document.getElementById('ctv');
   ctv.style.setProperty('--accent', d.accent);
+  ctv.style.setProperty('--team', (TEAMS[p.team] || {}).glow || d.accent);
 
   document.getElementById('emoNote').textContent = `${d.emotion} — ${d.register}.`;
   document.getElementById('playerNote').innerHTML =
@@ -185,13 +203,6 @@ function renderMixer() {
 
   document.getElementById('ctvEyebrow').textContent = EYEBROW(m, p);
   document.getElementById('ctvHeadline').textContent = VARIANTS[variantIdx](m, d, p);
-
-  const pic = document.getElementById('ctvPlayer');
-  pic.style.visibility = 'hidden';
-  pic.onload = () => { pic.style.visibility = 'visible'; };
-  pic.onerror = () => { pic.style.visibility = 'hidden'; };
-  pic.src = HEADSHOT(p);
-  pic.alt = p.name;
   document.getElementById('stageCap').textContent =
     `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Player: ${p.name} (${p.team.toUpperCase()})`;
   renderVariants(m, d, p);
@@ -232,12 +243,14 @@ function applyMedia(prompt) {
 
 /* image prompt — a clean photographic plate; our chrome supplies all text/branding */
 function imagePrompt(m, d, p) {
+  const t = TEAMS[p.team] || { colors: `${p.city} team colors` };
   return [
-    'Cinematic, photoreal 16:9 connected-TV background plate of an EMPTY NFL stadium at game time.',
-    `Mood: dramatic floodlights, ${p.city} team-color stadium lighting, atmospheric haze and bokeh, shallow depth of field, premium broadcast aesthetic.`,
+    'Cinematic, photoreal 16:9 sports-photography action shot for a connected-TV advertisement.',
+    `Subject: a professional American-football ${p.pos} in a generic ${t.colors} uniform, ${ACTION[p.pos]}, under dramatic stadium floodlights.`,
+    'Real photographic style: motion blur, turf spray, shallow depth of field, telephoto compression, premium broadcast mood.',
     `Emotional tone: ${d.emotion.toLowerCase()} — ${d.register.toLowerCase()}.`,
-    'No players, no people, no crowd faces, no text, no numbers, no logos, no jersey lettering, no sponsor marks, no watermarks.',
     'Keep the left third darker and clean as copy space for an overlaid headline.',
+    'No readable text, no numbers, no team names, no logos, no jersey lettering, no sponsor marks, no watermarks.',
   ].join(' ');
 }
 
