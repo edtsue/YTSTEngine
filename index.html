@@ -27,6 +27,11 @@
 
   <!-- ░░ HERO ░░ -->
   <section class="hero">
+    <div class="hero__video" aria-hidden="true">
+      <video id="heroVid" class="hero__video-el" muted loop playsinline preload="none" poster="assets/hero-poster.jpg"></video>
+      <div class="hero__video-scrim"></div>
+    </div>
+    <div class="hero__inner">
     <div class="hero__kicker">YouTube Sunday Ticket × Fantasy · Contextual CTV engine</div>
     <h1 class="hero__title">Sunday's<br /><span class="hero__title-wanted">Most Wanted</span></h1>
     <p class="hero__lede">
@@ -43,6 +48,7 @@
       <span class="today__dot"></span>
       <span class="today__label">Live signal · It's <strong id="todayName">Sunday</strong></span>
       <span class="today__msg" id="todayMsg"></span>
+    </div>
     </div>
   </section>
 

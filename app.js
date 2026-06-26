@@ -224,8 +224,26 @@ function buildToday() {
   document.getElementById('todayChip').hidden = false;
 }
 
+/* ── hero video: deferred load (Beckett treatment) ─────────────────── */
+function initHeroVideo() {
+  const v = document.getElementById('heroVid');
+  if (!v) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = navigator.connection && navigator.connection.saveData;
+  if (reduce || saveData) return; // keep the poster still; never autoplay
+  // defer the fetch until the page is otherwise loaded, so it never blocks paint
+  const load = () => {
+    v.src = 'assets/hero.mp4';
+    v.addEventListener('playing', () => v.classList.add('is-ready'), { once: true });
+    v.play().catch(() => {});
+  };
+  if (document.readyState === 'complete') setTimeout(load, 200);
+  else window.addEventListener('load', () => setTimeout(load, 200), { once: true });
+}
+
 /* ── init ── */
 buildSignals();
 buildWeekRail();
 buildMixer();
 buildToday();
+initHeroVideo();
