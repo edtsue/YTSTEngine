@@ -18,6 +18,7 @@
   --maxw: 1200px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; } /* author display rules must not override the hidden attribute */
 html { scroll-behavior: smooth; }
 body {
   background: radial-gradient(1200px 700px at 75% -10%, #141b2a 0%, var(--bg) 55%) no-repeat, var(--bg);
