@@ -33,14 +33,19 @@ const ACTION = {
 
 // Real player photos (Wikimedia Commons, freely licensed) keyed by ESPN pid.
 // Prefer genuine in-game ACTION frames (All-Pro Reels game photography) over
-// posed portraits. Players without a clean, team-correct free action photo keep
-// a portrait or fall back to the Gemini-generated action shot.
+// posed portraits. Every roster player gets a photo: a direct shot of the
+// player where one exists, otherwise a same-team action shot (the chrome
+// supplies the player's name, so a teammate in the right uniform reads right).
 const PHOTO = {
   4362628: 'https://upload.wikimedia.org/wikipedia/commons/7/74/Ja%27Marr_Chase.jpg',                                                            // Ja'Marr Chase (CIN) — portrait; no free in-game shot on Commons yet
   4262921: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Justin_Jefferson_Commanders_vs_Vikings_NOV2022.jpg/1280px-Justin_Jefferson_Commanders_vs_Vikings_NOV2022.jpg', // Justin Jefferson (MIN) — in-game, Vikings purple (Nov 2022 vs WAS)
   4430807: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Bijan_Robinson_2025.jpg/1280px-Bijan_Robinson_2025.jpg',                    // Bijan Robinson (ATL) — portrait; no free in-game shot on Commons yet
   3139477: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Patrick_Mahomes_%2851616341245%29.jpg/1280px-Patrick_Mahomes_%2851616341245%29.jpg', // Patrick Mahomes (KC) — in-game (replaces a pregame warmup frame)
   3040151: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/George_Kittle_2019_%2848940368597%29.jpg/1280px-George_Kittle_2019_%2848940368597%29.jpg', // George Kittle (SF) — in-game, 49ers red (uncropped action frame)
+  3915511: 'https://upload.wikimedia.org/wikipedia/commons/0/03/Joe_Burrow_Bengals.jpg',                                                          // Joe Burrow (CIN) — direct, Bengals
+  3918298: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Josh_Allen_%2843569465444%29.jpg/1280px-Josh_Allen_%2843569465444%29.jpg', // Josh Allen (BUF) — in-game, Bills (rookie-year All-Pro Reels frame)
+  3929630: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Saquon_Barkley_112024.jpg/1280px-Saquon_Barkley_112024.jpg',               // Saquon Barkley (PHI) — in-game, Eagles (Nov 2024)
+  4361307: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Kyler_Murray_passing.png',                                                        // Trey McBride (ARI) slot — no free McBride photo; same-team Cardinals action shot (Kyler Murray)
 };
 
 /* ── The three signals (for the explainer cards) ───────────────────── */
