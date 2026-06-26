@@ -31,18 +31,17 @@ const ACTION = {
   TE: 'powering through contact after a catch over the middle',
 };
 
-// Real player photos (Wikimedia Commons, freely licensed) keyed by ESPN pid.
-// Values are bare Commons file titles; commonsUrl() resolves them through
-// Special:FilePath, which Wikimedia redirects to the live CDN file and clamps
-// ?width to the original (so it never 404s on a portrait narrower than 1280,
-// the way a hand-built /thumb/.../1280px- URL does).
+// Real player photos keyed by ESPN pid, resolved by photoUrl(). A value is
+// either a vendored asset under assets/ (used as-is, served same-origin) or a
+// bare Wikimedia Commons file title resolved through Special:FilePath (Wikimedia
+// does the redirect and clamps ?width to the original, so no dead thumbnails).
 //
-// Prefer genuine in-game ACTION frames (All-Pro Reels game photography). Every
-// roster player gets a photo: a direct shot where one exists, else a same-team
-// action shot (the chrome supplies the player's name, so a teammate in the
-// right uniform reads right).
+// Prefer genuine in-game ACTION frames. Every roster player gets a photo: a
+// direct shot of the player where one exists, else a same-team action shot
+// (the chrome supplies the player's name, so a teammate in the right uniform
+// reads right).
 const PHOTO = {
-  4362628: "Ja'Marr Chase.jpg",                              // Ja'Marr Chase (CIN) — Bengals (portrait; no free in-game shot yet)
+  4362628: 'assets/jamarr-chase.jpg',                        // Ja'Marr Chase (CIN) — supplied in-game action shot (vendored, Bengals white)
   4262921: 'Justin Jefferson Commanders vs Vikings NOV2022.jpg', // Justin Jefferson (MIN) — in-game, Vikings purple
   4430807: '2025 Commanders at Falcons 11.jpg',              // Bijan Robinson (ATL) — in-game action, Falcons (Sept 2025; from his Commons category)
   3139477: 'Patrick Mahomes (51616341245).jpg',             // Patrick Mahomes (KC) — in-game
@@ -50,10 +49,14 @@ const PHOTO = {
   3915511: 'Joe Burrow Bengals.jpg',                        // Joe Burrow (CIN) — direct, Bengals
   3918298: 'Josh Allen (43569465444).jpg',                  // Josh Allen (BUF) — in-game, Bills (rookie-year frame)
   3929630: 'Saquon Barkley 112024.jpg',                     // Saquon Barkley (PHI) — in-game, Eagles (Nov 2024)
-  4361307: 'Kyler Murray passing.png',                      // Trey McBride (ARI) slot — same-team Cardinals action shot (Kyler Murray)
+  4361307: 'assets/trey-mcbride.jpg',                       // Trey McBride (ARI) — supplied in-game action shot (vendored, Cardinals red)
 };
-const commonsUrl = (file, w = 1280) =>
-  `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(file)}?width=${w}`;
+// A PHOTO value is either a vendored asset path / absolute URL (used as-is) or
+// a bare Commons file title resolved through Special:FilePath (Wikimedia does
+// the redirect and clamps ?width to the original, so no dead thumbnails).
+const photoUrl = (v, w = 1280) =>
+  /^(assets\/|https?:)/.test(v) ? v
+    : `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(v)}?width=${w}`;
 // ESPN headshot (deterministic by pid, same host as the team logos) — a
 // guaranteed last-resort so a mockup is never blank if a Commons file fails.
 const HEADSHOT = pid => `https://a.espncdn.com/i/headshots/nfl/players/full/${pid}.png`;
@@ -305,7 +308,7 @@ function applyMedia(prompt, p) {
     // cropped to 16:9 shows only its middle band at 'center', which slices
     // heads off — 'top' keeps them; 'center' horizontally keeps a wide
     // (landscape) subject from being cropped out the side.
-    fill(commonsUrl(PHOTO[p.pid]), 'center top', headshot);
+    fill(photoUrl(PHOTO[p.pid]), 'center top', headshot);
   } else {                                 // no curated entry → headshot
     headshot();
   }
