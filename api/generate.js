@@ -3,6 +3,8 @@
    Proxies a text prompt to the Gemini image model using YTST_KEY.
    The key never reaches the browser.
    ════════════════════════════════════════════════════════════════════ */
+import sharp from 'sharp';
+
 // give the function room past the default Hobby timeout so a cold start +
 // a ~6s Gemini render never gets killed mid-flight.
 export const config = { maxDuration: 60 };
@@ -59,8 +61,21 @@ export default async function handler(req, res) {
       return res.status(502).json({ error: 'no_image', message: text || 'Model returned no image.' });
     }
 
-    const mime = inline.mimeType || inline.mime_type || 'image/png';
-    const dataUrl = `data:${mime};base64,${inline.data}`;
+    // Re-encode to a right-sized 16:9 JPEG — cuts the payload ~10x (2.4MB → ~200KB)
+    // so it transfers fast. Falls back to the raw image if sharp ever fails.
+    let dataUrl;
+    try {
+      const png = Buffer.from(inline.data, 'base64');
+      const jpg = await sharp(png)
+        .resize({ width: 1280, height: 720, fit: 'cover' })
+        .jpeg({ quality: 82, mozjpeg: true })
+        .toBuffer();
+      dataUrl = `data:image/jpeg;base64,${jpg.toString('base64')}`;
+    } catch {
+      const mime = inline.mimeType || inline.mime_type || 'image/png';
+      dataUrl = `data:${mime};base64,${inline.data}`;
+    }
+
     cache.set(prompt, dataUrl);
     if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
     return res.status(200).json({ image: dataUrl });

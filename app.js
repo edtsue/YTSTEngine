@@ -214,12 +214,25 @@ async function generateAsset() {
   btn.disabled = true;
   loader.hidden = false;
   status.textContent = 'Generating with Gemini…';
+  const txt = document.getElementById('ctvLoaderTxt');
+
+  // live elapsed counter so the wait never looks frozen
+  const t0 = Date.now();
+  const tick = setInterval(() => {
+    const s = ((Date.now() - t0) / 1000).toFixed(0);
+    txt.textContent = `Generating with Gemini… ${s}s`;
+  }, 250);
+
+  // hard ceiling so a hung request can't spin forever
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 55000);
 
   try {
     const res = await fetch('/api/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ prompt }),
+      signal: ctrl.signal,
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.image) {
@@ -230,10 +243,15 @@ async function generateAsset() {
     }
     imgCache[prompt] = data.image;
     applyMedia(prompt);
-    status.textContent = '✓ Hero generated with Gemini.';
+    status.textContent = `✓ Hero generated in ${((Date.now() - t0) / 1000).toFixed(1)}s.`;
   } catch (e) {
-    status.textContent = '⚠ ' + e.message;
+    status.textContent = e.name === 'AbortError'
+      ? '⚠ Timed out — try again.'
+      : '⚠ ' + e.message;
   } finally {
+    clearInterval(tick);
+    clearTimeout(timeout);
+    txt.textContent = 'Generating with Gemini…';
     btn.disabled = false;
     loader.hidden = true;
   }

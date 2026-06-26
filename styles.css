@@ -171,7 +171,7 @@ em { font-style: normal; color: var(--ink); }
 .ctv.has-img .ctv__media { background-blend-mode: normal; }
 .ctv__scrim { position: absolute; inset: 0; background: linear-gradient(90deg, rgba(4,6,10,.92) 0%, rgba(4,6,10,.4) 42%, rgba(4,6,10,.15) 100%), linear-gradient(0deg, rgba(4,6,10,.85), transparent 55%); }
 .ctv__loader { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(4,6,10,.7); color: #fff; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .08em; font-size: 14px; }
-.ctv__loader span { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.25); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+.ctv__loader .spin { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.25); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .ctv__chrome { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; }
