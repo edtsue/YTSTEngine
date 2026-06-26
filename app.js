@@ -80,19 +80,27 @@ const MARKETS = [
   },
 ];
 
-/* ── The headline — pithy, bold, ad-grade. Proof lives in the subhead. ── */
-const HEADLINES = {
-  'mon':       (m, p) => `You drafted ${p.name}. You never got to watch him.`,
-  'tue':       (m, p) => `${p.name}’s back Sunday. Your blackout never left.`,
-  'wed':       (m, p) => `All-in on ${p.name}. Good luck finding the channel.`,
-  'thu':       (m, p) => `Tonight you watch ${p.name}. Sunday, you won’t.`,
-  'fri':       (m, p) => `You know ${p.name}’s snap count. Not his channel.`,
-  'sat':       (m, p) => `Perfect lineup. Wrong market.`,
-  'sun-am':    (m, p) => `Locked in. Locked out.`,
-  'sun-pm':    (m, p) => `${p.name} is scoring right now. You’re watching a number.`,
-  'sun-night': (m, p) => `Your whole week. One channel you don’t have.`,
+/* ── Three headline variants per mockup. Same image, different copy. ──
+   The hook is always: this player is the most-drafted at his position in
+   this market — and you'll miss him without Sunday Ticket. ── */
+const firstName = p => p.name.split(' ')[0];
+const EMO_LEAD = {
+  'mon':       'Monday already stings.',
+  'tue':       'The wire won’t fix your TV.',
+  'wed':       'You blew your whole budget.',
+  'thu':       'Tonight you watch. Sunday you won’t.',
+  'fri':       'You did all the homework.',
+  'sat':       'Lineup’s set. Your screen isn’t.',
+  'sun-am':    'Lineups lock in an hour.',
+  'sun-pm':    'He’s scoring right now.',
+  'sun-night': 'One player left, primetime.',
 };
-const SUBHEAD = (m, p) => `${p.name} plays in ${p.city} — ${m.geoClause}.`;
+const VARIANTS = [
+  (m, d, p) => `${firstName(p)} is the most-drafted ${p.pos} across ${m.city} fantasy rosters this week. You’ll miss him without Sunday Ticket.`,
+  (m, d, p) => `${m.city} drafted ${firstName(p)}. ${m.city} can’t watch ${firstName(p)} — he plays in ${p.city}, ${m.geoClause}.`,
+  (m, d, p) => `${EMO_LEAD[d.id]} And ${m.city}’s favorite ${p.pos} is on a channel you don’t get.`,
+];
+const SUBHEAD = (m, p) => `${p.name} · ${p.city} ${p.team.toUpperCase()} · out-of-market in ${m.city}`;
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
 function buildSignals() {
@@ -112,7 +120,7 @@ function buildWeekRail() {
     <button class="mini" data-day="${d.id}" style="--accent:${d.accent}">
       <span class="mini__top"><span class="mini__day">${d.short}</span><span class="mini__brand">▶ Sunday Ticket</span></span>
       <span class="mini__emo">${d.emotion}</span>
-      <span class="mini__hl">${HEADLINES[d.id](m, p)}</span>
+      <span class="mini__hl">${VARIANTS[2](m, d, p)}</span>
       <img class="mini__logo" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />
     </button>`).join('');
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {
@@ -142,6 +150,16 @@ function buildMixer() {
   ['selMarket', 'selDay', 'selPos'].forEach(id =>
     document.getElementById(id).addEventListener('change', renderMixer));
   document.getElementById('genBtn').addEventListener('click', generateAsset);
+  document.getElementById('randBtn').addEventListener('click', randomize);
+  renderMixer();
+}
+
+/* randomize the three signals — geography, day, and player/position */
+function randomize() {
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  document.getElementById('selMarket').value = pick(MARKETS).id;
+  document.getElementById('selDay').value = pick(DAYS).id;
+  document.getElementById('selPos').value = pick(['WR', 'QB', 'RB', 'TE']);
   renderMixer();
 }
 
@@ -163,13 +181,30 @@ function renderMixer() {
 
   document.getElementById('ctvLogo').src = ESPN_LOGO(p.team);
   document.getElementById('ctvEyebrow').textContent = `${m.city}'s Most Wanted · ${p.pos} · ${d.name}`;
-  document.getElementById('ctvHeadline').textContent = HEADLINES[d.id](m, p);
+  document.getElementById('ctvHeadline').textContent = VARIANTS[variantIdx](m, d, p);
   document.getElementById('ctvSub').textContent = SUBHEAD(m, p);
   document.getElementById('stageCap').textContent =
     `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Player: ${p.name} (${p.team.toUpperCase()})`;
+  renderVariants(m, d, p);
 
   // reuse a cached render for this exact signal combo; otherwise show the styled plate
   applyMedia(imagePrompt(m, d, p));
+}
+
+/* three copy versions of the same mockup — click to load one into the asset */
+let variantIdx = 0;
+function renderVariants(m, d, p) {
+  const wrap = document.getElementById('variantTabs');
+  wrap.innerHTML = VARIANTS.map((fn, i) => `
+    <button class="vtab ${i === variantIdx ? 'is-active' : ''}" data-v="${i}">
+      <span class="vtab__n">Version ${i + 1}</span>
+      <span class="vtab__hl">${fn(m, d, p)}</span>
+    </button>`).join('');
+  wrap.querySelectorAll('.vtab').forEach(b => b.addEventListener('click', () => {
+    variantIdx = +b.dataset.v;
+    document.getElementById('ctvHeadline').textContent = VARIANTS[variantIdx](m, d, p);
+    wrap.querySelectorAll('.vtab').forEach(x => x.classList.toggle('is-active', x === b));
+  }));
 }
 
 /* client-side cache: re-viewing a combo is instant, no re-generation */
