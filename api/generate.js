@@ -3,6 +3,14 @@
    Proxies a text prompt to the Gemini image model using YTST_KEY.
    The key never reaches the browser.
    ════════════════════════════════════════════════════════════════════ */
+// give the function room past the default Hobby timeout so a cold start +
+// a ~6s Gemini render never gets killed mid-flight.
+export const config = { maxDuration: 60 };
+
+// warm-instance cache: an identical prompt within a live instance returns instantly.
+const cache = new Map();
+const CACHE_MAX = 40;
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'method', message: 'POST only' });
@@ -18,6 +26,10 @@ export default async function handler(req, res) {
   const prompt = body && body.prompt;
   if (!prompt || typeof prompt !== 'string') {
     return res.status(400).json({ error: 'prompt', message: 'A `prompt` string is required.' });
+  }
+
+  if (cache.has(prompt)) {
+    return res.status(200).json({ image: cache.get(prompt), cached: true });
   }
 
   const model = process.env.YTST_IMAGE_MODEL || 'gemini-2.5-flash-image';
@@ -48,7 +60,10 @@ export default async function handler(req, res) {
     }
 
     const mime = inline.mimeType || inline.mime_type || 'image/png';
-    return res.status(200).json({ image: `data:${mime};base64,${inline.data}` });
+    const dataUrl = `data:${mime};base64,${inline.data}`;
+    cache.set(prompt, dataUrl);
+    if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value);
+    return res.status(200).json({ image: dataUrl });
   } catch (e) {
     return res.status(500).json({ error: 'fetch', message: String(e && e.message || e) });
   }

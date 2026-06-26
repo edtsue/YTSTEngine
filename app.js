@@ -80,19 +80,19 @@ const MARKETS = [
   },
 ];
 
-/* ── The template — fills per (day, market, player). Always reads true. ── */
-const CREATIVE = {
-  'mon':       (m, p) => `All of ${m.city} drafted ${p.name}. None of ${m.city} got to watch him — he plays in ${p.city}, ${m.geoClause}.`,
-  'tue':       (m, p) => `The ${p.pos} ${m.city} loves is back Sunday. ${cap(m.geoClause)}. Still not on your TV — there’s a fix.`,
-  'wed':       (m, p) => `${m.city}’s most-drafted ${p.pos} plays Sunday in ${p.city} — ${m.geoClause}. You know the drill by now.`,
-  'thu':       (m, p) => `Tonight you get to watch your guy. Enjoy it — Sunday, ${p.name} is back out of reach in ${p.city}.`,
-  'fri':       (m, p) => `You’ll study ${p.name} all weekend. Come Sunday, ${m.city}’s channels still won’t carry ${p.city}.`,
-  'sat':       (m, p) => `Start ${p.name}? You’ve flip-flopped three times. Doesn’t matter — ${m.city} can’t see ${p.city} anyway.`,
-  'sun-am':    (m, p) => `Lineups lock in 1 hour. ${m.city}’s ${p.name} is in ${p.city} — ${m.geoClause}. Your channels didn’t pick it.`,
-  'sun-pm':    (m, p) => `Right now: the ${p.pos} all of ${m.city} drafted is playing a game all of ${m.city} can’t see. ${m.punchline}`,
-  'sun-night': (m, p) => `One ${p.pos} left, primetime. ${p.name} could carry ${m.city}’s whole week — from a screen ${m.city} never got.`,
+/* ── The headline — pithy, bold, ad-grade. Proof lives in the subhead. ── */
+const HEADLINES = {
+  'mon':       (m, p) => `You drafted ${p.name}. You never got to watch him.`,
+  'tue':       (m, p) => `${p.name}’s back Sunday. Your blackout never left.`,
+  'wed':       (m, p) => `All-in on ${p.name}. Good luck finding the channel.`,
+  'thu':       (m, p) => `Tonight you watch ${p.name}. Sunday, you won’t.`,
+  'fri':       (m, p) => `You know ${p.name}’s snap count. Not his channel.`,
+  'sat':       (m, p) => `Perfect lineup. Wrong market.`,
+  'sun-am':    (m, p) => `Locked in. Locked out.`,
+  'sun-pm':    (m, p) => `${p.name} is scoring right now. You’re watching a number.`,
+  'sun-night': (m, p) => `Your whole week. One channel you don’t have.`,
 };
-const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+const SUBHEAD = (m, p) => `${p.name} plays in ${p.city} — ${m.geoClause}.`;
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
 function buildSignals() {
@@ -112,7 +112,7 @@ function buildWeekRail() {
     <button class="mini" data-day="${d.id}" style="--accent:${d.accent}">
       <span class="mini__top"><span class="mini__day">${d.short}</span><span class="mini__brand">▶ Sunday Ticket</span></span>
       <span class="mini__emo">${d.emotion}</span>
-      <span class="mini__hl">${CREATIVE[d.id](m, p)}</span>
+      <span class="mini__hl">${HEADLINES[d.id](m, p)}</span>
       <img class="mini__logo" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />
     </button>`).join('');
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {
@@ -163,9 +163,27 @@ function renderMixer() {
 
   document.getElementById('ctvLogo').src = ESPN_LOGO(p.team);
   document.getElementById('ctvEyebrow').textContent = `${m.city}'s Most Wanted · ${p.pos} · ${d.name}`;
-  document.getElementById('ctvHeadline').textContent = CREATIVE[d.id](m, p);
+  document.getElementById('ctvHeadline').textContent = HEADLINES[d.id](m, p);
+  document.getElementById('ctvSub').textContent = SUBHEAD(m, p);
   document.getElementById('stageCap').textContent =
     `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Player: ${p.name} (${p.team.toUpperCase()})`;
+
+  // reuse a cached render for this exact signal combo; otherwise show the styled plate
+  applyMedia(imagePrompt(m, d, p));
+}
+
+/* client-side cache: re-viewing a combo is instant, no re-generation */
+const imgCache = {};
+function applyMedia(prompt) {
+  const media = document.getElementById('ctvMedia');
+  const ctv = document.getElementById('ctv');
+  if (imgCache[prompt]) {
+    media.style.backgroundImage = `url(${imgCache[prompt]})`;
+    ctv.classList.add('has-img');
+  } else {
+    media.style.backgroundImage = '';
+    ctv.classList.remove('has-img');
+  }
 }
 
 /* image prompt — a clean photographic plate; our chrome supplies all text/branding */
@@ -186,6 +204,13 @@ async function generateAsset() {
   const loader = document.getElementById('ctvLoader');
   const status = document.getElementById('genStatus');
 
+  // already rendered this exact combo — show it instantly
+  if (imgCache[prompt]) {
+    applyMedia(prompt);
+    status.textContent = '✓ Showing saved render — change a signal for a new one.';
+    return;
+  }
+
   btn.disabled = true;
   loader.hidden = false;
   status.textContent = 'Generating with Gemini…';
@@ -203,9 +228,8 @@ async function generateAsset() {
         : (data.message || data.error || `Generation failed (${res.status}).`);
       throw new Error(reason);
     }
-    const media = document.getElementById('ctvMedia');
-    media.style.backgroundImage = `url(${data.image})`;
-    document.getElementById('ctv').classList.add('has-img');
+    imgCache[prompt] = data.image;
+    applyMedia(prompt);
     status.textContent = '✓ Hero generated with Gemini.';
   } catch (e) {
     status.textContent = '⚠ ' + e.message;
