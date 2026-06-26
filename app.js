@@ -301,7 +301,11 @@ function applyMedia(prompt, p) {
   if (imgCache[prompt]) {                  // a generated Gemini shot wins
     fill(imgCache[prompt], 'center');
   } else if (p && PHOTO[p.pid]) {          // curated real photo, headshot on failure
-    fill(commonsUrl(PHOTO[p.pid]), 'right center', headshot);
+    // Anchor to the top so the player's head is always in frame: a tall photo
+    // cropped to 16:9 shows only its middle band at 'center', which slices
+    // heads off — 'top' keeps them; 'center' horizontally keeps a wide
+    // (landscape) subject from being cropped out the side.
+    fill(commonsUrl(PHOTO[p.pid]), 'center top', headshot);
   } else {                                 // no curated entry → headshot
     headshot();
   }
