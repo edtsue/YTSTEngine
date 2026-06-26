@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>A Fantasy Player's Week — Sunday Ticket</title>
+  <meta name="description" content="The emotional life of a fantasy football manager, day by day. A creative-brief input for YouTube Sunday Ticket." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+
+  <!-- ░░ NAV ░░ -->
+  <header class="nav">
+    <div class="nav__brand">
+      <span class="nav__yt">▶</span>
+      <span class="nav__wordmark">Sunday Ticket</span>
+      <span class="nav__x">×</span>
+      <span class="nav__sub">Fantasy</span>
+    </div>
+    <nav class="nav__links">
+      <a href="#arc">The Arc</a>
+      <a href="#week">The Week</a>
+      <a href="#sunday">Sunday</a>
+      <a href="#product">The Payoff</a>
+    </nav>
+  </header>
+
+  <!-- ░░ HERO ░░ -->
+  <section class="hero">
+    <div class="hero__kicker">Creative-brief input · A fantasy manager's week</div>
+    <h1 class="hero__headline">
+      Fantasy manufactures stakes<br />
+      in games you <span class="hl">can't watch.</span>
+    </h1>
+    <p class="hero__lede">
+      Seven days of investment and powerlessness. Every emotional low is a place the
+      product can show up — and the sharpest pain of all lives on Sunday afternoon,
+      watching numbers move in games your television refuses to show you.
+    </p>
+
+    <!-- Contextual "today" chip — demonstrates day-of-week creative -->
+    <div class="today" id="todayChip" hidden>
+      <span class="today__dot"></span>
+      <span class="today__label">Live signal · It's <strong id="todayName">Sunday</strong></span>
+      <span class="today__msg" id="todayMsg"></span>
+    </div>
+  </section>
+
+  <!-- ░░ THE ARC (chart) ░░ -->
+  <section class="arc" id="arc">
+    <div class="section-head">
+      <span class="section-head__num">01</span>
+      <h2>The emotional arc</h2>
+      <p>Intensity of feeling across the week. It builds all week toward one minute, then breaks.</p>
+    </div>
+    <div class="chart" id="chart" role="img" aria-label="Emotional intensity rising across the week, peaking Sunday afternoon"></div>
+    <p class="arc__line">
+      <span>Monday grief</span><i>→</i><span>Tuesday hope</span><i>→</i><span>Sunday panic</span><i>→</i><span class="arc__line-wound">Sunday helplessness</span><i>→</i><span class="arc__line-rpt">repeat</span>
+    </p>
+  </section>
+
+  <!-- ░░ THE WEEK (cards) ░░ -->
+  <section class="week" id="week">
+    <div class="section-head">
+      <span class="section-head__num">02</span>
+      <h2>The week, day by day</h2>
+      <p>Rituals, feelings, and where the opening for Sunday Ticket lives.</p>
+    </div>
+    <div class="week__grid" id="weekGrid"></div>
+  </section>
+
+  <!-- ░░ SUNDAY ░░ -->
+  <section class="sunday" id="sunday">
+    <div class="section-head">
+      <span class="section-head__num">03</span>
+      <h2>Sunday — the reckoning, part II</h2>
+      <p>The day everything builds toward. Three distinct phases, three distinct hells.</p>
+    </div>
+    <div class="sunday__phases" id="sundayPhases"></div>
+    <blockquote class="wound">
+      <span class="wound__tag">The core wound</span>
+      The player who decides his week is playing in a game his television refuses to show him.
+      <strong>The whole campaign lives in this afternoon.</strong>
+    </blockquote>
+  </section>
+
+  <!-- ░░ PRODUCT ░░ -->
+  <section class="product" id="product">
+    <div class="section-head">
+      <span class="section-head__num">04</span>
+      <h2>Where the product lands</h2>
+      <p>The FOMO is the hook. The features are the proof.</p>
+    </div>
+    <div class="product__grid" id="productGrid"></div>
+  </section>
+
+  <footer class="foot">
+    <p>YTST Engine · contextual creative concept. The throughline: <em>fantasy manufactures stakes in games you can't watch.</em></p>
+  </footer>
+
+  <!-- ░░ Day detail flyout ░░ -->
+  <div class="flyout" id="flyout" hidden>
+    <button class="flyout__close" id="flyoutClose" aria-label="Close">×</button>
+    <div class="flyout__body" id="flyoutBody"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
