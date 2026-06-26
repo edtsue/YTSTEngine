@@ -3,8 +3,6 @@
    Proxies a text prompt to the Gemini image model using YTST_KEY.
    The key never reaches the browser.
    ════════════════════════════════════════════════════════════════════ */
-import sharp from 'sharp';
-
 // give the function room past the default Hobby timeout so a cold start +
 // a ~6s Gemini render never gets killed mid-flight.
 export const config = { maxDuration: 60 };
@@ -65,6 +63,7 @@ export default async function handler(req, res) {
     // so it transfers fast. Falls back to the raw image if sharp ever fails.
     let dataUrl;
     try {
+      const { default: sharp } = await import('sharp'); // lazy: fall back to raw if unavailable
       const png = Buffer.from(inline.data, 'base64');
       const jpg = await sharp(png)
         .resize({ width: 1280, height: 720, fit: 'cover' })
