@@ -1,0 +1,55 @@
+/* ════════════════════════════════════════════════════════════════════
+   POST /api/generate  → { image: "data:image/png;base64,..." }
+   Proxies a text prompt to the Gemini image model using YTST_KEY.
+   The key never reaches the browser.
+   ════════════════════════════════════════════════════════════════════ */
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'method', message: 'POST only' });
+  }
+
+  const key = process.env.YTST_KEY;
+  if (!key) {
+    return res.status(503).json({ error: 'no_key', message: 'Set YTST_KEY in Vercel env to enable generation.' });
+  }
+
+  let body = req.body;
+  if (typeof body === 'string') { try { body = JSON.parse(body); } catch { body = {}; } }
+  const prompt = body && body.prompt;
+  if (!prompt || typeof prompt !== 'string') {
+    return res.status(400).json({ error: 'prompt', message: 'A `prompt` string is required.' });
+  }
+
+  const model = process.env.YTST_IMAGE_MODEL || 'gemini-2.5-flash-image';
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+
+  try {
+    const gem = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] },
+      }),
+    });
+
+    const data = await gem.json().catch(() => null);
+    if (!gem.ok) {
+      const detail = data?.error?.message || `Gemini returned ${gem.status}`;
+      return res.status(gem.status).json({ error: 'gemini', message: detail });
+    }
+
+    const parts = data?.candidates?.[0]?.content?.parts || [];
+    const imgPart = parts.find(p => p.inlineData || p.inline_data);
+    const inline = imgPart && (imgPart.inlineData || imgPart.inline_data);
+    if (!inline?.data) {
+      const text = parts.map(p => p.text).filter(Boolean).join(' ');
+      return res.status(502).json({ error: 'no_image', message: text || 'Model returned no image.' });
+    }
+
+    const mime = inline.mimeType || inline.mime_type || 'image/png';
+    return res.status(200).json({ image: `data:${mime};base64,${inline.data}` });
+  } catch (e) {
+    return res.status(500).json({ error: 'fetch', message: String(e && e.message || e) });
+  }
+}

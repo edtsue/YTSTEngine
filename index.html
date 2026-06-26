@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>A Fantasy Player's Week — Sunday Ticket</title>
-  <meta name="description" content="The emotional life of a fantasy football manager, day by day. A creative-brief input for YouTube Sunday Ticket." />
+  <title>Sunday's Most Wanted — YouTube Sunday Ticket × Fantasy</title>
+  <meta name="description" content="A contextual CTV engine for YouTube Sunday Ticket. Three live signals — geography, day-emotion, and the top players on Yahoo fantasy teams in your market — produce a different ad for every city, every day." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -17,33 +17,28 @@
   <header class="nav">
     <div class="nav__brand">
       <span class="nav__yt">▶</span>
-      <span class="nav__wordmark">Sunday Ticket</span>
-      <span class="nav__x">×</span>
-      <span class="nav__sub">Fantasy</span>
+      <span class="nav__wordmark">Sunday's Most Wanted</span>
     </div>
     <nav class="nav__links">
-      <a href="#arc">The Arc</a>
-      <a href="#engine">The Engine</a>
-      <a href="#week">The Week</a>
-      <a href="#sunday">Sunday</a>
-      <a href="#product">The Payoff</a>
+      <a href="#how">How it works</a>
+      <a href="#mixer">Build an asset</a>
     </nav>
   </header>
 
   <!-- ░░ HERO ░░ -->
   <section class="hero">
-    <div class="hero__kicker">Creative-brief input · A fantasy manager's week</div>
-    <h1 class="hero__headline">
-      Fantasy manufactures stakes<br />
-      in games you <span class="hl">can't watch.</span>
-    </h1>
+    <div class="hero__kicker">YouTube Sunday Ticket × Fantasy · Contextual CTV engine</div>
+    <h1 class="hero__title">Sunday's<br /><span class="hero__title-wanted">Most Wanted</span></h1>
     <p class="hero__lede">
-      Seven days of investment and powerlessness. Every emotional low is a place the
-      product can show up — and the sharpest pain of all lives on Sunday afternoon,
-      watching numbers move in games your television refuses to show you.
+      Every market drafts the league's best players. Almost none of them play <em>in</em> that market —
+      they're scattered across out-of-market games your local channels won't carry. <strong>Sunday's Most
+      Wanted</strong> turns that gap into creative: three live signals render a different CTV ad for every
+      city, every day, every week — and only Sunday Ticket can resolve it.
     </p>
-
-    <!-- Contextual "today" chip — demonstrates day-of-week creative -->
+    <div class="hero__cta">
+      <a href="#how" class="btn btn--ghost">See how it works</a>
+      <a href="#mixer" class="btn btn--solid">Build an asset →</a>
+    </div>
     <div class="today" id="todayChip" hidden>
       <span class="today__dot"></span>
       <span class="today__label">Live signal · It's <strong id="todayName">Sunday</strong></span>
@@ -51,118 +46,115 @@
     </div>
   </section>
 
-  <!-- ░░ THE ARC (chart) ░░ -->
-  <section class="arc" id="arc">
+  <!-- ░░ SECTION 01 — HOW IT WORKS ░░ -->
+  <section class="how" id="how">
     <div class="section-head">
       <span class="section-head__num">01</span>
-      <h2>The emotional arc</h2>
-      <p>Intensity of feeling across the week. It builds all week toward one minute, then breaks.</p>
-    </div>
-    <div class="chart" id="chart" role="img" aria-label="Emotional intensity rising across the week, peaking Sunday afternoon"></div>
-    <p class="arc__line">
-      <span>Monday grief</span><i>→</i><span>Tuesday hope</span><i>→</i><span>Sunday panic</span><i>→</i><span class="arc__line-wound">Sunday helplessness</span><i>→</i><span class="arc__line-rpt">repeat</span>
-    </p>
-  </section>
-
-  <!-- ░░ THE ENGINE ░░ -->
-  <section class="engine" id="engine">
-    <div class="section-head">
-      <span class="section-head__num">02</span>
-      <h2>The contextual creative engine</h2>
-      <p>One truth, triangulated. Three live signals pour into one template — producing creative that feels personal at billboard scale, and that only Sunday Ticket can resolve.</p>
+      <h2>Three signals, one asset</h2>
+      <p>The engine reads three live signals and renders a CTV asset that's locally true, emotionally
+        timed, and only resolvable by the product. Geography does double duty — it tells us who's popular
+        <em>and</em> what's blacked out.</p>
     </div>
 
-    <!-- the three signals -->
     <div class="signals" id="signals"></div>
 
-    <!-- the template -->
-    <div class="formula">
-      <span class="formula__chip is-day">DAY · EMOTION tone</span><i>+</i>
-      <span class="formula__chip is-player">the player they drafted</span><i>+</i>
-      <span class="formula__chip is-geo">playing where they can't see it</span>
+    <!-- pipeline -->
+    <div class="pipe">
+      <span class="pipe__node">3 signals</span>
+      <i>→</i>
+      <span class="pipe__node pipe__node--engine">Sunday's Most Wanted engine</span>
+      <i>→</i>
+      <span class="pipe__node">a CTV asset that names <em>their</em> guy &amp; <em>their</em> blackout</span>
     </div>
 
-    <!-- interactive builder -->
-    <div class="builder">
-      <div class="builder__controls">
-        <label>Market
-          <div class="sel"><select id="selMarket"></select></div>
-        </label>
-        <label>Day · signal
-          <div class="sel"><select id="selDay"></select></div>
-        </label>
-        <span class="builder__live"><span class="builder__livedot"></span>generating live</span>
+    <!-- weekly strip -->
+    <div class="weekstrip">
+      <div class="weekstrip__head">
+        <h3>One template. A new asset every day.</h3>
+        <span>Market held constant (Cleveland). The day flips the mood; the player stays the hook.</span>
       </div>
-      <div class="builder__readout" id="readout"></div>
-      <div class="builder__output">
-        <span class="builder__outlabel">The creative</span>
-        <p class="builder__creative" id="creative"></p>
-        <div class="builder__gate" id="gate"></div>
-      </div>
-    </div>
-
-    <!-- Most Wanted poster -->
-    <div class="mostwanted">
-      <div class="mostwanted__head">
-        <h3 id="mwTitle">Cleveland's Most Wanted</h3>
-        <span class="mostwanted__wk">Out of market — uncatchable without Sunday Ticket</span>
-      </div>
-      <div class="mostwanted__grid" id="mwGrid"></div>
-      <p class="mostwanted__note">Top player per position, geo-stamped and pulled live from Yahoo. They're “on the run” — out of market. <em>The metaphor is the product.</em></p>
-    </div>
-
-    <!-- compounding payoff -->
-    <div class="payoff">
-      <span class="payoff__tag">The compounding payoff</span>
-      <p class="payoff__line" id="payoffLine"></p>
-      <p class="payoff__sub">Three signals → one locally-true sentence → and only Sunday Ticket resolves it.</p>
+      <div class="weekstrip__rail" id="weekRail"></div>
+      <p class="weekstrip__hint">Tap any day to load it into the builder ↓</p>
     </div>
   </section>
 
-  <!-- ░░ THE WEEK (cards) ░░ -->
-  <section class="week" id="week">
+  <!-- ░░ SECTION 02 — THE MIXER ░░ -->
+  <section class="mixer" id="mixer">
     <div class="section-head">
-      <span class="section-head__num">03</span>
-      <h2>The week, day by day</h2>
-      <p>Rituals, feelings, and where the opening for Sunday Ticket lives.</p>
+      <span class="section-head__num">02</span>
+      <h2>Build the asset</h2>
+      <p>Mix the three signals to composite a YouTube Sunday Ticket CTV spot. The hero image is generated
+        live by Gemini; the branding, headline, and blackout chrome are assembled from the signals.</p>
     </div>
-    <div class="week__grid" id="weekGrid"></div>
-  </section>
 
-  <!-- ░░ SUNDAY ░░ -->
-  <section class="sunday" id="sunday">
-    <div class="section-head">
-      <span class="section-head__num">04</span>
-      <h2>Sunday — the reckoning, part II</h2>
-      <p>The day everything builds toward. Three distinct phases, three distinct hells.</p>
-    </div>
-    <div class="sunday__phases" id="sundayPhases"></div>
-    <blockquote class="wound">
-      <span class="wound__tag">The core wound</span>
-      The player who decides his week is playing in a game his television refuses to show him.
-      <strong>The whole campaign lives in this afternoon.</strong>
-    </blockquote>
-  </section>
+    <div class="studio">
+      <!-- controls -->
+      <aside class="controls">
+        <div class="ctrl">
+          <span class="ctrl__sig ctrl__sig--geo">📍 Geography</span>
+          <label>Market
+            <div class="sel"><select id="selMarket"></select></div>
+          </label>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl__sig ctrl__sig--day">📅 Day → Emotion</span>
+          <label>Day
+            <div class="sel"><select id="selDay"></select></div>
+          </label>
+          <p class="ctrl__note" id="emoNote"></p>
+        </div>
+        <div class="ctrl">
+          <span class="ctrl__sig ctrl__sig--player">🏈 Top player · Yahoo</span>
+          <label>Position
+            <div class="sel"><select id="selPos"></select></div>
+          </label>
+          <p class="ctrl__note" id="playerNote"></p>
+        </div>
 
-  <!-- ░░ PRODUCT ░░ -->
-  <section class="product" id="product">
-    <div class="section-head">
-      <span class="section-head__num">05</span>
-      <h2>Where the product lands</h2>
-      <p>The FOMO is the hook. The features are the proof.</p>
+        <button class="btn btn--solid btn--gen" id="genBtn">✨ Generate hero image</button>
+        <p class="genstatus" id="genStatus">Powered by Gemini · add <code>YTST_KEY</code> on Vercel to enable.</p>
+      </aside>
+
+      <!-- the CTV asset -->
+      <div class="stage">
+        <div class="ctv" id="ctv">
+          <div class="ctv__screen">
+            <div class="ctv__media" id="ctvMedia"></div>
+            <div class="ctv__scrim"></div>
+            <div class="ctv__loader" id="ctvLoader" hidden><span></span>Generating with Gemini…</div>
+            <header class="ctv__chrome">
+              <div class="st-lockup">
+                <span class="st-lockup__yt">▶</span>
+                <span class="st-lockup__txt"><b>YouTube</b> TV</span>
+                <span class="st-lockup__div"></span>
+                <span class="st-lockup__st">NFL Sunday Ticket</span>
+              </div>
+              <div class="ctv__live"><span class="ctv__livedot"></span>LIVE · OUT OF MARKET</div>
+            </header>
+            <div class="ctv__stamp">Most Wanted</div>
+            <div class="ctv__body">
+              <img class="ctv__logo" id="ctvLogo" alt="" />
+              <div class="ctv__eyebrow" id="ctvEyebrow"></div>
+              <h3 class="ctv__headline" id="ctvHeadline"></h3>
+            </div>
+            <footer class="ctv__cta" id="ctvCta">
+              <span>The only place his game is on.</span>
+              <b>Get YouTube TV →</b>
+            </footer>
+          </div>
+          <div class="ctv__bezel"></div>
+          <div class="ctv__stand"></div>
+        </div>
+        <p class="stage__cap" id="stageCap"></p>
+      </div>
     </div>
-    <div class="product__grid" id="productGrid"></div>
   </section>
 
   <footer class="foot">
-    <p>YTST Engine · contextual creative concept. The throughline: <em>fantasy manufactures stakes in games you can't watch.</em></p>
+    <p><strong>Sunday's Most Wanted</strong> — a contextual creative engine concept for YouTube Sunday Ticket.
+      Players, logos and brand marks shown are illustrative for pitch purposes; the live engine pulls the real
+      most-drafted names per position from Yahoo, geo-filtered.</p>
   </footer>
-
-  <!-- ░░ Day detail flyout ░░ -->
-  <div class="flyout" id="flyout" hidden>
-    <button class="flyout__close" id="flyoutClose" aria-label="Close">×</button>
-    <div class="flyout__body" id="flyoutBody"></div>
-  </div>
 
   <script src="app.js"></script>
 </body>
