@@ -44,7 +44,7 @@ const ACTION = {
 const PHOTO = {
   4362628: "Ja'Marr Chase.jpg",                              // Ja'Marr Chase (CIN) — Bengals (portrait; no free in-game shot yet)
   4262921: 'Justin Jefferson Commanders vs Vikings NOV2022.jpg', // Justin Jefferson (MIN) — in-game, Vikings purple
-  4430807: 'Bijan Robinson 2025.jpg',                        // Bijan Robinson (ATL) — Falcons (portrait; no free in-game shot yet)
+  4430807: '2025 Commanders at Falcons 11.jpg',              // Bijan Robinson (ATL) — in-game action, Falcons (Sept 2025; from his Commons category)
   3139477: 'Patrick Mahomes (51616341245).jpg',             // Patrick Mahomes (KC) — in-game
   3040151: 'George Kittle 2019 (48940368597).jpg',          // George Kittle (SF) — in-game, 49ers red
   3915511: 'Joe Burrow Bengals.jpg',                        // Joe Burrow (CIN) — direct, Bengals
