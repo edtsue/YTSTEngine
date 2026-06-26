@@ -84,23 +84,25 @@ const MARKETS = [
    The hook is always: this player is the most-drafted at his position in
    this market — and you'll miss him without Sunday Ticket. ── */
 const firstName = p => p.name.split(' ')[0];
-const EMO_LEAD = {
-  'mon':       'Monday already stings.',
-  'tue':       'The wire won’t fix your TV.',
-  'wed':       'You blew your whole budget.',
-  'thu':       'Tonight you watch. Sunday you won’t.',
-  'fri':       'You did all the homework.',
-  'sat':       'Lineup’s set. Your screen isn’t.',
-  'sun-am':    'Lineups lock in an hour.',
-  'sun-pm':    'He’s scoring right now.',
-  'sun-night': 'One player left, primetime.',
+// eyebrow: the popularity-in-this-geography fact
+const EYEBROW = (m, p) => `${p.name} — ${m.city}’s most-drafted ${p.pos} this week`;
+// one clever headline, with three selectable versions sharing the same image
+const EMO_HEADLINE = {
+  'mon':       'Monday grief, brought to you by a game you couldn’t see.',
+  'tue':       'The wire’s open. Your blackout isn’t going anywhere.',
+  'wed':       'You spent the whole budget. You still can’t buy his channel.',
+  'thu':       'Tonight you watch. Sunday, he vanishes.',
+  'fri':       'You did the homework. You’ll still squint at a number.',
+  'sat':       'Lineup’s perfect. Your channel lineup isn’t.',
+  'sun-am':    'Lineups lock in an hour. So does your view.',
+  'sun-pm':    'He’s scoring right now — on a screen you don’t get.',
+  'sun-night': 'Primetime, and your last hope is off-channel.',
 };
 const VARIANTS = [
-  (m, d, p) => `${firstName(p)} is the most-drafted ${p.pos} across ${m.city} fantasy rosters this week. You’ll miss him without Sunday Ticket.`,
-  (m, d, p) => `${m.city} drafted ${firstName(p)}. ${m.city} can’t watch ${firstName(p)} — he plays in ${p.city}, ${m.geoClause}.`,
-  (m, d, p) => `${EMO_LEAD[d.id]} And ${m.city}’s favorite ${p.pos} is on a channel you don’t get.`,
+  (m, d, p) => `You drafted ${firstName(p)}. Your TV didn’t.`,
+  (m, d, p) => `Your best ${p.pos}. Someone else’s broadcast.`,
+  (m, d, p) => EMO_HEADLINE[d.id],
 ];
-const SUBHEAD = (m, p) => `${p.name} · ${p.city} ${p.team.toUpperCase()} · out-of-market in ${m.city}`;
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
 function buildSignals() {
@@ -179,10 +181,8 @@ function renderMixer() {
   document.getElementById('playerNote').innerHTML =
     `${p.name} · ${p.city} (${p.team.toUpperCase()}) — out-of-market in ${m.city}.`;
 
-  document.getElementById('ctvLogo').src = ESPN_LOGO(p.team);
-  document.getElementById('ctvEyebrow').textContent = `${m.city}'s Most Wanted · ${p.pos} · ${d.name}`;
+  document.getElementById('ctvEyebrow').textContent = EYEBROW(m, p);
   document.getElementById('ctvHeadline').textContent = VARIANTS[variantIdx](m, d, p);
-  document.getElementById('ctvSub').textContent = SUBHEAD(m, p);
   document.getElementById('stageCap').textContent =
     `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Player: ${p.name} (${p.team.toUpperCase()})`;
   renderVariants(m, d, p);
