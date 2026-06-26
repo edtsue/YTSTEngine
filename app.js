@@ -32,13 +32,15 @@ const ACTION = {
 };
 
 // Real player photos (Wikimedia Commons, freely licensed) keyed by ESPN pid.
-// Players without a clean, team-correct free photo fall back to the Gemini shot.
+// Prefer genuine in-game ACTION frames (All-Pro Reels game photography) over
+// posed portraits. Players without a clean, team-correct free action photo keep
+// a portrait or fall back to the Gemini-generated action shot.
 const PHOTO = {
-  4362628: 'https://upload.wikimedia.org/wikipedia/commons/7/74/Ja%27Marr_Chase.jpg',                                                            // Ja'Marr Chase (CIN)
-  4262921: 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/24/Jefferson_2022.jpg/1280px-Jefferson_2022.jpg',                              // Justin Jefferson (MIN)
-  4430807: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Bijan_Robinson_2025.jpg/1280px-Bijan_Robinson_2025.jpg',                    // Bijan Robinson (ATL)
-  3139477: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/92/Patrick_Mahomes_%2851615475056%29.jpg/1280px-Patrick_Mahomes_%2851615475056%29.jpg', // Patrick Mahomes (KC)
-  3040151: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/George_Kittle_DSC08082_%2848940368597%29_%28cropped%29.jpg/1280px-George_Kittle_DSC08082_%2848940368597%29_%28cropped%29.jpg', // George Kittle (SF)
+  4362628: 'https://upload.wikimedia.org/wikipedia/commons/7/74/Ja%27Marr_Chase.jpg',                                                            // Ja'Marr Chase (CIN) — portrait; no free in-game shot on Commons yet
+  4262921: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/ea/Justin_Jefferson_Commanders_vs_Vikings_NOV2022.jpg/1280px-Justin_Jefferson_Commanders_vs_Vikings_NOV2022.jpg', // Justin Jefferson (MIN) — in-game, Vikings purple (Nov 2022 vs WAS)
+  4430807: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Bijan_Robinson_2025.jpg/1280px-Bijan_Robinson_2025.jpg',                    // Bijan Robinson (ATL) — portrait; no free in-game shot on Commons yet
+  3139477: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Patrick_Mahomes_%2851616341245%29.jpg/1280px-Patrick_Mahomes_%2851616341245%29.jpg', // Patrick Mahomes (KC) — in-game (replaces a pregame warmup frame)
+  3040151: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/George_Kittle_2019_%2848940368597%29.jpg/1280px-George_Kittle_2019_%2848940368597%29.jpg', // George Kittle (SF) — in-game, 49ers red (uncropped action frame)
 };
 
 /* ── The three signals (for the explainer cards) ───────────────────── */
@@ -243,6 +245,7 @@ function applyMedia(prompt, p) {
   const media = document.getElementById('ctvMedia');
   const ctv = document.getElementById('ctv');
   const photo = p && PHOTO[p.pid];
+  media.dataset.photo = '';               // invalidate any in-flight photo probe
   if (imgCache[prompt]) {                 // a generated Gemini shot wins
     media.style.backgroundImage = `url(${imgCache[prompt]})`;
     media.style.backgroundPosition = 'center';
@@ -251,6 +254,17 @@ function applyMedia(prompt, p) {
     media.style.backgroundImage = `url("${photo}")`;
     media.style.backgroundPosition = 'right center';
     ctv.classList.add('has-img');
+    media.dataset.photo = photo;
+    // Guard: if the (external) photo 404s, fall back to the tinted backdrop
+    // rather than leaving a blank hero. Only act if this combo is still showing.
+    const probe = new Image();
+    probe.onerror = () => {
+      if (media.dataset.photo !== photo) return;
+      media.style.backgroundImage = '';
+      media.style.backgroundPosition = '';
+      ctv.classList.remove('has-img');
+    };
+    probe.src = photo;
   } else {                                 // team-tinted backdrop
     media.style.backgroundImage = '';
     media.style.backgroundPosition = '';
