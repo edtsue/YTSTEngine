@@ -96,7 +96,8 @@ em { font-style: normal; color: var(--ink); }
 
 /* ── SECTION 01 ── */
 .how { padding: 78px 0 30px; }
-.signals { max-width: var(--maxw); margin: 30px auto 0; padding: 0 28px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.signals { max-width: var(--maxw); margin: 30px auto 0; padding: 0 28px; display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 14px; }
+.sig-x { display: flex; align-items: center; justify-content: center; font-family: 'Oswald'; font-weight: 700; font-size: clamp(22px, 3vw, 36px); color: var(--ink-faint); }
 .sig { background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px; border-top: 3px solid var(--ink-faint); }
 .sig--geo { border-top-color: var(--field); }
 .sig--day { border-top-color: var(--gold); }

@@ -208,7 +208,7 @@ function buildSignals() {
       <div class="sig__src">${s.source}</div>
       <p class="sig__job">${s.job}</p>
       ${s.key === 'player' ? '<div class="sig__logos"><img class="sig__yahoo" src="assets/yahoo-fantasy.jpg" alt="Yahoo Fantasy" /><img class="sig__yahoo" src="assets/genius-sports.svg" alt="Genius Sports" /></div>' : ''}
-    </article>`).join('');
+    </article>`).join('<div class="sig-x" aria-hidden="true">×</div>');
 }
 
 function buildWeekRail() {
