@@ -429,10 +429,6 @@ function marketFromGeo(city, region) {
   if (byCity) return byCity.id;
   return REGION_MARKET[(region || '').toUpperCase()] || null;
 }
-function setBlackoutCity(city) {
-  const el = document.getElementById('blackoutCity');
-  if (el) el.textContent = `Blacked out in ${city || 'your market'}`;
-}
 async function detectLocation() {
   const status = document.getElementById('geoStatus');
   if (!geoEnabled()) { status.textContent = 'Location off — pick a market manually below.'; return; }
@@ -446,7 +442,6 @@ async function detectLocation() {
       document.getElementById('selMarket').value = id;
       renderMixer();
       const mk = MARKETS.find(m => m.id === id);
-      setBlackoutCity(g.city || mk.city);
       status.innerHTML = `📍 Detected near <strong>${g.city || mk.region || mk.city}</strong> — showing the ${mk.city} market.`;
     } else {
       status.textContent = g.city
@@ -469,39 +464,6 @@ function initGeo() {
   detectLocation();
 }
 
-/* ── before/after blackout slider (feature 2) ────────────────────────*/
-function initBlackoutSlider() {
-  const screen = document.querySelector('.ctv__screen');
-  const divider = document.getElementById('ctvDivider');
-  if (!screen || !divider) return;
-  let dragging = false;
-  const setSplit = clientX => {
-    const r = screen.getBoundingClientRect();
-    let pct = ((clientX - r.left) / r.width) * 100;
-    pct = Math.max(8, Math.min(92, pct));
-    screen.style.setProperty('--split', pct + '%');
-  };
-  const start = e => {
-    dragging = true;
-    screen.classList.add('is-dragging', 'has-dragged');
-    setSplit(e.touches ? e.touches[0].clientX : e.clientX);
-    e.preventDefault();
-  };
-  const move = e => { if (dragging) setSplit(e.touches ? e.touches[0].clientX : e.clientX); };
-  const end = () => { dragging = false; screen.classList.remove('is-dragging'); };
-  divider.addEventListener('mousedown', start);
-  divider.addEventListener('touchstart', start, { passive: false });
-  window.addEventListener('mousemove', move);
-  window.addEventListener('touchmove', move, { passive: false });
-  window.addEventListener('mouseup', end);
-  window.addEventListener('touchend', end);
-  // click anywhere on the screen jumps the divider (except the CTA chip)
-  screen.addEventListener('click', e => {
-    if (dragging || e.target.closest('.ctv__cta-btn')) return;
-    screen.classList.add('has-dragged');
-    setSplit(e.clientX);
-  });
-}
 
 function beatForToday() {
   const dow = new Date().getDay();
@@ -712,6 +674,5 @@ buildMixer();
 buildProduction();
 buildToday();
 initHeroVideo();
-initBlackoutSlider();
 animateOdometer();
 initGeo();          // detects market + seeds the mixer (after buildMixer)
