@@ -180,8 +180,8 @@ em { font-style: normal; color: var(--ink); }
 .ctv__loader .spin { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.25); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.ctv__chrome { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; justify-content: space-between; padding: 16px 18px; }
-.ctv__stlogo { height: 40px; width: auto; filter: drop-shadow(0 2px 10px rgba(0,0,0,.6)); }
+.ctv__chrome { position: absolute; top: 0; left: 0; right: 0; z-index: 3; display: flex; align-items: center; justify-content: flex-end; padding: 16px 18px; }
+.ctv__stlogo { height: clamp(54px, 9vw, 72px); width: auto; filter: drop-shadow(0 2px 12px rgba(0,0,0,.7)); }
 .st-lockup { display: flex; align-items: center; gap: 8px; }
 .st-lockup__yt { background: var(--red); color: #fff; font-size: 10px; padding: 4px 6px; border-radius: 4px; line-height: 1; }
 .st-lockup__txt { font-family: 'Oswald'; font-size: 15px; text-transform: none; color: #fff; }
@@ -202,8 +202,17 @@ em { font-style: normal; color: var(--ink); }
 .ctv__headline { font-family: 'Oswald'; font-weight: 700; color: #fff; font-size: clamp(24px, 4.2vw, 44px); line-height: 1.02; letter-spacing: -.01em; text-transform: uppercase; text-wrap: balance; text-shadow: 0 2px 18px rgba(0,0,0,.8); }
 .ctv__cta-btn { display: inline-block; margin-top: 18px; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(12px, 1.5vw, 15px); color: #fff; background: var(--red); padding: 11px 18px; border-radius: 999px; box-shadow: 0 6px 22px rgba(255,45,45,.4); }
 
-.ctv__bezel { height: 10px; }
-.ctv__stand { width: 130px; height: 10px; margin: 0 auto; background: linear-gradient(180deg, #1a212c, #0c1119); border-radius: 0 0 10px 10px; }
+/* flat-screen TV frame — puts the asset "in situ" */
+.ctv__tv {
+  position: relative; padding: 14px 14px 30px; border-radius: 16px;
+  background: linear-gradient(160deg, #20242c 0%, #0a0c10 55%, #16191f 100%);
+  box-shadow: 0 44px 90px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.07), inset 0 0 0 1px rgba(255,255,255,.05);
+}
+.ctv__tv::before { content: ''; position: absolute; inset: 0; border-radius: 16px; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,.06), transparent 16%); }
+.ctv__tv::after { content: ''; position: absolute; left: 50%; bottom: 12px; transform: translateX(-50%); width: 7px; height: 7px; border-radius: 50%; background: radial-gradient(circle at 40% 40%, #ff7a6b, #7a1410); box-shadow: 0 0 7px rgba(255,90,77,.85); }
+.ctv__tv .ctv__screen { border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.7), inset 0 0 34px rgba(0,0,0,.55); }
+.ctv__neck { width: 74px; height: 24px; margin: 0 auto; background: linear-gradient(180deg, #232932, #0e1116); border-radius: 0 0 5px 5px; box-shadow: inset 0 1px 0 rgba(255,255,255,.05); }
+.ctv__base { width: 250px; height: 12px; margin: 0 auto; border-radius: 14px; background: linear-gradient(180deg, #2b323d, #11151b); box-shadow: 0 16px 26px rgba(0,0,0,.55); }
 .stage__cap { margin-top: 14px; font-size: 13px; color: var(--ink-faint); text-align: center; }
 .genby { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .06em; font-size: 12px; color: var(--ink-dim); }
 .genby__logo { height: 18px; width: 18px; }
@@ -259,14 +268,14 @@ em { font-style: normal; color: var(--ink); }
 .ctv.is-spinning .ctv__screen { filter: blur(1.4px) saturate(1.15); }
 .ctv.is-spinning .ctv__headline, .ctv.is-spinning .ctv__eyebrow { opacity: .85; }
 .controls.is-spinning select { color: var(--ink-faint); }
-.ctv.is-reeling .ctv__screen { box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px var(--accent), 0 0 34px color-mix(in srgb, var(--accent) 45%, transparent); transition: box-shadow .3s; }
+.ctv.is-reeling .ctv__tv { box-shadow: 0 44px 90px rgba(0,0,0,.65), 0 0 0 1px var(--accent), 0 0 42px color-mix(in srgb, var(--accent) 45%, transparent); transition: box-shadow .3s; }
 
 /* ── headline typewriter (feature 5) ── */
 .ctv__headline.is-typing::after { content: '▌'; color: var(--accent); margin-left: 1px; animation: caret .7s steps(1) infinite; }
 @keyframes caret { 50% { opacity: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .ctv__headline.is-typing::after, .ctv.is-reeling .ctv__screen { animation: none; }
+  .ctv__headline.is-typing::after, .ctv.is-reeling .ctv__tv { animation: none; }
 }
 
 /* ── FOOTER ── */
