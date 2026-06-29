@@ -478,6 +478,11 @@ function renderMixer(opts) {
   const ctv = document.getElementById('ctv');
   ctv.style.setProperty('--accent', d.accent);
   ctv.style.setProperty('--team', (TEAMS[p.team] || {}).glow || d.accent);
+  const room = document.getElementById('room');
+  if (room) {
+    room.style.setProperty('--accent', d.accent);
+    room.style.setProperty('--team', (TEAMS[p.team] || {}).glow || d.accent);
+  }
 
   document.getElementById('emoNote').textContent = `${d.emotion} — ${d.register}.`;
   document.getElementById('playerNote').innerHTML =
