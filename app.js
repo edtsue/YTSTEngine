@@ -134,23 +134,70 @@ const MARKETS = [
 const firstName = p => p.name.split(' ')[0];
 // eyebrow: the popularity-in-this-geography fact
 const EYEBROW = (m, p) => `${p.name} — ${m.city}’s most-drafted fantasy ${p.pos} this week`;
-// one clever headline, with three selectable versions sharing the same image
-const EMO_HEADLINE = {
-  'mon':       'Monday grief, brought to you by a game you couldn’t see.',
-  'tue':       'The wire’s open. Your blackout isn’t going anywhere.',
-  'wed':       'You spent the whole budget. You still can’t buy his channel.',
-  'thu':       'Tonight you watch. Sunday, he vanishes.',
-  'fri':       'You did the homework. You’ll still squint at a number.',
-  'sat':       'Lineup’s perfect. Your channel lineup isn’t.',
-  'sun-am':    'Lineups lock in an hour. So does your view.',
-  'sun-pm':    'He’s scoring right now — on a screen you don’t get.',
-  'sun-night': 'Primetime, and your last hope is off-channel.',
+// Three headlines PER DAY, each tuned to that day's emotion. Same image,
+// three selectable copy versions — the tone tracks the calendar (Monday grief
+// is rueful; Sunday-morning panic is all-caps countdown energy). The hook is
+// always: this is the most-popular player at his position in this market, and
+// you'll miss him without Sunday Ticket.
+const DAY_HEADLINES = {
+  // Monday — grief, rueful morning-after
+  'mon': [
+    (m, d, p) => `Monday grief: you’re mourning a ${firstName(p)} game you never saw.`,
+    (m, d, p) => `RIP your weekend. ${firstName(p)} went off — you got the box score.`,
+    (m, d, p) => `Five stages of grief. You’re stuck on “${firstName(p)} did WHAT?”`,
+  ],
+  // Tuesday — resentment turning to hope, the fresh-start pivot
+  'tue': [
+    (m, d, p) => `New week, same blackout: ${firstName(p)} still isn’t on your TV.`,
+    (m, d, p) => `The waiver wire’s open. Your channel lineup isn’t.`,
+    (m, d, p) => `Hope is a ${m.city} fan refreshing ${firstName(p)}’s stat line.`,
+  ],
+  // Wednesday — anxious gambling, wry and knowing
+  'wed': [
+    (m, d, p) => `You’d bet the house on ${firstName(p)}. You can’t even watch him.`,
+    (m, d, p) => `Hump-day math: 100% rostered, 0% on your screen.`,
+    (m, d, p) => `${firstName(p)}’s a lock this week. Seeing him? Long odds.`,
+  ],
+  // Thursday — reckless commitment, the contrast (a game you CAN see)
+  'thu': [
+    (m, d, p) => `Tonight you get a game. Sunday, ${firstName(p)} vanishes.`,
+    (m, d, p) => `Thursday’s on. ${firstName(p)}? Out of market, out of luck.`,
+    (m, d, p) => `Enjoy the one game they give you — ${firstName(p)} isn’t in it.`,
+  ],
+  // Friday — studious dread, prep-mode and ominous
+  'fri': [
+    (m, d, p) => `You studied every matchup. ${firstName(p)}’s won’t be on your TV.`,
+    (m, d, p) => `Friday prep, Sunday dread: ${firstName(p)} plays where you can’t look.`,
+    (m, d, p) => `Lineup locked, ${firstName(p)} in — your channels still don’t carry him.`,
+  ],
+  // Saturday — restless second-guessing, coiled and anticipatory
+  'sat': [
+    (m, d, p) => `Start ${firstName(p)}? Bench him? Moot if you can’t see him.`,
+    (m, d, p) => `One sleep till kickoff. Zero chance ${m.city} airs ${firstName(p)}.`,
+    (m, d, p) => `Saturday scaries: tomorrow ${firstName(p)} plays off your channels.`,
+  ],
+  // Sunday morning — PEAK PANIC, urgent countdown energy
+  'sun-am': [
+    (m, d, p) => `KICKOFF IN 1 HOUR — and ${firstName(p)} is on ZERO ${m.city} channels. 😰`,
+    (m, d, p) => `PANIC: your ${p.pos}1 ${firstName(p)} is BLACKED OUT. Right. Now.`,
+    (m, d, p) => `Lineups lock, ${firstName(p)} kicks off — your TV has the pregame show.`,
+  ],
+  // Sunday afternoon — helplessness, the core wound, present tense
+  'sun-pm': [
+    (m, d, p) => `${firstName(p)} is scoring RIGHT NOW — on a screen ${m.city} doesn’t get.`,
+    (m, d, p) => `${firstName(p)} just went off. You’re watching a progress bar.`,
+    (m, d, p) => `Somewhere ${firstName(p)} is winning your week. Not on your TV.`,
+  ],
+  // Sunday night — exhausted hope, spent and hanging by a thread
+  'sun-night': [
+    (m, d, p) => `Primetime, and your season’s riding on ${firstName(p)} — off-channel.`,
+    (m, d, p) => `One player left: ${firstName(p)}. Of course you can’t see him.`,
+    (m, d, p) => `Last hope, ${firstName(p)} — playing on everything but your TV.`,
+  ],
 };
-const VARIANTS = [
-  (m, d, p) => `You drafted ${firstName(p)}. Your TV didn’t.`,
-  (m, d, p) => `Your best ${p.pos}. Someone else’s broadcast.`,
-  (m, d, p) => EMO_HEADLINE[d.id],
-];
+// VARIANTS pulls version 1/2/3 for the selected day, with a safe fallback.
+const VARIANTS = [0, 1, 2].map(i => (m, d, p) =>
+  (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun-pm'])[i](m, d, p));
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
 function buildSignals() {
