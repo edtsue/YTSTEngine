@@ -252,6 +252,7 @@ em { font-style: normal; color: var(--ink); }
 .prod__token--p { border-left-color: var(--field); }
 .prod__token--t { border-left-color: var(--gold); }
 .prod__token--g { border-left-color: var(--blue); }
+.prod__token--h { border-left-color: var(--red); }
 .prod__build { margin-top: auto; padding-top: 14px; color: var(--ink-dim); font-size: 13px; }
 .prod__week { display: flex; flex-wrap: wrap; gap: 7px; }
 .wk { flex: 1 1 38px; text-align: center; padding: 11px 0; border-radius: 8px; background: color-mix(in srgb, var(--a) 14%, #0a0e16); border: 1px solid color-mix(in srgb, var(--a) 45%, var(--line)); color: var(--a); font-family: 'Oswald'; font-size: 13px; }
