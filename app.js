@@ -273,19 +273,234 @@ function buildMixer() {
   document.getElementById('selDay').value = beatForToday();
 
   ['selMarket', 'selDay', 'selPos'].forEach(id =>
-    document.getElementById(id).addEventListener('change', renderMixer));
-  document.getElementById('genBtn').addEventListener('click', generateAsset);
+    document.getElementById(id).addEventListener('change', () => { stopReel(); renderMixer(); }));
+  document.getElementById('genBtn').addEventListener('click', () => { stopReel(); generateAsset(); });
   document.getElementById('randBtn').addEventListener('click', randomize);
-  renderMixer();
+  document.getElementById('reelBtn').addEventListener('click', toggleReel);
+  renderMixer(true);
 }
 
-/* randomize the three signals — geography, day, and player/position */
+/* ── slot-machine randomize (feature 4) ──────────────────────────────
+   The three signal selects "roll" and clunk into place one by one, with
+   the whole mockup rolling through combos behind a blur. */
+const POS = ['WR', 'QB', 'RB', 'TE'];
+const pick = a => a[Math.floor(Math.random() * a.length)];
+let spinning = false;
 function randomize() {
-  const pick = a => a[Math.floor(Math.random() * a.length)];
-  document.getElementById('selMarket').value = pick(MARKETS).id;
-  document.getElementById('selDay').value = pick(DAYS).id;
-  document.getElementById('selPos').value = pick(['WR', 'QB', 'RB', 'TE']);
-  renderMixer();
+  if (spinning) return;
+  stopReel();
+  const mEl = document.getElementById('selMarket');
+  const dEl = document.getElementById('selDay');
+  const pEl = document.getElementById('selPos');
+  const finalM = pick(MARKETS).id, finalD = pick(DAYS).id, finalP = pick(POS);
+
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    mEl.value = finalM; dEl.value = finalD; pEl.value = finalP;
+    renderMixer();
+    return;
+  }
+
+  spinning = true;
+  const btn = document.getElementById('randBtn');
+  const ctv = document.getElementById('ctv');
+  const controls = document.querySelector('.controls');
+  btn.disabled = true;
+  ctv.classList.add('is-spinning');
+  controls.classList.add('is-spinning');
+
+  const mIds = MARKETS.map(m => m.id), dIds = DAYS.map(d => d.id);
+  let mDone = false, dDone = false;
+  const flick = setInterval(() => {
+    if (!mDone) mEl.value = pick(mIds);
+    if (!dDone) dEl.value = pick(dIds);
+    pEl.value = pick(POS);
+    renderMixer(true);            // instant roll of the whole mockup
+  }, 75);
+
+  // settle one reel at a time — market, then day, then position
+  setTimeout(() => { mDone = true; mEl.value = finalM; }, 520);
+  setTimeout(() => { dDone = true; dEl.value = finalD; }, 720);
+  setTimeout(() => {
+    clearInterval(flick);
+    pEl.value = finalP;
+    ctv.classList.remove('is-spinning');
+    controls.classList.remove('is-spinning');
+    btn.disabled = false;
+    spinning = false;
+    renderMixer();                // final settle, with the headline retype
+  }, 920);
+}
+
+/* ── headline typewriter / glitch (feature 5) ────────────────────────
+   Retypes the headline on every change. Panic days type fast with a
+   glitch flicker; slower, heavier emotions type calmly. */
+let headlineToken = 0;
+function typeHeadline(text, emotion) {
+  const el = document.getElementById('ctvHeadline');
+  if (!el) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = text; return; }
+  const token = ++headlineToken;
+  const panic = /panic/i.test(emotion || '');
+  const base = panic ? 13 : 28;
+  const glyphs = '#%&X0/\\*';
+  el.classList.add('is-typing');
+  let i = 0;
+  const step = () => {
+    if (token !== headlineToken) return;             // a newer headline superseded us
+    if (i <= text.length) {
+      const glitch = (panic && i < text.length) ? glyphs[Math.floor(Math.random() * glyphs.length)] : '';
+      el.textContent = text.slice(0, i) + glitch;
+      i++;
+      setTimeout(step, base + (panic ? Math.random() * 38 : 0));
+    } else {
+      el.textContent = text;
+      el.classList.remove('is-typing');
+    }
+  };
+  step();
+}
+
+/* ── engine auto-reel (feature 3) ────────────────────────────────────
+   Cycles market → day → player every couple seconds so the engine
+   visibly renders a new asset on its own. Uses curated photos (instant,
+   no Gemini call). */
+let reelTimer = null;
+function toggleReel() { reelTimer ? stopReel() : startReel(); }
+function startReel() {
+  if (reelTimer || spinning) return;
+  const btn = document.getElementById('reelBtn');
+  btn.classList.add('is-on');
+  btn.textContent = '⏸ Stop the engine';
+  document.getElementById('ctv').classList.add('is-reeling');
+  const step = () => {
+    document.getElementById('selMarket').value = pick(MARKETS).id;
+    document.getElementById('selDay').value = pick(DAYS).id;
+    document.getElementById('selPos').value = pick(POS);
+    renderMixer();
+  };
+  step();
+  reelTimer = setInterval(step, 2300);
+}
+function stopReel() {
+  if (!reelTimer) return;
+  clearInterval(reelTimer);
+  reelTimer = null;
+  const btn = document.getElementById('reelBtn');
+  btn.classList.remove('is-on');
+  btn.textContent = '▶ Watch the engine run';
+  document.getElementById('ctv').classList.remove('is-reeling');
+}
+
+/* ── odometer count-up (feature 3) ───────────────────────────────────*/
+function animateOdometer() {
+  const el = document.getElementById('odoNum');
+  if (!el) return;
+  const target = 20160; // 210 DMAs × 8 day-moods × 4 positions × 3 versions
+  let started = false;
+  const run = () => {
+    if (started) return; started = true;
+    const dur = 1700, t0 = performance.now();
+    const tick = now => {
+      const k = Math.min(1, (now - t0) / dur);
+      const eased = 1 - Math.pow(1 - k, 3);
+      el.textContent = Math.round(target * eased).toLocaleString();
+      if (k < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { run(); io.disconnect(); } }), { threshold: 0.4 });
+    io.observe(el);
+  } else { run(); }
+}
+
+/* ── location detection (feature 1), with an opt-out ─────────────────*/
+const GEO_OFF = 'ytst_geo_off';
+const geoEnabled = () => localStorage.getItem(GEO_OFF) !== '1';
+// US state/region → nearest of our four sample markets
+const REGION_MARKET = {
+  NY: 'nyc', NJ: 'nyc', CT: 'nyc', MA: 'nyc', RI: 'nyc', NH: 'nyc', VT: 'nyc', ME: 'nyc', PA: 'nyc', MD: 'nyc', DE: 'nyc', DC: 'nyc', VA: 'nyc',
+  OH: 'cle', MI: 'cle', IN: 'cle', KY: 'cle', WV: 'cle', TN: 'cle', NC: 'cle', SC: 'cle', GA: 'cle', FL: 'cle', AL: 'cle',
+  IL: 'chi', WI: 'chi', MN: 'chi', IA: 'chi', MO: 'chi', ND: 'chi', SD: 'chi', NE: 'chi', KS: 'chi', OK: 'chi', AR: 'chi', LA: 'chi', MS: 'chi', TX: 'chi', CO: 'chi', NM: 'chi',
+  CA: 'la', OR: 'la', WA: 'la', NV: 'la', AZ: 'la', UT: 'la', ID: 'la', MT: 'la', WY: 'la', HI: 'la', AK: 'la',
+};
+function marketFromGeo(city, region) {
+  const byCity = MARKETS.find(m => m.city.toLowerCase() === (city || '').toLowerCase());
+  if (byCity) return byCity.id;
+  return REGION_MARKET[(region || '').toUpperCase()] || null;
+}
+function setBlackoutCity(city) {
+  const el = document.getElementById('blackoutCity');
+  if (el) el.textContent = `Blacked out in ${city || 'your market'}`;
+}
+async function detectLocation() {
+  const status = document.getElementById('geoStatus');
+  if (!geoEnabled()) { status.textContent = 'Location off — pick a market manually below.'; return; }
+  status.textContent = 'Detecting your market…';
+  try {
+    const r = await fetch('/api/geo');
+    const g = await r.json().catch(() => ({}));
+    const id = marketFromGeo(g.city, g.region);
+    if (id) {
+      stopReel();
+      document.getElementById('selMarket').value = id;
+      renderMixer();
+      const mk = MARKETS.find(m => m.id === id);
+      setBlackoutCity(g.city || mk.city);
+      status.innerHTML = `📍 Detected near <strong>${g.city || mk.region || mk.city}</strong> — showing the ${mk.city} market.`;
+    } else {
+      status.textContent = g.city
+        ? `📍 ${g.city} — showing a nearby sample market.`
+        : 'Couldn’t detect location — showing a sample market.';
+    }
+  } catch {
+    status.textContent = 'Couldn’t detect location — showing a sample market.';
+  }
+}
+function initGeo() {
+  const chk = document.getElementById('geoChk');
+  if (!chk) return;
+  chk.checked = geoEnabled();
+  chk.addEventListener('change', () => {
+    localStorage.setItem(GEO_OFF, chk.checked ? '0' : '1');
+    if (chk.checked) detectLocation();
+    else document.getElementById('geoStatus').textContent = 'Location off — pick a market manually below.';
+  });
+  detectLocation();
+}
+
+/* ── before/after blackout slider (feature 2) ────────────────────────*/
+function initBlackoutSlider() {
+  const screen = document.querySelector('.ctv__screen');
+  const divider = document.getElementById('ctvDivider');
+  if (!screen || !divider) return;
+  let dragging = false;
+  const setSplit = clientX => {
+    const r = screen.getBoundingClientRect();
+    let pct = ((clientX - r.left) / r.width) * 100;
+    pct = Math.max(8, Math.min(92, pct));
+    screen.style.setProperty('--split', pct + '%');
+  };
+  const start = e => {
+    dragging = true;
+    screen.classList.add('is-dragging', 'has-dragged');
+    setSplit(e.touches ? e.touches[0].clientX : e.clientX);
+    e.preventDefault();
+  };
+  const move = e => { if (dragging) setSplit(e.touches ? e.touches[0].clientX : e.clientX); };
+  const end = () => { dragging = false; screen.classList.remove('is-dragging'); };
+  divider.addEventListener('mousedown', start);
+  divider.addEventListener('touchstart', start, { passive: false });
+  window.addEventListener('mousemove', move);
+  window.addEventListener('touchmove', move, { passive: false });
+  window.addEventListener('mouseup', end);
+  window.addEventListener('touchend', end);
+  // click anywhere on the screen jumps the divider (except the CTA chip)
+  screen.addEventListener('click', e => {
+    if (dragging || e.target.closest('.ctv__cta-btn')) return;
+    screen.classList.add('has-dragged');
+    setSplit(e.clientX);
+  });
 }
 
 function beatForToday() {
@@ -295,7 +510,8 @@ function beatForToday() {
   return hit ? hit.id : 'sun-pm';
 }
 
-function renderMixer() {
+function renderMixer(opts) {
+  const instant = opts === true || (opts && opts.instant === true);
   const { m, d, p } = currentSel();
   const ctv = document.getElementById('ctv');
   ctv.style.setProperty('--accent', d.accent);
@@ -306,7 +522,9 @@ function renderMixer() {
     `${p.name} · ${p.city} (${p.team.toUpperCase()}) — out-of-market in ${m.city}.`;
 
   document.getElementById('ctvEyebrow').textContent = EYEBROW(m, p);
-  document.getElementById('ctvHeadline').textContent = VARIANTS[variantIdx](m, d, p);
+  const headline = VARIANTS[variantIdx](m, d, p);
+  if (instant) document.getElementById('ctvHeadline').textContent = headline;
+  else typeHeadline(headline, d.emotion);
   document.getElementById('stageCap').textContent =
     `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Player: ${p.name} (${p.team.toUpperCase()})`;
   renderVariants(m, d, p);
@@ -326,7 +544,7 @@ function renderVariants(m, d, p) {
     </button>`).join('');
   wrap.querySelectorAll('.vtab').forEach(b => b.addEventListener('click', () => {
     variantIdx = +b.dataset.v;
-    document.getElementById('ctvHeadline').textContent = VARIANTS[variantIdx](m, d, p);
+    typeHeadline(VARIANTS[variantIdx](m, d, p), d.emotion);
     wrap.querySelectorAll('.vtab').forEach(x => x.classList.toggle('is-active', x === b));
   }));
 }
@@ -494,3 +712,6 @@ buildMixer();
 buildProduction();
 buildToday();
 initHeroVideo();
+initBlackoutSlider();
+animateOdometer();
+initGeo();          // detects market + seeds the mixer (after buildMixer)
