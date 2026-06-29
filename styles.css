@@ -205,6 +205,9 @@ em { font-style: normal; color: var(--ink); }
 .ctv__bezel { height: 10px; }
 .ctv__stand { width: 130px; height: 10px; margin: 0 auto; background: linear-gradient(180deg, #1a212c, #0c1119); border-radius: 0 0 10px 10px; }
 .stage__cap { margin-top: 14px; font-size: 13px; color: var(--ink-faint); text-align: center; }
+.genby { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .06em; font-size: 12px; color: var(--ink-dim); }
+.genby__logo { height: 18px; width: 18px; }
+.gemini-ic { height: 18px; width: 18px; }
 
 /* three copy versions of the mockup */
 .variants { margin-top: 18px; width: 100%; max-width: 760px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
