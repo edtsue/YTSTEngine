@@ -144,13 +144,6 @@ em { font-style: normal; color: var(--ink); }
 
 .controls { display: grid; gap: 16px; position: sticky; top: 22px; }
 .ctrl { background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 18px; }
-.ctrl--gen { background: none; border: none; padding: 0; display: grid; gap: 8px; }
-/* progressive disclosure: a step stays hidden until the prior one is acted on */
-.ctrl.is-locked { display: none; }
-.ctrl:not(.is-locked) { animation: stepIn .32s ease both; }
-@keyframes stepIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .ctrl:not(.is-locked) { animation: none; } }
-.ctrl__step { display: inline-block; margin-right: 6px; padding: 1px 7px; border-radius: 999px; background: rgba(255,255,255,.08); color: var(--ink-faint); font-size: 10px; letter-spacing: .08em; }
 .ctrl__sig { display: inline-block; font-family: 'Oswald'; text-transform: uppercase; font-size: 12px; letter-spacing: .06em; padding: 4px 10px; border-radius: 999px; margin-bottom: 12px; border: 1px solid var(--line); }
 .ctrl__sig--geo { color: var(--field); border-color: #16402a; }
 .ctrl__sig--day { color: var(--gold); border-color: #3a2f12; }
