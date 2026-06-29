@@ -183,6 +183,33 @@ function buildWeekRail() {
   }));
 }
 
+/* ════════════════════ SECTION 03 — production ════════════════════ */
+function buildProduction() {
+  // 1 · Aggregate — popularity ranked by DMA (real markets, hook player per market)
+  const dmas = document.getElementById('prodDmas');
+  if (dmas) {
+    dmas.innerHTML = MARKETS.map(m => {
+      const p = m.roster.find(r => r.hook) || m.roster[0];
+      return `<div class="dma">
+        <span class="dma__city">${m.city}</span>
+        <span class="dma__dma">${m.dma} DMA</span>
+        <span class="dma__top"><img src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />${p.name}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('prodDmaMore').textContent = `+ ${210 - MARKETS.length} more U.S. DMAs`;
+  }
+
+  // 3 · Push to CTV — one fresh asset per day of the week
+  const week = document.getElementById('prodWeek');
+  if (week) {
+    const WEEK = [
+      ['Mon', '#5b8cff'], ['Tue', '#3fb6a8'], ['Wed', '#e0a83d'], ['Thu', '#ff7a3d'],
+      ['Fri', '#9b6cff'], ['Sat', '#ff944d'], ['Sun', '#ff2d2d'],
+    ];
+    week.innerHTML = WEEK.map(([s, a]) => `<span class="wk" style="--a:${a}">${s}</span>`).join('');
+  }
+}
+
 /* ════════════════════ SECTION 02 — the mixer ════════════════════ */
 function currentSel() {
   const m = MARKETS.find(x => x.id === document.getElementById('selMarket').value);
@@ -433,5 +460,6 @@ function initHeroVideo() {
 buildSignals();
 buildWeekRail();
 buildMixer();
+buildProduction();
 buildToday();
 initHeroVideo();
