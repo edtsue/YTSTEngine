@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex" />
+  <title>Sunday's Most Wanted — Enter</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&family=Oswald:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root { --bg:#06080d; --panel:#11151e; --panel-2:#161b26; --line:#232c3a; --ink:#eef2f8; --ink-dim:#9aa6b8; --ink-faint:#5e6a7d; --red:#ff2d2d; --red-soft:#ff5a4d; }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body {
+      min-height:100vh; display:grid; place-items:center; padding:24px;
+      background:radial-gradient(1100px 640px at 75% -10%, #141b2a 0%, var(--bg) 55%) no-repeat, var(--bg);
+      color:var(--ink); font-family:'Archivo',system-ui,sans-serif; -webkit-font-smoothing:antialiased;
+    }
+    .card {
+      width:100%; max-width:380px; background:linear-gradient(180deg,var(--panel-2),var(--panel));
+      border:1px solid var(--line); border-top:3px solid var(--red); border-radius:18px; padding:34px 30px;
+    }
+    .eyebrow { font-family:'Oswald'; text-transform:uppercase; letter-spacing:.16em; font-size:11px; color:var(--red-soft); }
+    h1 { font-family:'Anton',sans-serif; font-weight:400; font-size:34px; line-height:1.02; text-transform:uppercase; margin:8px 0 6px; letter-spacing:.01em; }
+    .sub { color:var(--ink-dim); font-size:13px; margin-bottom:22px; }
+    label { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:var(--ink-faint); font-weight:600; margin-bottom:7px; }
+    input {
+      width:100%; background:#0a0e16; color:var(--ink); border:1px solid var(--line); border-radius:10px;
+      padding:13px 14px; font:600 15px 'Archivo'; outline:none;
+    }
+    input:focus { border-color:var(--red); }
+    button {
+      margin-top:14px; width:100%; justify-content:center; display:inline-flex; align-items:center; gap:8px;
+      font-family:'Oswald'; text-transform:uppercase; letter-spacing:.04em; font-size:14px; padding:13px 22px;
+      border-radius:999px; cursor:pointer; border:1px solid var(--red); background:var(--red); color:#fff;
+      transition:transform .15s, background .2s;
+    }
+    button:hover:not(:disabled) { transform:translateY(-2px); background:var(--red-soft); }
+    button:disabled { opacity:.6; cursor:default; }
+    .err { margin-top:12px; font-size:13px; color:var(--red-soft); }
+    .foot { margin-top:18px; font-size:11px; color:var(--ink-faint); }
+  </style>
+</head>
+<body>
+  <form class="card" id="gate">
+    <div class="eyebrow">▶ YouTube Sunday Ticket · Engine</div>
+    <h1>Sunday's<br />Most Wanted</h1>
+    <p class="sub">This preview is password-protected.</p>
+    <label for="pw">Password</label>
+    <input type="password" id="pw" name="password" autocomplete="current-password" autofocus />
+    <button type="submit" id="btn">Enter →</button>
+    <p class="err" id="err" hidden>Wrong password — try again.</p>
+    <p class="foot">A contextual CTV engine concept.</p>
+  </form>
+  <script>
+    const form = document.getElementById('gate');
+    const err = document.getElementById('err');
+    const btn = document.getElementById('btn');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      err.hidden = true;
+      btn.disabled = true;
+      btn.textContent = 'Checking…';
+      try {
+        const r = await fetch('/api/gate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: document.getElementById('pw').value }),
+        });
+        if (r.ok) { location.replace('/'); return; }
+      } catch {}
+      err.hidden = false;
+      btn.disabled = false;
+      btn.textContent = 'Enter →';
+      document.getElementById('pw').select();
+    });
+  </script>
+</body>
+</html>
