@@ -38,6 +38,8 @@
     }
     button:hover:not(:disabled) { transform:translateY(-2px); background:var(--red-soft); }
     button:disabled { opacity:.6; cursor:default; }
+    .remember { display:flex; align-items:center; gap:8px; margin-top:14px; font-size:13px; text-transform:none; letter-spacing:0; color:var(--ink-dim); font-weight:400; cursor:pointer; }
+    .remember input { width:16px; height:16px; accent-color:var(--red); cursor:pointer; }
     .err { margin-top:12px; font-size:13px; color:var(--red-soft); }
     .foot { margin-top:18px; font-size:11px; color:var(--ink-faint); }
   </style>
@@ -49,6 +51,7 @@
     <p class="sub">This preview is password-protected.</p>
     <label for="pw">Password</label>
     <input type="password" id="pw" name="password" autocomplete="current-password" autofocus />
+    <label class="remember"><input type="checkbox" id="remember" /> Remember me for 7 days</label>
     <button type="submit" id="btn">Enter →</button>
     <p class="err" id="err" hidden>Wrong password — try again.</p>
     <p class="foot">A contextual CTV engine concept.</p>
@@ -66,7 +69,10 @@
         const r = await fetch('/api/gate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: document.getElementById('pw').value }),
+          body: JSON.stringify({
+            password: document.getElementById('pw').value,
+            remember: document.getElementById('remember').checked,
+          }),
         });
         if (r.ok) { location.replace('/'); return; }
       } catch {}

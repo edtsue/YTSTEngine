@@ -28,8 +28,11 @@ export default function handler(req, res) {
   const ok = a.length === b.length && timingSafeEqual(a, b);
   if (!ok) return res.status(401).json({ ok: false, error: 'bad' });
 
-  const maxAge = 60 * 60 * 24 * 30; // 30 days
-  res.setHeader('Set-Cookie',
-    `${COOKIE}=${tokenFor(secret)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`);
+  // "Remember me" → a persistent 7-day cookie; otherwise a session cookie
+  // (no Max-Age) that clears when the browser closes.
+  const base = `${COOKIE}=${tokenFor(secret)}; Path=/; HttpOnly; Secure; SameSite=Lax`;
+  const remember = !!(body && body.remember);
+  const cookie = remember ? `${base}; Max-Age=${60 * 60 * 24 * 7}` : base;
+  res.setHeader('Set-Cookie', cookie);
   return res.status(200).json({ ok: true });
 }
