@@ -67,8 +67,8 @@ const SIGNALS = [
     job: 'Double duty: who’s most-drafted here, and which of their games is blacked out here.' },
   { icon: '📅', key: 'day', name: 'Day → Emotion', source: 'Calendar lookup',
     job: 'The frame. Monday grief, Sunday-morning panic, Sunday-afternoon helplessness — the tone of the spot.' },
-  { icon: '🏈', key: 'player', name: 'Top player', source: 'Yahoo aggregate ownership, geo-filtered',
-    job: 'The hook. The real most-drafted player per position in that market — four faces, one machine.' },
+  { icon: '🏈', key: 'player', name: 'Popular players', source: 'Yahoo ownership + Genius Sports data, geo-filtered',
+    job: 'The hook. The most popular player per position in that market — Yahoo fantasy ownership blended with Genius Sports engagement data. Four faces, one machine.' },
 ];
 
 /* ── Day → emotion tone grid ───────────────────────────────────────── */
@@ -160,7 +160,7 @@ function buildSignals() {
       <h3>${s.name}</h3>
       <div class="sig__src">${s.source}</div>
       <p class="sig__job">${s.job}</p>
-      ${s.key === 'player' ? '<img class="sig__yahoo" src="assets/yahoo-fantasy.jpg" alt="Yahoo Fantasy" />' : ''}
+      ${s.key === 'player' ? '<div class="sig__logos"><img class="sig__yahoo" src="assets/yahoo-fantasy.jpg" alt="Yahoo Fantasy" /><img class="sig__yahoo" src="assets/genius-sports.svg" alt="Genius Sports" /></div>' : ''}
     </article>`).join('');
 }
 
@@ -177,6 +177,7 @@ function buildWeekRail() {
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {
     document.getElementById('selDay').value = b.dataset.day;
     document.getElementById('selMarket').value = m.id;
+    revealStep(4);          // loading a preset day sets market + day → show every step
     renderMixer();
     document.getElementById('mixer').scrollIntoView({ behavior: 'smooth' });
   }));
@@ -198,11 +199,25 @@ function buildMixer() {
 
   document.getElementById('selDay').value = beatForToday();
 
-  ['selMarket', 'selDay', 'selPos'].forEach(id =>
-    document.getElementById(id).addEventListener('change', renderMixer));
+  // Progressive disclosure: each step appears only once the prior one is acted
+  // on, so the builder never dumps every control at once. Picking a market
+  // reveals Day; picking a day reveals Players; picking a player reveals Generate.
+  const advance = { selMarket: 2, selDay: 3, selPos: 4 };
+  Object.entries(advance).forEach(([id, step]) =>
+    document.getElementById(id).addEventListener('change', () => { revealStep(step); renderMixer(); }));
   document.getElementById('genBtn').addEventListener('click', generateAsset);
   document.getElementById('randBtn').addEventListener('click', randomize);
+  revealStep(1);            // start with only Step 1 (Geography) visible
   renderMixer();
+}
+
+/* progressive disclosure — keep steps up to `n` visible (monotonic; never re-hides) */
+let maxStep = 0;
+function revealStep(n) {
+  maxStep = Math.max(maxStep, n);
+  document.querySelectorAll('.ctrl[data-step]').forEach(el => {
+    el.classList.toggle('is-locked', +el.dataset.step > maxStep);
+  });
 }
 
 /* randomize the three signals — geography, day, and player/position */
@@ -211,6 +226,7 @@ function randomize() {
   document.getElementById('selMarket').value = pick(MARKETS).id;
   document.getElementById('selDay').value = pick(DAYS).id;
   document.getElementById('selPos').value = pick(['WR', 'QB', 'RB', 'TE']);
+  revealStep(4);            // shortcut fills all three signals → show every step
   renderMixer();
 }
 
