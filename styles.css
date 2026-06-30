@@ -274,20 +274,48 @@ em { font-style: normal; color: var(--ink); }
 .bcard__pos { position: absolute; top: 4.5%; right: 5%; z-index: 3; font-family: 'Oswald'; font-weight: 700; font-size: clamp(6px, 1.7cqw, 9px); letter-spacing: .08em; color: #fff; background: rgba(6,9,14,.62); border: 1px solid rgba(255,255,255,.28); padding: .14em .42em; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.45); backdrop-filter: blur(2px); }
 .bcard__name { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 1.5em .2em .4em; text-align: center; font-family: 'Oswald'; font-weight: 600; text-transform: uppercase; letter-spacing: .005em; font-size: clamp(6.5px, 2.05cqw, 11px); color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: linear-gradient(0deg, rgba(3,5,9,.95) 28%, transparent); text-shadow: 0 1px 4px rgba(0,0,0,.95); }
 
-/* random, one-at-a-time signal glitch on a player photo (driven by JS) */
-.bcard.is-glitch .bcard__face { animation: faceGlitch .55s steps(1) 1; }
-.bcard.is-glitch::after { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; mix-blend-mode: overlay; background: repeating-linear-gradient(0deg, rgba(255,255,255,.11) 0 1px, transparent 1px 3px); animation: faceScan .55s steps(1) 1; }
-@keyframes faceGlitch {
-  0%   { transform: translateX(0);    clip-path: inset(0 0 0 0);   filter: none; }
-  12%  { transform: translateX(-6px); clip-path: inset(10% 0 62% 0); filter: drop-shadow(3px 0 0 rgba(255,0,70,.75)) drop-shadow(-3px 0 0 rgba(0,235,255,.75)) saturate(1.4); }
-  26%  { transform: translateX(5px);  clip-path: inset(56% 0 16% 0); filter: contrast(1.3) brightness(1.14); }
-  40%  { transform: translateX(-4px); clip-path: inset(30% 0 42% 0); filter: drop-shadow(2px 0 0 rgba(255,0,70,.65)) drop-shadow(-2px 0 0 rgba(0,235,255,.65)); }
-  54%  { transform: translateX(4px);  clip-path: inset(72% 0 6% 0);  filter: hue-rotate(14deg); }
-  68%  { transform: translateX(-2px); clip-path: inset(8% 0 74% 0);  filter: none; }
-  100% { transform: translateX(0);    clip-path: inset(0 0 0 0);   filter: none; }
+/* random, one-at-a-time signal glitch on a player photo — analog TV static.
+   The face loses colour and flickers (lost signal); an SVG fractal-noise
+   "snow" layer crawls over it; a bright vertical-hold bar rolls through. */
+.bcard.is-glitch .bcard__face { animation: tvStaticFace .6s steps(1) 1; }
+.bcard.is-glitch::after {
+  content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; mix-blend-mode: screen;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 1px, transparent 1px 2px);
+  background-size: 160% 160%, 100% 100%;
+  animation: tvStaticNoise .6s steps(1) 1;
 }
-@keyframes faceScan { 0%, 100% { opacity: 0; } 10% { opacity: 1; } 50% { opacity: .45; } 72% { opacity: .9; } 90% { opacity: .2; } }
-@media (prefers-reduced-motion: reduce) { .bcard.is-glitch .bcard__face, .bcard.is-glitch::after { animation: none; } }
+/* the rolling vertical-hold tear bar */
+.bcard.is-glitch::before {
+  content: ''; position: absolute; left: 0; right: 0; height: 22%; z-index: 5; pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,.55) 45%, rgba(255,255,255,.12) 60%, transparent);
+  mix-blend-mode: screen; animation: tvStaticRoll .6s linear 1;
+}
+@keyframes tvStaticFace {
+  0%   { filter: none;                                          transform: translateY(0); }
+  14%  { filter: grayscale(.75) contrast(1.6) brightness(1.35); transform: translateY(-2%); }
+  30%  { filter: grayscale(1) contrast(2.1) brightness(.78);    transform: translateY(2.5%); }
+  46%  { filter: grayscale(.5) contrast(1.7) brightness(1.45);  transform: translateY(-1%); }
+  62%  { filter: grayscale(1) contrast(1.9) brightness(.88);    transform: translateY(1.5%); }
+  80%  { filter: grayscale(.3) contrast(1.3) brightness(1.12);  transform: translateY(0); }
+  100% { filter: none;                                          transform: translateY(0); }
+}
+@keyframes tvStaticNoise {
+  0%, 100% { opacity: 0; }
+  10% { opacity: .95; background-position: 0 0,         0 0; }
+  26% { opacity: .65; background-position: 32% 64%,     0 0; }
+  42% { opacity: 1;   background-position: 71% 18%,     0 0; }
+  58% { opacity: .6;  background-position: 12% 83%,     0 0; }
+  74% { opacity: .9;  background-position: 54% 41%,     0 0; }
+  90% { opacity: .35; background-position: 83% 9%,      0 0; }
+}
+@keyframes tvStaticRoll {
+  0%   { top: -24%; opacity: 0; }
+  12%  { opacity: .85; }
+  100% { top: 108%; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .bcard.is-glitch .bcard__face, .bcard.is-glitch::after, .bcard.is-glitch::before { animation: none; } .bcard.is-glitch::before { display: none; } }
 
 /* the TV "frame" is the real TV in the photo — strip our own bezel/stand */
 .ctv__tv { position: relative; width: 100%; height: 100%; padding: 0; border-radius: 2px; background: none; box-shadow: none; }

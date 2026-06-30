@@ -85,7 +85,7 @@ const SIGNALS = [
   { icon: '📍', key: 'geo', name: 'Geography', source: 'IP → DMA + weekly blackout map',
     job: 'Double duty: which of the league’s most-drafted are out of market here, and which of their games is blacked out here.' },
   { icon: '😰', key: 'day', name: 'Day → Emotion', source: 'Calendar lookup',
-    job: 'The frame. Monday grief, Sunday-morning panic, Sunday-afternoon helplessness — the tone of the whole board.' },
+    job: 'The frame. Monday grief, Sunday-morning panic, Sunday-afternoon helplessness — the tone of the whole ad.' },
   { icon: '🏈', key: 'player', name: 'The eight', source: 'Yahoo ownership + Genius Sports data, geo-filtered',
     job: 'The wound. The eight most-drafted players in that market — Yahoo fantasy ownership blended with Genius Sports engagement. Shown together, equal weight, never a single face.' },
 ];
@@ -430,7 +430,7 @@ function renderMixer(opts) {
   document.getElementById('ctvEyebrow').textContent = EYEBROW(m);
   setHeadline(m, d, instant);
   document.getElementById('stageCap').textContent =
-    `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Board: ${m.city}’s 8 most-drafted, out-of-market`;
+    `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Ad: ${m.city}’s 8 most-drafted, out-of-market`;
   renderVariants(m, d);
   renderBoard(m);
 
@@ -562,7 +562,7 @@ function buildToday() {
   const d = DAYS.find(x => x.id === beatForToday());
   if (!d) return;
   document.getElementById('todayName').textContent = d.name.replace(' Afternoon', '').replace(' Morning', ' morning').replace(' Night', ' night');
-  document.getElementById('todayMsg').textContent = `${d.emotion} — today's board writes itself in this register.`;
+  document.getElementById('todayMsg').textContent = `${d.emotion} — today's ad writes itself in this register.`;
   document.getElementById('todayChip').hidden = false;
 }
 
