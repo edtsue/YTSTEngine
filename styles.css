@@ -238,7 +238,7 @@ em { font-style: normal; color: var(--ink); }
   font-size: 12px; letter-spacing: .12em; color: var(--accent); border: 2px solid var(--accent);
   padding: 5px 10px; border-radius: 6px; transform: rotate(6deg); opacity: .92;
 }
-.ctv__eyebrow { font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .09em; font-size: clamp(7px, 2.3cqw, 13px); line-height: 1.2; color: var(--accent); text-shadow: 0 1px 8px rgba(0,0,0,.95); }
+.ctv__eyebrow { font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .05em; font-size: clamp(6px, 2.02cqw, 12px); line-height: 1.2; color: var(--accent); text-shadow: 0 1px 8px rgba(0,0,0,.95); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── SPLIT BLOCK — bold stacked statement | board of eight ── */
 .ctv__split { position: relative; z-index: 4; flex: 1 1 auto; min-height: 0; display: flex; align-items: stretch; gap: 3%; padding: 1.4% 3.4% 3.6%; }
