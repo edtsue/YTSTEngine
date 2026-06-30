@@ -1,4 +1,4 @@
-/* ════════════════ SUNDAY'S MOST WANTED ════════════════ */
+/* ════════════════ SUNDAY M.I.A. ════════════════ */
 :root {
   --bg: #06080d;
   --bg-2: #0b0e15;
@@ -70,9 +70,10 @@ em { font-style: normal; color: var(--ink); }
 }
 .hero__kicker { text-transform: uppercase; letter-spacing: .2em; font-size: 12px; color: var(--red-soft); font-weight: 600; margin-bottom: 20px; }
 .hero__title { font-family: 'Anton'; font-size: clamp(54px, 11vw, 132px); line-height: .86; text-transform: uppercase; letter-spacing: -.01em; }
-.hero__title-wanted {
+/* default wordmark treatment for "M.I.A." (red→gold gradient) */
+.hero__title-mia {
   color: transparent; background: linear-gradient(100deg, var(--red) 8%, var(--gold)); -webkit-background-clip: text; background-clip: text;
-  -webkit-text-stroke: 1px rgba(255,90,77,.25);
+  -webkit-text-stroke: 1px rgba(255,90,77,.25); letter-spacing: .01em;
 }
 .hero__lede { margin-top: 26px; max-width: 680px; color: var(--ink-dim); font-size: clamp(15px, 1.7vw, 18px); }
 .hero__lede strong { color: var(--ink); }
@@ -231,7 +232,7 @@ em { font-style: normal; color: var(--ink); }
 }
 .bcard__face { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: drop-shadow(0 3px 6px rgba(0,0,0,.4)); transition: opacity .2s; }
 .bcard__logo { position: absolute; top: 4.5%; left: 5%; z-index: 2; width: clamp(9px, 3cqw, 17px); height: clamp(9px, 3cqw, 17px); object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
-.bcard__out { position: absolute; top: 4.5%; right: 5%; z-index: 3; font-family: 'Oswald'; font-weight: 700; font-size: clamp(6px, 1.7cqw, 9px); letter-spacing: .06em; color: #fff; background: var(--red); padding: .12em .4em; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.5); }
+.bcard__pos { position: absolute; top: 4.5%; right: 5%; z-index: 3; font-family: 'Oswald'; font-weight: 700; font-size: clamp(6px, 1.7cqw, 9px); letter-spacing: .08em; color: #fff; background: rgba(6,9,14,.62); border: 1px solid rgba(255,255,255,.28); padding: .14em .42em; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.45); backdrop-filter: blur(2px); }
 .bcard__name { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 1.6em .4em .42em; text-align: center; font-family: 'Oswald'; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(7px, 2.3cqw, 12px); color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: linear-gradient(0deg, rgba(3,5,9,.95) 28%, transparent); text-shadow: 0 1px 4px rgba(0,0,0,.95); }
 
 /* the TV "frame" is the real TV in the photo — strip our own bezel/stand */
@@ -252,6 +253,17 @@ em { font-style: normal; color: var(--ink); }
   max-width: none; margin: 0; z-index: 2;
 }
 .room__ambient, .room__console { display: none; }
+
+/* expand the mock-up into a centered lightbox */
+.btn--expand { margin-top: 16px; align-self: center; }
+body.mockup-open { overflow: hidden; }
+.lightbox-backdrop { position: fixed; inset: 0; z-index: 199; background: rgba(2,4,8,.86); backdrop-filter: blur(5px); animation: lbFade .2s ease; }
+.lightbox-close { position: fixed; z-index: 201; top: 18px; right: 20px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.5); color: #fff; font-size: 18px; line-height: 1; cursor: pointer; transition: background .2s, transform .2s; }
+.lightbox-close:hover { background: rgba(0,0,0,.75); transform: scale(1.06); }
+.room.is-expanded { position: fixed; z-index: 200; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(94vw, 120vh, 1320px); max-width: none; box-shadow: 0 40px 120px rgba(0,0,0,.7); animation: lbPop .26s cubic-bezier(.2,.8,.2,1); }
+@keyframes lbFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lbPop { from { opacity: 0; transform: translate(-50%, -50%) scale(.94); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .room.is-expanded, .lightbox-backdrop { animation: none; } }
 .stage__cap { margin-top: 14px; font-size: 13px; color: var(--ink-faint); text-align: center; }
 .genby { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .06em; font-size: 12px; color: var(--ink-dim); }
 .genby__logo { height: 18px; width: 18px; }

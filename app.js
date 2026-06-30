@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════════
-   SUNDAY'S MOST WANTED
+   SUNDAY M.I.A.
    A contextual CTV engine for YouTube Sunday Ticket × Fantasy.
 
    Three live signals fill one template — a BOARD OF EIGHT:
@@ -108,59 +108,59 @@ const DAYS = [
    hope). Each is a [lead, punch] pair: the lead sets it up (big caps), the
    punch lands it (accent italic). Three distinct angles per day. ── */
 const DAY_HEADLINES = {
-  // Monday — grief, rueful morning-after
+  // Monday-beat — grief, rueful morning-after (never names the day)
   'mon': [
-    m => ['Your guys went off Sunday.', 'You’re grieving the box score.'],
+    m => ['Your guys went nuclear.', 'You’re grieving the box score.'],
     m => ['RIP your weekend.', 'Studs everywhere, you saw zero.'],
-    m => ['Monday mourning.', `Eight ghosts, one sad ${m.city} recap.`],
+    m => ['The mourning after.', `Eight ghosts, one sad ${m.city} recap.`],
   ],
-  // Tuesday — resentment turning to hope, the fresh-start pivot
+  // Tuesday-beat — resentment turning to hope, the fresh-start pivot
   'tue': [
     m => ['New week, fresh waivers.', 'Same “still not on my TV.”'],
-    m => ['Hope springs Tuesday.', 'Your channels don’t.'],
+    m => ['Hope springs eternal.', 'Your channels don’t.'],
     m => ['Turning the page…', 'to the same old blackout.'],
   ],
-  // Wednesday — anxious gambling, wry and knowing
+  // Wednesday-beat — anxious gambling, wry and knowing
   'wed': [
     m => ['Locks of the week:', `eight guys, zero on ${m.city} TV.`],
     m => ['100% rostered,', '0% watchable. Sweat it.'],
     m => ['You’d bet the house.', 'Can’t even bet the remote.'],
   ],
-  // Thursday — reckless commitment, the contrast (a game you CAN see)
+  // Thursday-beat — reckless commitment, the contrast (a game you CAN see)
   'thu': [
-    m => ['Tonight: one game, all in.', 'Sunday: your guys vanish.'],
-    m => ['Thursday’s a freebie.', 'Sunday’s a group chat.'],
-    m => ['Go all-in tonight.', 'Pay for it Sunday.'],
+    m => ['Tonight: one game, all in.', 'Then your guys vanish.'],
+    m => ['Tonight’s the freebie.', 'The rest is a group chat.'],
+    m => ['Go all-in tonight.', 'Pay for it at kickoff.'],
   ],
-  // Friday — studious dread, prep-mode and ominous
+  // Friday-beat — studious dread, prep-mode and ominous
   'fri': [
     m => ['Lineup: locked and studied.', 'Channels: won’t cooperate.'],
-    m => ['You did the homework.', 'Sunday’s quiz is off-air.'],
-    m => ['Friday prep, Sunday dread.', 'Same blackout, every week.'],
+    m => ['You did the homework.', 'The big quiz is off-air.'],
+    m => ['Prepped, set… dreading.', 'Same blackout, every week.'],
   ],
-  // Saturday — restless second-guessing, coiled and anticipatory
+  // Saturday-beat — restless second-guessing, coiled and anticipatory
   'sat': [
     m => ['Start ’em? Sit ’em?', 'Moot — you can’t see ’em.'],
     m => ['One sleep till kickoff.', 'Zero chance it’s on your TV.'],
-    m => ['Saturday overthinking.', 'Tomorrow they play out of town.'],
+    m => ['Overthinking every start.', 'Tomorrow they play out of town.'],
   ],
-  // Sunday morning — peak panic, urgent countdown energy
+  // Sunday-morning-beat — peak panic, urgent countdown energy
   'sun-am': [
     m => ['Kickoff in an hour.', 'Your eight? Nowhere near your TV.'],
     m => ['Lineups locking — breathe.', 'Channels still won’t cooperate.'],
     m => ['It’s go time.', 'For everyone airing your guys.'],
   ],
-  // Sunday afternoon — helplessness, the core wound, present tense
+  // Sunday-afternoon-beat — helplessness, the core wound, present tense
   'sun-pm': [
     m => ['Your guys are cooking right now.', 'You’re watching a spinner.'],
     m => ['Your lineup is balling, live.', 'Not on a screen you’ve got.'],
     m => ['Eight stars on, in real time.', `Zero on ${m.city} TV.`],
   ],
-  // Sunday night — exhausted hope, spent and hanging by a thread
+  // Sunday-night-beat — exhausted hope, spent and hanging by a thread
   'sun-night': [
     m => ['Primetime, last gasp.', 'Your season’s off-channel.'],
     m => ['One game left, eight missed.', 'Hope’s doing heavy lifting.'],
-    m => ['Sunday’s almost gone.', 'Your guys never aired. Again.'],
+    m => ['The day’s almost gone.', 'Your guys never aired. Again.'],
   ],
 };
 // each variant returns a [lead, punch] pair for the selected day
@@ -458,7 +458,7 @@ function renderBoard(m) {
   if (!el) return;
   el.innerHTML = m.board.map(p => `
     <div class="bcard" style="--team:${(TEAMS[p.team] || {}).glow || '#7a8290'}">
-      <span class="bcard__out">OUT</span>
+      <span class="bcard__pos">${p.pos}</span>
       <img class="bcard__face" src="${HEADSHOT(p.pid)}" alt="${p.name}" loading="lazy"
            onerror="this.style.opacity=0" />
       <img class="bcard__logo" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />
@@ -580,6 +580,37 @@ function buildToday() {
   document.getElementById('todayChip').hidden = false;
 }
 
+/* ── expand the mock-up into a large lightbox ──────────────────────── */
+function initExpand() {
+  const btn = document.getElementById('expandBtn');
+  const room = document.getElementById('room');
+  if (!btn || !room) return;
+  let bd = null, closeBtn = null;
+  const onKey = e => { if (e.key === 'Escape') close(); };
+  function close() {
+    room.classList.remove('is-expanded');
+    document.body.classList.remove('mockup-open');
+    if (bd) bd.remove();
+    if (closeBtn) closeBtn.remove();
+    document.removeEventListener('keydown', onKey);
+    btn.setAttribute('aria-expanded', 'false');
+  }
+  function open() {
+    bd = document.createElement('div'); bd.className = 'lightbox-backdrop';
+    closeBtn = document.createElement('button');
+    closeBtn.className = 'lightbox-close'; closeBtn.innerHTML = '✕';
+    closeBtn.setAttribute('aria-label', 'Close expanded mock-up');
+    document.body.append(bd, closeBtn);
+    document.body.classList.add('mockup-open');
+    room.classList.add('is-expanded');
+    bd.addEventListener('click', close);
+    closeBtn.addEventListener('click', close);
+    document.addEventListener('keydown', onKey);
+    btn.setAttribute('aria-expanded', 'true');
+  }
+  btn.addEventListener('click', () => room.classList.contains('is-expanded') ? close() : open());
+}
+
 /* ── hero video: deferred load ─────────────────────────────────────── */
 function initHeroVideo() {
   const v = document.getElementById('heroVid');
@@ -604,4 +635,5 @@ buildProduction();
 buildToday();
 initHeroVideo();
 animateOdometer();
+initExpand();
 initGeo();          // detects market + seeds the mixer (after buildMixer)
