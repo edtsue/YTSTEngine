@@ -70,11 +70,25 @@ em { font-style: normal; color: var(--ink); }
 }
 .hero__kicker { text-transform: uppercase; letter-spacing: .2em; font-size: 12px; color: var(--red-soft); font-weight: 600; margin-bottom: 20px; }
 .hero__title { font-family: 'Anton'; font-size: clamp(54px, 11vw, 132px); line-height: .86; text-transform: uppercase; letter-spacing: -.01em; }
-/* default wordmark treatment for "M.I.A." (red→gold gradient) */
-.hero__title-mia {
-  color: transparent; background: linear-gradient(100deg, var(--red) 8%, var(--gold)); -webkit-background-clip: text; background-clip: text;
-  -webkit-text-stroke: 1px rgba(255,90,77,.25); letter-spacing: .01em;
+/* "M.I.A." — signal-lost glitch (no signal = missing from your TV) */
+.hero__title-mia { position: relative; display: inline-block; color: #fff; letter-spacing: .01em; animation: miaFlicker 4s steps(1) infinite; }
+.hero__title-mia::before, .hero__title-mia::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
+.hero__title-mia::before { color: #ff2d3a; transform: translate(-2px, 1px); animation: miaGlitchR 4s steps(1) infinite; }
+.hero__title-mia::after  { color: #1fd8ff; transform: translate(2px, -1px); animation: miaGlitchC 4s steps(1) infinite; }
+@keyframes miaFlicker { 0%, 88%, 100% { opacity: 1; } 89% { opacity: .55; } 90% { opacity: .95; } 92% { opacity: .4; } 93% { opacity: .92; } }
+@keyframes miaGlitchR {
+  0%, 86%, 100% { clip-path: inset(0 0 0 0); transform: translate(-2px, 1px); }
+  87% { clip-path: inset(18% 0 58% 0); transform: translate(-7px, -2px); }
+  90% { clip-path: inset(62% 0 12% 0); transform: translate(6px, 1px); }
+  94% { clip-path: inset(40% 0 38% 0); transform: translate(-5px, 2px); }
 }
+@keyframes miaGlitchC {
+  0%, 86%, 100% { clip-path: inset(0 0 0 0); transform: translate(2px, -1px); }
+  88% { clip-path: inset(70% 0 8% 0); transform: translate(7px, 2px); }
+  91% { clip-path: inset(10% 0 72% 0); transform: translate(-6px, -2px); }
+  95% { clip-path: inset(48% 0 30% 0); transform: translate(5px, -2px); }
+}
+@media (prefers-reduced-motion: reduce) { .hero__title-mia, .hero__title-mia::before, .hero__title-mia::after { animation: none; } }
 .hero__lede { margin-top: 26px; max-width: 680px; color: var(--ink-dim); font-size: clamp(15px, 1.7vw, 18px); }
 .hero__lede strong { color: var(--ink); }
 .hero__cta { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
