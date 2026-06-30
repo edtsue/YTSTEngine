@@ -108,45 +108,45 @@ const DAYS = [
 const DAY_HEADLINES = {
   // Monday-beat — grief, rueful morning-after (never names the day)
   'mon': [
-    m => ['Your guys went nuclear.', 'You’re grieving the box score.'],
-    m => ['RIP your weekend.', 'Studs everywhere, you saw zero.'],
-    m => ['The mourning after.', `Eight ghosts, one sad ${m.city} recap.`],
+    m => ['Your studs all hit their peak.', 'Your TV stayed bleak.'],
+    m => ['They hung up forty-four.', `${m.city} never saw the score.`],
+    m => ['The morning-after blues —', 'eight ghosts, zero views.'],
   ],
   // Tuesday-beat — resentment turning to hope, the fresh-start pivot
   'tue': [
-    m => ['New week, fresh waivers.', 'Same “still not on my TV.”'],
-    m => ['Hope springs eternal.', 'Your channels don’t.'],
-    m => ['Turning the page…', 'to the same old blackout.'],
+    m => ['New week, new waiver dreams.', 'Same off-air schemes.'],
+    m => ['You reload with hope.', 'The blackout says nope.'],
+    m => ['Turn the page, ink still wet.', 'Same eight you won’t get.'],
   ],
   // Wednesday-beat — anxious gambling, wry and knowing
   'wed': [
-    m => ['Locks of the week:', `eight guys, zero on ${m.city} TV.`],
-    m => ['100% rostered,', '0% watchable. Sweat it.'],
-    m => ['You’d bet the house.', 'Can’t even bet the remote.'],
+    m => ['Eight stone-cold locks.', 'Zero on your box.'],
+    m => ['Bet the house, bet the car.', 'They’re playing way too far.'],
+    m => ['You sweat each snap and stat.', 'Can’t watch where they’re at.'],
   ],
   // Thursday-beat — reckless commitment, the contrast (a game you CAN see)
   'thu': [
-    m => ['Tonight: one game, all in.', 'Then your guys vanish.'],
-    m => ['Tonight’s the freebie.', 'The rest is a group chat.'],
-    m => ['Go all-in tonight.', 'Pay for it at kickoff.'],
+    m => ['One game on tonight.', 'Then they’re out of sight.'],
+    m => ['Tonight’s your freebie thrill.', 'The weekend’s a bitter pill.'],
+    m => ['Go all-in under the lights.', 'Pay for it the next few nights.'],
   ],
   // Friday-beat — studious dread, prep-mode and ominous
   'fri': [
-    m => ['Lineup: locked and studied.', 'Channels: won’t cooperate.'],
-    m => ['You did the homework.', 'The big quiz is off-air.'],
-    m => ['Prepped, set… dreading.', 'Same blackout, every week.'],
+    m => ['Lineup locked and read.', 'Your channels fill with dread.'],
+    m => ['You did all the prep.', 'Your TV’s out of step.'],
+    m => ['Charts studied, plans precise.', 'Blacked out — such is the price.'],
   ],
   // Saturday-beat — restless second-guessing, coiled and anticipatory
   'sat': [
-    m => ['Start ’em? Sit ’em?', 'Moot — you can’t see ’em.'],
-    m => ['One sleep till kickoff.', 'Zero chance it’s on your TV.'],
-    m => ['Overthinking every start.', 'Tomorrow they play out of town.'],
+    m => ['Start ’em? Sit ’em?', 'You can’t even get ’em.'],
+    m => ['One sleep till the games.', 'Zero on your frames.'],
+    m => ['You agonize each call.', 'Out of market — see none at all.'],
   ],
   // Sunday-beat — game-day helplessness, present-tense FOMO
   'sun': [
-    m => ['Your guys are cooking right now.', 'You’re watching a spinner.'],
-    m => ['Your lineup is balling, live.', 'Not on a screen you’ve got.'],
-    m => ['Eight stars on, in real time.', `Zero on ${m.city} TV.`],
+    m => ['Your guys are cooking hot.', 'You? A buffering dot.'],
+    m => ['Live right now, they shine.', 'Not on a screen of mine.'],
+    m => ['Eight stars in real-time glow.', `Zero on ${m.city}’s show.`],
   ],
 };
 // each variant returns a [lead, punch] pair for the selected day
