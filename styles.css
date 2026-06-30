@@ -167,9 +167,9 @@ em { font-style: normal; color: var(--ink); }
 .stage { display: flex; flex-direction: column; align-items: center; }
 .ctv { --accent: #ff2d2d; width: 100%; max-width: 760px; }
 .ctv__screen {
-  position: relative; aspect-ratio: 16 / 9; border-radius: 14px 14px 4px 4px; overflow: hidden;
-  background: #05070b; box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px var(--line);
-  display: flex; flex-direction: column; padding-top: 9.5%;
+  position: relative; width: 100%; height: 100%; border-radius: 3px; overflow: hidden;
+  background: #05070b; display: flex; flex-direction: column; padding-top: 9.5%;
+  container-type: inline-size;   /* the ad scales to the TV, not the viewport */
 }
 .ctv__media {
   position: absolute; inset: 0; background-size: cover; background-position: center;
@@ -185,8 +185,8 @@ em { font-style: normal; color: var(--ink); }
 .ctv__loader .spin { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.25); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.ctv__chrome { position: absolute; top: 0; left: 0; right: 0; z-index: 4; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 13px 16px; }
-.ctv__stlogo { height: clamp(38px, 6.6vw, 52px); width: auto; flex: none; filter: drop-shadow(0 2px 12px rgba(0,0,0,.7)); }
+.ctv__chrome { position: absolute; top: 0; left: 0; right: 0; z-index: 4; display: flex; align-items: flex-start; justify-content: flex-end; padding: 3% 3.4%; }
+.ctv__stlogo { height: clamp(24px, 8cqw, 52px); width: auto; flex: none; filter: drop-shadow(0 2px 12px rgba(0,0,0,.7)); }
 .st-lockup { display: flex; align-items: center; gap: 8px; }
 .st-lockup__yt { background: var(--red); color: #fff; font-size: 10px; padding: 4px 6px; border-radius: 4px; line-height: 1; }
 .st-lockup__txt { font-family: 'Oswald'; font-size: 15px; text-transform: none; color: #fff; }
@@ -202,17 +202,15 @@ em { font-style: normal; color: var(--ink); }
   font-size: 12px; letter-spacing: .12em; color: var(--accent); border: 2px solid var(--accent);
   padding: 5px 10px; border-radius: 6px; transform: rotate(6deg); opacity: .92;
 }
-.ctv__eyebrow { max-width: 60%; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .07em; font-size: clamp(8.5px, 1.2vw, 12px); line-height: 1.18; color: var(--accent); text-shadow: 0 1px 8px rgba(0,0,0,.9); }
+.ctv__eyebrow { font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .09em; font-size: clamp(7px, 2.3cqw, 13px); line-height: 1.2; color: var(--accent); text-shadow: 0 1px 8px rgba(0,0,0,.9); }
 
 /* ── SPLIT BLOCK — bold stacked statement | board of eight ── */
 .ctv__split { position: relative; z-index: 4; flex: 1 1 auto; min-height: 0; display: flex; align-items: stretch; gap: 3%; padding: 1.4% 3.4% 3.6%; }
-.ctv__statement { flex: 0 0 37%; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 7px; }
-.ctv__kicker { display: flex; align-items: center; gap: 9px; width: 100%; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .15em; font-size: clamp(7.5px, 1vw, 11px); color: var(--accent); }
-.ctv__kicker::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 80%, transparent), transparent); }
-.ctv__headline { font-family: 'Oswald'; line-height: .96; text-wrap: balance; margin: 2px 0; }
-.ctv__hl-lead { display: block; font-weight: 700; text-transform: uppercase; letter-spacing: -.015em; font-size: clamp(21px, 3.9vw, 44px); color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
-.ctv__hl-accent { display: block; margin-top: 7px; font-family: 'Archivo', sans-serif; font-style: italic; font-weight: 500; text-transform: none; letter-spacing: 0; font-size: clamp(11px, 1.6vw, 19px); line-height: 1.18; color: var(--accent); text-shadow: 0 1px 10px rgba(0,0,0,.85); }
-.ctv__cta-btn { align-self: flex-start; margin-top: 9px; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(9.5px, 1.25vw, 13px); color: #fff; background: var(--red); padding: 8px 14px; border-radius: 999px; box-shadow: 0 6px 22px rgba(255,45,45,.4); }
+.ctv__statement { flex: 0 0 37%; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 2.2cqw; }
+.ctv__headline { font-family: 'Oswald'; line-height: .96; text-wrap: balance; margin: 0; }
+.ctv__hl-lead { display: block; font-weight: 700; text-transform: uppercase; letter-spacing: -.015em; font-size: clamp(13px, 4.7cqw, 38px); color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
+.ctv__hl-accent { display: block; margin-top: 1.4cqw; font-family: 'Archivo', sans-serif; font-style: italic; font-weight: 500; text-transform: none; letter-spacing: 0; font-size: clamp(9px, 2.7cqw, 18px); line-height: 1.18; color: var(--accent); text-shadow: 0 1px 10px rgba(0,0,0,.85); }
+.ctv__cta-btn { align-self: flex-start; margin-top: 1cqw; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(8px, 2.2cqw, 13px); color: #fff; background: var(--red); padding: .62em 1.05em; border-radius: 999px; box-shadow: 0 4px 16px rgba(255,45,45,.4); }
 .ctv__headline.is-reveal .ctv__hl-lead { animation: hlLead .5s cubic-bezier(.2,.75,.2,1) both; }
 .ctv__headline.is-reveal .ctv__hl-accent { animation: hlAcc .5s .12s ease both; }
 @keyframes hlLead { from { opacity: 0; transform: translateY(9px); clip-path: inset(0 100% 0 0); } to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); } }
@@ -232,36 +230,28 @@ em { font-style: normal; color: var(--ink); }
   box-shadow: inset 0 0 0 1px rgba(255,255,255,.09), inset 0 -26px 26px rgba(0,0,0,.5);
 }
 .bcard__face { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: drop-shadow(0 3px 6px rgba(0,0,0,.4)); transition: opacity .2s; }
-.bcard__logo { position: absolute; top: 5px; left: 5px; z-index: 2; width: 17px; height: 17px; object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
-.bcard__out { position: absolute; top: 5px; right: 5px; z-index: 3; font-family: 'Oswald'; font-weight: 700; font-size: 8px; letter-spacing: .07em; color: #fff; background: var(--red); padding: 1px 4px; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.5); }
-.bcard__name { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 9px 4px 4px; text-align: center; font-family: 'Oswald'; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(8px, 1.35vw, 12px); color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: linear-gradient(0deg, rgba(3,5,9,.95) 28%, transparent); text-shadow: 0 1px 4px rgba(0,0,0,.95); }
+.bcard__logo { position: absolute; top: 4.5%; left: 5%; z-index: 2; width: clamp(9px, 3cqw, 17px); height: clamp(9px, 3cqw, 17px); object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
+.bcard__out { position: absolute; top: 4.5%; right: 5%; z-index: 3; font-family: 'Oswald'; font-weight: 700; font-size: clamp(6px, 1.7cqw, 9px); letter-spacing: .06em; color: #fff; background: var(--red); padding: .12em .4em; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.5); }
+.bcard__name { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 1.6em .4em .42em; text-align: center; font-family: 'Oswald'; font-weight: 600; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(7px, 2.3cqw, 12px); color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: linear-gradient(0deg, rgba(3,5,9,.95) 28%, transparent); text-shadow: 0 1px 4px rgba(0,0,0,.95); }
 
-/* flat-screen TV — wall-mounted in the room, ultra-thin bezel */
-.ctv__tv {
-  position: relative; padding: 9px; border-radius: 12px;
-  background: linear-gradient(160deg, #1c2027 0%, #07090d 55%, #14171d 100%);
-  box-shadow: 0 30px 56px rgba(0,0,0,.38), 0 12px 22px rgba(0,0,0,.26), inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 0 1px rgba(255,255,255,.06);
-}
-.ctv__tv::before { content: ''; position: absolute; inset: 0; border-radius: 12px; pointer-events: none; background: linear-gradient(180deg, rgba(255,255,255,.07), transparent 14%); }
-.ctv__tv .ctv__screen { border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.7), inset 0 0 34px rgba(0,0,0,.55); }
+/* the TV "frame" is the real TV in the photo — strip our own bezel/stand */
+.ctv__tv { position: relative; width: 100%; height: 100%; padding: 0; border-radius: 2px; background: none; box-shadow: none; }
+.ctv__tv::before { display: none; }
+.ctv__tv .ctv__screen { border-radius: 2px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.55); }
 .ctv__neck, .ctv__base { display: none; }
 
-/* ── premium white modern living-room scene (in situ) ── */
+/* ── real living-room scene — the ad renders INSIDE the photo's TV ── */
 .room {
-  position: relative; width: 100%; max-width: 880px; padding: 7% 12% 12%; border-radius: 16px; overflow: hidden;
-  background: #ecebe7 url('assets/room.jpg') center 30% / cover no-repeat;
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.5), 0 36px 90px rgba(0,0,0,.4);
+  position: relative; width: 100%; max-width: 980px; aspect-ratio: 720 / 540; border-radius: 14px; overflow: hidden;
+  background: #cdc7bb url('assets/room.jpg') center / cover no-repeat;
+  box-shadow: 0 34px 80px rgba(0,0,0,.4), inset 0 0 0 1px rgba(0,0,0,.06);
 }
-/* gentle grounding shadow at the floor so the scene feels seated */
-.room::after { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(120% 70% at 50% 122%, rgba(20,18,14,.16), transparent 60%); }
-/* the TV's bias light spilling onto the white wall, tinted by the spot */
-.room__ambient {
-  position: absolute; left: 50%; top: 11%; transform: translateX(-50%); width: 64%; height: 50%; z-index: 0; pointer-events: none;
-  background: radial-gradient(58% 58% at 50% 44%, color-mix(in srgb, var(--accent, #ff2d2d) 50%, transparent), transparent 72%);
-  filter: blur(58px); opacity: .4; transition: background .45s ease;
+/* the ad, mapped precisely onto the photo's black screen rectangle */
+.room .ctv {
+  position: absolute; left: 22.5%; top: 11.85%; width: 54.58%; height: 43.7%;
+  max-width: none; margin: 0; z-index: 2;
 }
-.room .ctv { position: relative; z-index: 1; max-width: 100%; margin: 0 auto; }
-.room__console { display: none; }
+.room__ambient, .room__console { display: none; }
 .stage__cap { margin-top: 14px; font-size: 13px; color: var(--ink-faint); text-align: center; }
 .genby { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 14px; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .06em; font-size: 12px; color: var(--ink-dim); }
 .genby__logo { height: 18px; width: 18px; }
@@ -372,7 +362,5 @@ em { font-style: normal; color: var(--ink); }
   .controls { position: static; }
   .prod__flow { grid-template-columns: 1fr; }
   .prod__arrow { transform: rotate(90deg); }
-  .room { padding: 32px 20px 0; }
-  .room__console { margin: -4px -20px 0; }
   .today__msg { border-left: none; padding-left: 0; }
 }

@@ -103,62 +103,73 @@ const DAYS = [
   { id: 'sun-night', short: 'Sun Night', name: 'Sunday Night', dow: 0, emotion: 'Exhausted hope',       register: 'Spent, hanging by a thread',       accent: '#6c7cff' },
 ];
 
-/* ── Headlines speak to the COLLECTIVE — the eight, the whole lineup —
-   never a single name. Three copy versions per day, tuned to that day's
-   emotion. The hook is always: your whole lineup is most-drafted, all
-   out-of-market, and you'll miss every one without Sunday Ticket. ── */
+/* ── Headlines — playful, witty, concise, and each day's three lines carry
+   that day's EMOTION (Mon grief → Sun-PM helplessness → Sun-night exhausted
+   hope). Each is a [lead, punch] pair: the lead sets it up (big caps), the
+   punch lands it (accent italic). Three distinct angles per day. ── */
 const DAY_HEADLINES = {
+  // Monday — grief, rueful morning-after
   'mon': [
-    (m, d) => `Monday grief: all eight of your starters played — none on a ${m.city} screen.`,
-    (m, d) => `RIP your weekend. Eight studs went off; you got eight box scores.`,
-    (m, d) => `Five stages of grief, eight players deep. ${m.city} aired none of them.`,
+    m => ['Your guys went off Sunday.', 'You’re grieving the box score.'],
+    m => ['RIP your weekend.', 'Studs everywhere, you saw zero.'],
+    m => ['Monday mourning.', `Eight ghosts, one sad ${m.city} recap.`],
   ],
+  // Tuesday — resentment turning to hope, the fresh-start pivot
   'tue': [
-    (m, d) => `New week, same blackout: your eight still aren’t on ${m.city} TV.`,
-    (m, d) => `The waiver wire’s open. Your channel lineup still isn’t.`,
-    (m, d) => `Hope is eight stat lines you refreshed because you couldn’t watch.`,
+    m => ['New week, fresh waivers.', 'Same “still not on my TV.”'],
+    m => ['Hope springs Tuesday.', 'Your channels don’t.'],
+    m => ['Turning the page…', 'to the same old blackout.'],
   ],
+  // Wednesday — anxious gambling, wry and knowing
   'wed': [
-    (m, d) => `You’d bet the house on all eight. ${m.city} can’t show you one.`,
-    (m, d) => `Hump-day math: eight starters, 0% on your screen.`,
-    (m, d) => `Eight locks this week. Seeing them in ${m.city}? Long odds.`,
+    m => ['Locks of the week:', `eight guys, zero on ${m.city} TV.`],
+    m => ['100% rostered,', '0% watchable. Sweat it.'],
+    m => ['You’d bet the house.', 'Can’t even bet the remote.'],
   ],
+  // Thursday — reckless commitment, the contrast (a game you CAN see)
   'thu': [
-    (m, d) => `Tonight you get one game. Sunday, all eight vanish.`,
-    (m, d) => `Thursday’s on. Your eight? Out of market, out of luck.`,
-    (m, d) => `Enjoy the one game they give you — your eight aren’t in it.`,
+    m => ['Tonight: one game, all in.', 'Sunday: your guys vanish.'],
+    m => ['Thursday’s a freebie.', 'Sunday’s a group chat.'],
+    m => ['Go all-in tonight.', 'Pay for it Sunday.'],
   ],
+  // Friday — studious dread, prep-mode and ominous
   'fri': [
-    (m, d) => `You studied all eight matchups. ${m.city} carries none of them.`,
-    (m, d) => `Friday prep, Sunday dread: your eight play where you can’t look.`,
-    (m, d) => `Lineup locked, all eight in — your channels still don’t carry them.`,
+    m => ['Lineup: locked and studied.', 'Channels: won’t cooperate.'],
+    m => ['You did the homework.', 'Sunday’s quiz is off-air.'],
+    m => ['Friday prep, Sunday dread.', 'Same blackout, every week.'],
   ],
+  // Saturday — restless second-guessing, coiled and anticipatory
   'sat': [
-    (m, d) => `Start them? Bench them? Moot — ${m.city} can’t show your eight.`,
-    (m, d) => `One sleep till kickoff. Zero chance ${m.city} airs your eight.`,
-    (m, d) => `Saturday scaries: tomorrow all eight play off your channels.`,
+    m => ['Start ’em? Sit ’em?', 'Moot — you can’t see ’em.'],
+    m => ['One sleep till kickoff.', 'Zero chance it’s on your TV.'],
+    m => ['Saturday overthinking.', 'Tomorrow they play out of town.'],
   ],
+  // Sunday morning — peak panic, urgent countdown energy
   'sun-am': [
-    (m, d) => `KICKOFF IN 1 HOUR — and all eight are on ZERO ${m.city} channels. 😰`,
-    (m, d) => `PANIC: your entire lineup is BLACKED OUT. All eight. Right now.`,
-    (m, d) => `Lineups lock, eight kick off — your TV has the pregame show.`,
+    m => ['Kickoff in an hour.', 'Your eight? Nowhere near your TV.'],
+    m => ['Lineups locking — breathe.', 'Channels still won’t cooperate.'],
+    m => ['It’s go time.', 'For everyone airing your guys.'],
   ],
+  // Sunday afternoon — helplessness, the core wound, present tense
   'sun-pm': [
-    (m, d) => `All eight are scoring RIGHT NOW — on screens ${m.city} doesn’t get.`,
-    (m, d) => `Your whole lineup just went off. You’re watching a progress bar.`,
-    (m, d) => `Somewhere your eight are winning your week. Not on your TV.`,
+    m => ['Your guys are cooking right now.', 'You’re watching a spinner.'],
+    m => ['Your lineup is balling, live.', 'Not on a screen you’ve got.'],
+    m => ['Eight stars on, in real time.', `Zero on ${m.city} TV.`],
   ],
+  // Sunday night — exhausted hope, spent and hanging by a thread
   'sun-night': [
-    (m, d) => `Primetime, and your season rides on eight players — all off-channel.`,
-    (m, d) => `Eight starters left. Of course ${m.city} can’t show a single one.`,
-    (m, d) => `Last hope, all eight — playing on everything but your TV.`,
+    m => ['Primetime, last gasp.', 'Your season’s off-channel.'],
+    m => ['One game left, eight missed.', 'Hope’s doing heavy lifting.'],
+    m => ['Sunday’s almost gone.', 'Your guys never aired. Again.'],
   ],
 };
+// each variant returns a [lead, punch] pair for the selected day
 const VARIANTS = [0, 1, 2].map(i => (m, d) =>
-  (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun-pm'])[i](m, d));
+  (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun-pm'])[i](m));
+const headlineText = (m, d, i) => VARIANTS[i](m, d).join(' ');
 
-// eyebrow: the popularity-in-this-geography fact, group-framed
-const EYEBROW = m => `${m.city}’s 8 most-drafted — every one out of market`;
+// eyebrow: simply the market's most popular fantasy players
+const EYEBROW = m => `${m.city}’s most popular fantasy players`;
 const surname = name => name.split(' ').slice(1).join(' ');
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
@@ -181,7 +192,7 @@ function buildWeekRail() {
     <button class="mini" data-day="${d.id}" style="--accent:${d.accent}">
       <span class="mini__top"><span class="mini__day">${d.short}</span><span class="mini__brand">▶ Sunday Ticket</span></span>
       <span class="mini__emo">${d.emotion}</span>
-      <span class="mini__hl">${VARIANTS[2](m, d)}</span>
+      <span class="mini__hl">${headlineText(m, d, 2)}</span>
       <span class="mini__logos">${logos}<span class="mini__more">+4</span></span>
     </button>`).join('');
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {
@@ -288,24 +299,11 @@ function randomize() {
   }, 900);
 }
 
-/* ── editorial headline: a caps LEAD + an accent-italic tail ──────────
-   Split each line at its natural pivot (em-dash, colon, sentence break)
-   so the design reads as two intentional registers: the punch, then the
-   turn. The lead is uppercased in CSS; the accent stays sentence-case,
-   italic, in the day's accent color. ── */
-function splitHeadline(t) {
-  const dash = t.indexOf(' — ');
-  if (dash >= 0) return [t.slice(0, dash).trim(), t.slice(dash + 3).trim()];
-  const colon = t.indexOf(': ');
-  if (colon >= 0) return [t.slice(0, colon).trim(), t.slice(colon + 2).trim()];
-  const period = t.search(/[.!?] /);
-  if (period >= 0) return [t.slice(0, period + 1).trim(), t.slice(period + 2).trim()];
-  const semi = t.indexOf('; ');
-  if (semi >= 0) return [t.slice(0, semi + 1).trim(), t.slice(semi + 2).trim()];
-  return [t, ''];
-}
+/* ── headline: a caps LEAD (the setup) + an accent-italic PUNCH ───────
+   Two registers by design — the lead sets it up big, the punch lands it
+   italic in the day's accent color. ── */
 function setHeadline(m, d, instant) {
-  const [lead, accent] = splitHeadline(VARIANTS[variantIdx](m, d));
+  const [lead, accent] = VARIANTS[variantIdx](m, d);
   const h = document.getElementById('ctvHeadline');
   const leadEl = document.getElementById('ctvHlLead');
   const accEl = document.getElementById('ctvHlAccent');
@@ -444,7 +442,6 @@ function renderMixer(opts) {
     `<strong>8 most-drafted starters</strong> · all out-of-market in ${m.city}.`;
 
   document.getElementById('ctvEyebrow').textContent = EYEBROW(m);
-  document.getElementById('ctvKicker').textContent = `${d.name} · ${d.emotion}`;
   setHeadline(m, d, instant);
   document.getElementById('stageCap').textContent =
     `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Board: ${m.city}’s 8 most-drafted, out-of-market`;
@@ -476,7 +473,7 @@ function renderVariants(m, d) {
   wrap.innerHTML = VARIANTS.map((fn, i) => `
     <button class="vtab ${i === variantIdx ? 'is-active' : ''}" data-v="${i}">
       <span class="vtab__n">Version ${i + 1}</span>
-      <span class="vtab__hl">${fn(m, d)}</span>
+      <span class="vtab__hl">${headlineText(m, d, i)}</span>
     </button>`).join('');
   wrap.querySelectorAll('.vtab').forEach(b => b.addEventListener('click', () => {
     variantIdx = +b.dataset.v;
