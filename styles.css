@@ -160,21 +160,38 @@ em { font-style: normal; color: var(--ink); }
 .weekstrip__rail { margin-top: 18px; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(230px, 1fr); gap: 14px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; }
 .weekstrip__rail::-webkit-scrollbar { height: 8px; }
 .weekstrip__rail::-webkit-scrollbar-thumb { background: var(--line); border-radius: 8px; }
+/* each day is a classic tear-off calendar page: spiral-bound, cream paper,
+   a coloured weekday header, ruled body */
 .mini {
   scroll-snap-align: start; text-align: left; cursor: pointer; position: relative; overflow: hidden;
-  background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line);
-  border-top: 3px solid var(--accent); border-radius: 14px; padding: 16px; min-height: 168px;
-  display: flex; flex-direction: column; gap: 8px; transition: transform .18s, border-color .2s;
+  background: #f6f1e6; border: 1px solid #d3cbb8; border-radius: 6px; padding: 0; min-height: 196px;
+  display: flex; flex-direction: column;
+  box-shadow: 0 8px 20px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.45);
+  transition: transform .18s, box-shadow .2s;
 }
-.mini:hover { transform: translateY(-4px); border-color: #33415a; }
-.mini__top { display: flex; align-items: center; justify-content: space-between; }
-.mini__day { font-family: 'Oswald'; text-transform: uppercase; font-weight: 600; color: var(--accent); letter-spacing: .08em; }
-.mini__brand { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-faint); }
-.mini__emo { font-family: 'Oswald'; text-transform: uppercase; font-size: 13px; color: var(--ink-dim); }
-.mini__hl { font-size: 13.5px; color: var(--ink); line-height: 1.4; }
-.mini__logos { display: flex; align-items: center; gap: 4px; margin-top: auto; }
+.mini:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(0,0,0,.62), inset 0 0 0 1px rgba(255,255,255,.45); }
+/* punched spiral-binding holes along the very top */
+.mini__rings {
+  position: absolute; top: 7px; left: 0; right: 0; height: 8px; z-index: 3; pointer-events: none;
+  background-image: radial-gradient(circle at center, #0b0f17 0 3px, rgba(0,0,0,.35) 3px 4px, transparent 4px);
+  background-size: 26px 8px; background-repeat: repeat-x; background-position: 13px center;
+}
+/* coloured weekday header band */
+.mini__top {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  background: var(--accent); padding: 19px 14px 8px; border-bottom: 2px solid rgba(0,0,0,.2);
+}
+.mini__day { font-family: 'Anton', 'Oswald', sans-serif; text-transform: uppercase; letter-spacing: .03em;
+  font-size: clamp(19px, 2.3vw, 25px); line-height: .9; color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,.28); }
+.mini__brand { font-size: 9px; text-transform: uppercase; letter-spacing: .07em; color: rgba(255,255,255,.92); padding-bottom: 2px; }
+/* ruled paper body */
+.mini__body { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px 14px; flex: 1;
+  background-image: repeating-linear-gradient(180deg, transparent 0 27px, rgba(40,60,120,.09) 27px 28px); }
+.mini__emo { font-family: 'Oswald'; text-transform: uppercase; font-size: 12px; letter-spacing: .04em; color: #9a8e72; }
+.mini__hl { font-size: 14px; color: #1b1e25; line-height: 1.42; font-weight: 500; }
+.mini__logos { display: flex; align-items: center; gap: 5px; margin-top: auto; }
 .mini__lg { width: 18px; height: 18px; object-fit: contain; }
-.mini__more { font-family: 'Oswald'; font-size: 11px; color: var(--ink-faint); letter-spacing: .04em; }
+.mini__more { font-family: 'Oswald'; font-size: 11px; color: #9a8e72; letter-spacing: .04em; }
 .weekstrip__hint { margin-top: 12px; font-size: 13px; color: var(--ink-faint); }
 
 /* ── SECTION 02 — MIXER ── */
@@ -371,10 +388,6 @@ body.mockup-open { overflow: hidden; }
 .geo__lbl { font-family: 'Oswald'; text-transform: uppercase; font-size: 12px; letter-spacing: .04em; color: var(--ink); }
 .geo__status { margin-top: 10px; font-size: 12px; color: var(--ink-dim); line-height: 1.4; }
 .geo__status strong { color: var(--field); }
-
-/* ── engine reel button (feature 3) ── */
-.btn--reel { width: 100%; justify-content: center; }
-.btn--reel.is-on { border-color: var(--red); color: var(--red); background: color-mix(in srgb, var(--red) 12%, transparent); }
 
 /* ── odometer (feature 3) ── */
 .odo { max-width: var(--maxw); margin: 36px auto 0; padding: 0 28px; text-align: center; }

@@ -141,10 +141,13 @@ function buildWeekRail() {
     .map(p => `<img class="mini__lg" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />`).join('');
   document.getElementById('weekRail').innerHTML = DAYS.map(d => `
     <button class="mini" data-day="${d.id}" style="--accent:${d.accent}">
-      <span class="mini__top"><span class="mini__day">${d.short}</span><span class="mini__brand">▶ Sunday Ticket</span></span>
-      <span class="mini__emo">${d.emotion}</span>
-      <span class="mini__hl">${headlineText(m, d)}</span>
-      <span class="mini__logos">${logos}<span class="mini__more">+4</span></span>
+      <span class="mini__rings" aria-hidden="true"></span>
+      <span class="mini__top"><span class="mini__day">${d.name}</span><span class="mini__brand">▶ Sunday Ticket</span></span>
+      <span class="mini__body">
+        <span class="mini__emo">${d.emotion}</span>
+        <span class="mini__hl">${headlineText(m, d)}</span>
+        <span class="mini__logos">${logos}<span class="mini__more">+4</span></span>
+      </span>
     </button>`).join('');
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {
     document.getElementById('selDay').value = b.dataset.day;
@@ -197,9 +200,13 @@ function buildMixer() {
 
   ['selMarket', 'selDay'].forEach(id =>
     document.getElementById(id).addEventListener('change', () => { stopSpot(); renderMixer(); }));
-  document.getElementById('genBtn').addEventListener('click', () => { stopSpot(); generateBackdrop(); });
+  document.getElementById('genBtn').addEventListener('click', async () => {
+    if (spotPlaying) { stopSpot(); return; }   // playing → this click stops it
+    stopSpot();
+    await generateBackdrop();                  // composite the backdrop…
+    if (!spotPlaying) playSpot();              // …then play the finished :15 spot
+  });
   document.getElementById('randBtn').addEventListener('click', randomize);
-  document.getElementById('reelBtn').addEventListener('click', toggleSpot);
   renderMixer(true);
 }
 
@@ -282,7 +289,6 @@ let spotCountdown = null;
 const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const later = (fn, t) => { spotTimers.push(setTimeout(fn, t)); };
 
-function toggleSpot() { spotPlaying ? stopSpot() : playSpot(); }
 
 function setSpotPhase(phase) {
   const ctv = document.getElementById('ctv');
@@ -294,9 +300,9 @@ function playSpot() {
   if (spotPlaying || spinning) return;
   stopSpot();                                   // clean slate
   const ctv = document.getElementById('ctv');
-  const btn = document.getElementById('reelBtn');
+  const lbl = document.getElementById('genBtnLbl');
   spotPlaying = true;
-  if (btn) { btn.classList.add('is-on'); btn.textContent = '⏸ Stop the spot'; }
+  if (lbl) lbl.textContent = 'Stop the spot';
   ctv.classList.add('is-spot');
 
   // reduced motion → no choreography, just resolve to the end card
@@ -353,8 +359,8 @@ function stopSpot() {
   const wasPlaying = spotPlaying || (ctv && ctv.classList.contains('is-spot'));
   if (ctv) ctv.classList.remove('is-spot', 'is-running', 'spot-ident', 'spot-build', 'spot-wound', 'spot-payoff', 'spot-end');
   spotPlaying = false;
-  const btn = document.getElementById('reelBtn');
-  if (btn) { btn.classList.remove('is-on'); btn.textContent = '▶ Play the :15 spot'; }
+  const lbl = document.getElementById('genBtnLbl');
+  if (lbl) lbl.textContent = 'Generate the contextual ad';
   if (wasPlaying) renderMixer(true);            // rebuild the clean static frame
 }
 
