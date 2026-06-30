@@ -566,6 +566,21 @@ function buildToday() {
   document.getElementById('todayChip').hidden = false;
 }
 
+/* ── random signal glitch on the board, one player at a time ───────── */
+function initBoardGlitch() {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const run = () => {
+    const cards = document.querySelectorAll('#ctvBoard .bcard');
+    if (cards.length) {
+      const c = cards[Math.floor(Math.random() * cards.length)];
+      c.classList.add('is-glitch');
+      setTimeout(() => c.classList.remove('is-glitch'), 600);
+    }
+    setTimeout(run, 650 + Math.random() * 1500);   // next glitch after a random gap
+  };
+  setTimeout(run, 1400);
+}
+
 /* ── expand the mock-up into a large lightbox ──────────────────────────
    The room lives deep inside the studio grid, whose stacking context paints
    below a body-level backdrop. So on open we MOVE the room node up to <body>
@@ -631,4 +646,5 @@ buildToday();
 initHeroVideo();
 animateOdometer();
 initExpand();
+initBoardGlitch();
 initGeo();          // detects market + seeds the mixer (after buildMixer)

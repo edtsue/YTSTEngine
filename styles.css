@@ -247,34 +247,8 @@ em { font-style: normal; color: var(--ink); }
 .ctv__boardcol { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1.3cqw; }
 .ctv__headline { line-height: .88; text-wrap: balance; margin: 0; }
 .ctv__hl-lead { display: block; font-family: 'Anton', 'Oswald', sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: 0; font-size: clamp(17px, 6.2cqw, 56px); line-height: .9; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
-/* payoff line — same signal-lost glitch as the M.I.A. wordmark */
-.ctv__hl-accent { position: relative; display: inline-block; margin-top: 1.8cqw; font-family: 'Archivo', sans-serif; font-style: italic; font-weight: 600; text-transform: none; letter-spacing: 0; font-size: clamp(9px, 2.7cqw, 18px); line-height: 1.28; color: #fff; text-shadow: 0 1px 10px rgba(0,0,0,.9); }
-.ctv__hl-accent::before, .ctv__hl-accent::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
-.ctv__hl-accent::before { color: #ff2d3a; transform: translate(-1.5px, .5px); animation: payGlitchR 2.4s steps(1) infinite; }
-.ctv__hl-accent::after  { color: #1fd8ff; transform: translate(1.5px, -.5px); animation: payGlitchC 2.4s steps(1) infinite; }
-@keyframes payGlitchR {
-  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(-1.5px, .5px); }
-  8%  { clip-path: inset(10% 0 70% 0); transform: translate(-4px, -1px); }
-  16% { clip-path: inset(54% 0 22% 0); transform: translate(3px, 1px); }
-  26% { clip-path: inset(30% 0 46% 0); transform: translate(-3px, 1px); }
-  40% { clip-path: inset(0 0 0 0);     transform: translate(-1.5px, .5px); }
-  54% { clip-path: inset(74% 0 6% 0);  transform: translate(4px, -1px); }
-  64% { clip-path: inset(16% 0 64% 0); transform: translate(-3.5px, 1px); }
-  78% { clip-path: inset(44% 0 30% 0); transform: translate(3px, -1px); }
-  92% { clip-path: inset(10% 0 70% 0); transform: translate(-3px, 1px); }
-}
-@keyframes payGlitchC {
-  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(1.5px, -.5px); }
-  8%  { clip-path: inset(66% 0 10% 0); transform: translate(4px, 1px); }
-  16% { clip-path: inset(12% 0 68% 0); transform: translate(-3.5px, -1px); }
-  26% { clip-path: inset(48% 0 28% 0); transform: translate(3px, -1px); }
-  40% { clip-path: inset(0 0 0 0);     transform: translate(1.5px, -.5px); }
-  54% { clip-path: inset(20% 0 60% 0); transform: translate(-4px, 1px); }
-  64% { clip-path: inset(58% 0 16% 0); transform: translate(3.5px, -1px); }
-  78% { clip-path: inset(34% 0 42% 0); transform: translate(-3px, 1px); }
-  92% { clip-path: inset(70% 0 6% 0);  transform: translate(3px, -1px); }
-}
-@media (prefers-reduced-motion: reduce) { .ctv__hl-accent::before, .ctv__hl-accent::after { animation: none; } }
+/* payoff line — colored marker highlight */
+.ctv__hl-accent { display: inline-block; margin-top: 1.6cqw; font-family: 'Archivo', sans-serif; font-style: italic; font-weight: 600; text-transform: none; letter-spacing: 0; font-size: clamp(9px, 2.7cqw, 18px); line-height: 1.28; color: #0a0d12; background: var(--accent); padding: .16em .42em; border-radius: 3px; box-shadow: 0 2px 12px rgba(0,0,0,.32); }
 .ctv__cta-btn { align-self: flex-start; margin-top: 1cqw; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(8px, 2.2cqw, 13px); color: #fff; background: var(--red); padding: .62em 1.05em; border-radius: 999px; box-shadow: 0 4px 16px rgba(255,45,45,.4); }
 .ctv__headline.is-reveal .ctv__hl-lead { animation: hlLead .5s cubic-bezier(.2,.75,.2,1) both; }
 .ctv__headline.is-reveal .ctv__hl-accent { animation: hlAcc .5s .12s ease both; }
@@ -298,6 +272,21 @@ em { font-style: normal; color: var(--ink); }
 .bcard__logo { position: absolute; top: 4.5%; left: 5%; z-index: 2; width: clamp(9px, 3cqw, 17px); height: clamp(9px, 3cqw, 17px); object-fit: contain; filter: drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
 .bcard__pos { position: absolute; top: 4.5%; right: 5%; z-index: 3; font-family: 'Oswald'; font-weight: 700; font-size: clamp(6px, 1.7cqw, 9px); letter-spacing: .08em; color: #fff; background: rgba(6,9,14,.62); border: 1px solid rgba(255,255,255,.28); padding: .14em .42em; border-radius: 3px; box-shadow: 0 1px 4px rgba(0,0,0,.45); backdrop-filter: blur(2px); }
 .bcard__name { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 1.5em .2em .4em; text-align: center; font-family: 'Oswald'; font-weight: 600; text-transform: uppercase; letter-spacing: .005em; font-size: clamp(6.5px, 2.05cqw, 11px); color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: linear-gradient(0deg, rgba(3,5,9,.95) 28%, transparent); text-shadow: 0 1px 4px rgba(0,0,0,.95); }
+
+/* random, one-at-a-time signal glitch on a player photo (driven by JS) */
+.bcard.is-glitch .bcard__face { animation: faceGlitch .55s steps(1) 1; }
+.bcard.is-glitch::after { content: ''; position: absolute; inset: 0; z-index: 4; pointer-events: none; mix-blend-mode: overlay; background: repeating-linear-gradient(0deg, rgba(255,255,255,.11) 0 1px, transparent 1px 3px); animation: faceScan .55s steps(1) 1; }
+@keyframes faceGlitch {
+  0%   { transform: translateX(0);    clip-path: inset(0 0 0 0);   filter: none; }
+  12%  { transform: translateX(-6px); clip-path: inset(10% 0 62% 0); filter: drop-shadow(3px 0 0 rgba(255,0,70,.75)) drop-shadow(-3px 0 0 rgba(0,235,255,.75)) saturate(1.4); }
+  26%  { transform: translateX(5px);  clip-path: inset(56% 0 16% 0); filter: contrast(1.3) brightness(1.14); }
+  40%  { transform: translateX(-4px); clip-path: inset(30% 0 42% 0); filter: drop-shadow(2px 0 0 rgba(255,0,70,.65)) drop-shadow(-2px 0 0 rgba(0,235,255,.65)); }
+  54%  { transform: translateX(4px);  clip-path: inset(72% 0 6% 0);  filter: hue-rotate(14deg); }
+  68%  { transform: translateX(-2px); clip-path: inset(8% 0 74% 0);  filter: none; }
+  100% { transform: translateX(0);    clip-path: inset(0 0 0 0);   filter: none; }
+}
+@keyframes faceScan { 0%, 100% { opacity: 0; } 10% { opacity: 1; } 50% { opacity: .45; } 72% { opacity: .9; } 90% { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { .bcard.is-glitch .bcard__face, .bcard.is-glitch::after { animation: none; } }
 
 /* the TV "frame" is the real TV in the photo — strip our own bezel/stand */
 .ctv__tv { position: relative; width: 100%; height: 100%; padding: 0; border-radius: 2px; background: none; box-shadow: none; }
