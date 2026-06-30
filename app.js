@@ -580,27 +580,36 @@ function buildToday() {
   document.getElementById('todayChip').hidden = false;
 }
 
-/* ── expand the mock-up into a large lightbox ──────────────────────── */
+/* ── expand the mock-up into a large lightbox ──────────────────────────
+   The room lives deep inside the studio grid, whose stacking context paints
+   below a body-level backdrop. So on open we MOVE the room node up to <body>
+   (same node → keeps its listeners + live state) and restore it on close. */
 function initExpand() {
   const btn = document.getElementById('expandBtn');
   const room = document.getElementById('room');
   if (!btn || !room) return;
-  let bd = null, closeBtn = null;
+  let bd = null, closeBtn = null, anchor = null;
   const onKey = e => { if (e.key === 'Escape') close(); };
   function close() {
+    if (!room.classList.contains('is-expanded')) return;
     room.classList.remove('is-expanded');
+    if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(room, anchor);  // put it back
+    if (anchor) anchor.remove();
     document.body.classList.remove('mockup-open');
     if (bd) bd.remove();
     if (closeBtn) closeBtn.remove();
+    bd = closeBtn = anchor = null;
     document.removeEventListener('keydown', onKey);
     btn.setAttribute('aria-expanded', 'false');
   }
   function open() {
+    anchor = document.createComment('room-placeholder');     // remember where it was
+    room.parentNode.insertBefore(anchor, room);
     bd = document.createElement('div'); bd.className = 'lightbox-backdrop';
     closeBtn = document.createElement('button');
     closeBtn.className = 'lightbox-close'; closeBtn.innerHTML = '✕';
     closeBtn.setAttribute('aria-label', 'Close expanded mock-up');
-    document.body.append(bd, closeBtn);
+    document.body.append(bd, room, closeBtn);                // lift room to top level
     document.body.classList.add('mockup-open');
     room.classList.add('is-expanded');
     bd.addEventListener('click', close);

@@ -70,23 +70,44 @@ em { font-style: normal; color: var(--ink); }
 }
 .hero__kicker { text-transform: uppercase; letter-spacing: .2em; font-size: 12px; color: var(--red-soft); font-weight: 600; margin-bottom: 20px; }
 .hero__title { font-family: 'Anton'; font-size: clamp(54px, 11vw, 132px); line-height: .86; text-transform: uppercase; letter-spacing: -.01em; }
+/* keep the whole wordmark on one line */
+.hero__title--mia { white-space: nowrap; font-size: clamp(28px, 11vw, 118px); }
+
 /* "M.I.A." — signal-lost glitch (no signal = missing from your TV) */
-.hero__title-mia { position: relative; display: inline-block; color: #fff; letter-spacing: .01em; animation: miaFlicker 4s steps(1) infinite; }
+.hero__title-mia { position: relative; display: inline-block; color: #fff; letter-spacing: .01em; animation: miaFlicker 2.4s steps(1) infinite; }
 .hero__title-mia::before, .hero__title-mia::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
-.hero__title-mia::before { color: #ff2d3a; transform: translate(-2px, 1px); animation: miaGlitchR 4s steps(1) infinite; }
-.hero__title-mia::after  { color: #1fd8ff; transform: translate(2px, -1px); animation: miaGlitchC 4s steps(1) infinite; }
-@keyframes miaFlicker { 0%, 88%, 100% { opacity: 1; } 89% { opacity: .55; } 90% { opacity: .95; } 92% { opacity: .4; } 93% { opacity: .92; } }
+.hero__title-mia::before { color: #ff2d3a; transform: translate(-3px, 1px); animation: miaGlitchR 2.4s steps(1) infinite; }
+.hero__title-mia::after  { color: #1fd8ff; transform: translate(3px, -1px); animation: miaGlitchC 2.4s steps(1) infinite; }
+@keyframes miaFlicker {
+  0%, 100% { opacity: 1; }
+  9% { opacity: .65; } 10% { opacity: 1; }
+  27% { opacity: .4; } 28% { opacity: .92; }
+  44% { opacity: .7; } 45% { opacity: 1; }
+  61% { opacity: .35; } 62% { opacity: .9; }
+  79% { opacity: .6; } 80% { opacity: 1; }
+  93% { opacity: .45; } 94% { opacity: .95; }
+}
 @keyframes miaGlitchR {
-  0%, 86%, 100% { clip-path: inset(0 0 0 0); transform: translate(-2px, 1px); }
-  87% { clip-path: inset(18% 0 58% 0); transform: translate(-7px, -2px); }
-  90% { clip-path: inset(62% 0 12% 0); transform: translate(6px, 1px); }
-  94% { clip-path: inset(40% 0 38% 0); transform: translate(-5px, 2px); }
+  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(-3px, 1px); }
+  8%  { clip-path: inset(8% 0 72% 0);  transform: translate(-11px, -3px); }
+  16% { clip-path: inset(54% 0 22% 0); transform: translate(9px, 2px); }
+  26% { clip-path: inset(30% 0 46% 0); transform: translate(-8px, 3px); }
+  40% { clip-path: inset(0 0 0 0);     transform: translate(-3px, 1px); }
+  54% { clip-path: inset(74% 0 6% 0);  transform: translate(10px, -2px); }
+  64% { clip-path: inset(16% 0 64% 0); transform: translate(-10px, 2px); }
+  78% { clip-path: inset(44% 0 30% 0); transform: translate(8px, -3px); }
+  92% { clip-path: inset(10% 0 70% 0); transform: translate(-9px, 2px); }
 }
 @keyframes miaGlitchC {
-  0%, 86%, 100% { clip-path: inset(0 0 0 0); transform: translate(2px, -1px); }
-  88% { clip-path: inset(70% 0 8% 0); transform: translate(7px, 2px); }
-  91% { clip-path: inset(10% 0 72% 0); transform: translate(-6px, -2px); }
-  95% { clip-path: inset(48% 0 30% 0); transform: translate(5px, -2px); }
+  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(3px, -1px); }
+  8%  { clip-path: inset(66% 0 10% 0); transform: translate(11px, 2px); }
+  16% { clip-path: inset(12% 0 68% 0); transform: translate(-9px, -2px); }
+  26% { clip-path: inset(48% 0 28% 0); transform: translate(8px, -3px); }
+  40% { clip-path: inset(0 0 0 0);     transform: translate(3px, -1px); }
+  54% { clip-path: inset(20% 0 60% 0); transform: translate(-10px, 2px); }
+  64% { clip-path: inset(58% 0 16% 0); transform: translate(10px, -2px); }
+  78% { clip-path: inset(34% 0 42% 0); transform: translate(-8px, 3px); }
+  92% { clip-path: inset(70% 0 6% 0);  transform: translate(9px, -2px); }
 }
 @media (prefers-reduced-motion: reduce) { .hero__title-mia, .hero__title-mia::before, .hero__title-mia::after { animation: none; } }
 .hero__lede { margin-top: 26px; max-width: 680px; color: var(--ink-dim); font-size: clamp(15px, 1.7vw, 18px); }
@@ -200,7 +221,7 @@ em { font-style: normal; color: var(--ink); }
 .ctv__loader .spin { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.25); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.ctv__chrome { position: absolute; top: 0; left: 0; right: 0; z-index: 4; display: flex; align-items: flex-start; justify-content: flex-end; padding: 3% 3.4%; }
+.ctv__chrome { position: absolute; top: 0; left: 0; right: 0; z-index: 4; display: flex; align-items: flex-start; justify-content: flex-start; padding: 3% 3.4%; }
 .ctv__stlogo { height: clamp(24px, 8cqw, 52px); width: auto; flex: none; filter: drop-shadow(0 2px 12px rgba(0,0,0,.7)); }
 .st-lockup { display: flex; align-items: center; gap: 8px; }
 .st-lockup__yt { background: var(--red); color: #fff; font-size: 10px; padding: 4px 6px; border-radius: 4px; line-height: 1; }
@@ -224,7 +245,7 @@ em { font-style: normal; color: var(--ink); }
 .ctv__statement { flex: 0 0 37%; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 2.2cqw; }
 .ctv__headline { font-family: 'Oswald'; line-height: .96; text-wrap: balance; margin: 0; }
 .ctv__hl-lead { display: block; font-weight: 700; text-transform: uppercase; letter-spacing: -.015em; font-size: clamp(13px, 4.7cqw, 38px); color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
-.ctv__hl-accent { display: block; margin-top: 1.4cqw; font-family: 'Archivo', sans-serif; font-style: italic; font-weight: 500; text-transform: none; letter-spacing: 0; font-size: clamp(9px, 2.7cqw, 18px); line-height: 1.18; color: var(--accent); text-shadow: 0 1px 10px rgba(0,0,0,.85); }
+.ctv__hl-accent { display: inline-block; margin-top: 1.6cqw; font-family: 'Archivo', sans-serif; font-style: italic; font-weight: 600; text-transform: none; letter-spacing: 0; font-size: clamp(9px, 2.7cqw, 18px); line-height: 1.28; color: #0a0d12; background: var(--accent); padding: .16em .42em; border-radius: 3px; box-shadow: 0 2px 12px rgba(0,0,0,.32); }
 .ctv__cta-btn { align-self: flex-start; margin-top: 1cqw; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(8px, 2.2cqw, 13px); color: #fff; background: var(--red); padding: .62em 1.05em; border-radius: 999px; box-shadow: 0 4px 16px rgba(255,45,45,.4); }
 .ctv__headline.is-reveal .ctv__hl-lead { animation: hlLead .5s cubic-bezier(.2,.75,.2,1) both; }
 .ctv__headline.is-reveal .ctv__hl-accent { animation: hlAcc .5s .12s ease both; }
@@ -257,13 +278,13 @@ em { font-style: normal; color: var(--ink); }
 
 /* ── real living-room scene — the ad renders INSIDE the photo's TV ── */
 .room {
-  position: relative; width: 100%; max-width: 980px; aspect-ratio: 720 / 540; border-radius: 14px; overflow: hidden;
+  position: relative; width: 100%; max-width: 980px; aspect-ratio: 580 / 455; border-radius: 14px; overflow: hidden;
   background: #cdc7bb url('assets/room.jpg') center / cover no-repeat;
   box-shadow: 0 34px 80px rgba(0,0,0,.4), inset 0 0 0 1px rgba(0,0,0,.06);
 }
 /* the ad, mapped precisely onto the photo's black screen rectangle */
 .room .ctv {
-  position: absolute; left: 22.5%; top: 11.85%; width: 54.58%; height: 43.7%;
+  position: absolute; left: 15.86%; top: 7.47%; width: 67.76%; height: 51.87%;
   max-width: none; margin: 0; z-index: 2;
 }
 .room__ambient, .room__console { display: none; }
