@@ -458,3 +458,68 @@ body.mockup-open { overflow: hidden; }
   .prod__arrow { transform: rotate(90deg); }
   .today__msg { border-left: none; padding-left: 0; }
 }
+
+/* ════════════════ :15 CTV SPOT — playthrough chrome + beats ════════════════ */
+.ctv__split, .ctv__statement, .ctv__eyebrow, .ctv__chrome,
+.ctv__hl-accent, .ctv__cta-btn { transition: opacity .45s ease, transform .45s ease; }
+
+/* CTV ad furniture — countdown + non-skippable progress bar */
+.ctv__adbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; display: none;
+  align-items: center; gap: 2.2cqw; padding: 2.2cqw 3.2cqw 2.4cqw; font-family: 'Oswald';
+  background: linear-gradient(0deg, rgba(3,5,9,.92), rgba(3,5,9,.42) 60%, transparent); }
+.ctv.is-spot .ctv__adbar { display: flex; }
+.ctv__adtag { font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  font-size: clamp(6px, 1.7cqw, 10px); color: #0a0d12; background: #fff; padding: .2em .5em; border-radius: 2px; }
+.ctv__adtime { font-weight: 700; font-size: clamp(7px, 2cqw, 12px); color: #fff; font-variant-numeric: tabular-nums; }
+.ctv__adskip { font-size: clamp(6px, 1.6cqw, 10px); color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .06em; }
+.ctv__adprog { flex: 1 1 auto; height: 3px; border-radius: 2px; background: rgba(255,255,255,.18); overflow: hidden; }
+.ctv__adprog-fill { display: block; height: 100%; width: 0; background: var(--knock); }
+.ctv.is-running .ctv__adprog-fill { width: 100%; transition: width 15s linear; }
+
+/* brand ident (open) + QR end card (close) */
+.ctv__ident, .ctv__endcard { position: absolute; inset: 0; z-index: 8; display: flex;
+  flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(120% 120% at 50% 32%, #0c121d, #04060a);
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .5s ease; }
+.ctv__ident img { width: 34cqw; max-width: 240px; filter: drop-shadow(0 8px 34px rgba(0,0,0,.6)); }
+.ctv.is-spot.spot-ident .ctv__ident { opacity: 1; visibility: visible; }
+.ctv.is-spot.spot-ident .ctv__ident img { animation: spotIdent .9s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes spotIdent { 0% { opacity: 0; transform: scale(.8); filter: blur(7px); } 60% { opacity: 1; } 100% { opacity: 1; transform: scale(1); filter: blur(0); } }
+
+.ctv__endcard { gap: 2.6cqw; }
+.ctv__endlogo { width: 30cqw; max-width: 220px; filter: drop-shadow(0 8px 34px rgba(0,0,0,.6)); }
+.ctv__endcta { font-family: 'Anton', 'Oswald', sans-serif; text-transform: uppercase;
+  font-size: clamp(13px, 5cqw, 42px); color: #fff; letter-spacing: .01em; }
+.ctv__endqr { display: flex; flex-direction: column; align-items: center; gap: .9cqw; }
+.ctv__endqr img { width: 17cqw; max-width: 116px; background: #fff; padding: 1.3cqw; border-radius: 1.6cqw; }
+.ctv__endqr span { font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .12em;
+  font-size: clamp(6px, 1.8cqw, 11px); color: var(--knock); }
+.ctv.is-spot.spot-end .ctv__endcard { opacity: 1; visibility: visible; }
+.ctv.is-spot.spot-end .ctv__endlogo { animation: spotEnd .55s ease both; }
+.ctv.is-spot.spot-end .ctv__endcta { animation: spotEnd .55s .12s ease both; }
+.ctv.is-spot.spot-end .ctv__endqr { animation: spotEnd .55s .24s ease both; }
+@keyframes spotEnd { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+
+/* hide the small corner logo while the ident / end card own the frame */
+.ctv.is-spot.spot-ident .ctv__chrome, .ctv.is-spot.spot-end .ctv__chrome { opacity: 0; }
+
+/* beat staging of the content layers */
+.ctv.is-spot.spot-ident .ctv__split { opacity: 0; }
+.ctv.is-spot.spot-ident .ctv__statement,
+.ctv.is-spot.spot-build .ctv__statement { opacity: 0; transform: translateY(8px); }
+.ctv.is-spot.spot-ident .ctv__hl-accent, .ctv.is-spot.spot-build .ctv__hl-accent, .ctv.is-spot.spot-wound .ctv__hl-accent,
+.ctv.is-spot.spot-ident .ctv__cta-btn,   .ctv.is-spot.spot-build .ctv__cta-btn,   .ctv.is-spot.spot-wound .ctv__cta-btn {
+  opacity: 0; transform: translateY(8px) scale(.96); }
+.ctv.is-spot.spot-payoff .ctv__hl-accent { animation: spotSlam .5s cubic-bezier(.2,.9,.2,1) both; }
+.ctv.is-spot.spot-payoff .ctv__cta-btn   { animation: spotSlam .5s .12s cubic-bezier(.2,.9,.2,1) both; }
+@keyframes spotSlam { 0% { opacity: 0; transform: translateY(12px) scale(.9); } 60% { transform: scale(1.05); } 100% { opacity: 1; transform: none; } }
+
+/* the eight cascade in one-by-one during the spot */
+.ctv.is-spot .ctv__board .bcard { opacity: 0; transform: translateY(12px) scale(.95);
+  transition: opacity .4s ease, transform .4s cubic-bezier(.2,.8,.2,1); }
+.ctv.is-spot .ctv__board .bcard.spot-card-in { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ctv__ident, .ctv__endcard, .ctv__split, .ctv__statement, .ctv__eyebrow,
+  .ctv__hl-accent, .ctv__cta-btn, .ctv.is-spot .ctv__board .bcard { transition: none !important; animation: none !important; }
+}

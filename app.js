@@ -232,10 +232,10 @@ function buildMixer() {
   document.getElementById('selDay').value = beatForToday();
 
   ['selMarket', 'selDay'].forEach(id =>
-    document.getElementById(id).addEventListener('change', () => { stopReel(); renderMixer(); }));
-  document.getElementById('genBtn').addEventListener('click', () => { stopReel(); generateBackdrop(); });
+    document.getElementById(id).addEventListener('change', () => { stopSpot(); renderMixer(); }));
+  document.getElementById('genBtn').addEventListener('click', () => { stopSpot(); generateBackdrop(); });
   document.getElementById('randBtn').addEventListener('click', randomize);
-  document.getElementById('reelBtn').addEventListener('click', toggleReel);
+  document.getElementById('reelBtn').addEventListener('click', toggleSpot);
   renderMixer(true);
 }
 
@@ -246,7 +246,7 @@ const pick = a => a[Math.floor(Math.random() * a.length)];
 let spinning = false;
 function randomize() {
   if (spinning) return;
-  stopReel();
+  stopSpot();
   const mEl = document.getElementById('selMarket');
   const dEl = document.getElementById('selDay');
   const finalM = pick(MARKETS).id, finalD = pick(DAYS).id;
@@ -305,33 +305,107 @@ function setHeadline(m, d, instant) {
   h.classList.add('is-reveal');
 }
 
-/* ── engine auto-reel ────────────────────────────────────────────────
-   Cycles market → day every couple seconds so the engine visibly renders
-   a new board on its own. */
-let reelTimer = null;
-function toggleReel() { reelTimer ? stopReel() : startReel(); }
-function startReel() {
-  if (reelTimer || spinning) return;
-  const btn = document.getElementById('reelBtn');
-  btn.classList.add('is-on');
-  btn.textContent = '⏸ Stop the engine';
-  document.getElementById('ctv').classList.add('is-reeling');
-  const step = () => {
-    document.getElementById('selMarket').value = pick(MARKETS).id;
-    document.getElementById('selDay').value = pick(DAYS).id;
-    renderMixer();
-  };
-  step();
-  reelTimer = setInterval(step, 2300);
+/* ── :15 CTV spot playthrough ─────────────────────────────────────────
+   Plays the current ad as a scripted 15-second spot: brand ident → the
+   eight cascade in → players cut to TV static as the headline lands →
+   payoff + CTA slam → QR end card, under a live "Ad · 0:15" countdown.
+   Then it restores the static resting frame. Works on whatever market /
+   day / version is loaded — i.e. on every ad the engine can render. */
+const SPOT_MS = 15000;
+let spotPlaying = false;
+let spotTimers = [];
+let spotCountdown = null;
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const later = (fn, t) => { spotTimers.push(setTimeout(fn, t)); };
+
+function toggleSpot() { spotPlaying ? stopSpot() : playSpot(); }
+
+function setSpotPhase(phase) {
+  const ctv = document.getElementById('ctv');
+  ['spot-ident', 'spot-build', 'spot-wound', 'spot-payoff', 'spot-end']
+    .forEach(c => ctv.classList.toggle(c, c === phase));
 }
-function stopReel() {
-  if (!reelTimer) return;
-  clearInterval(reelTimer);
-  reelTimer = null;
+
+function playSpot() {
+  if (spotPlaying || spinning) return;
+  stopSpot();                                   // clean slate
+  const ctv = document.getElementById('ctv');
   const btn = document.getElementById('reelBtn');
-  btn.classList.remove('is-on');
-  btn.textContent = '▶ Watch the engine run';
-  document.getElementById('ctv').classList.remove('is-reeling');
+  spotPlaying = true;
+  if (btn) { btn.classList.add('is-on'); btn.textContent = '⏸ Stop the spot'; }
+  ctv.classList.add('is-spot');
+
+  // reduced motion → no choreography, just resolve to the end card
+  if (reduceMotion()) {
+    setSpotPhase('spot-end');
+    document.getElementById('ctvAdTime').textContent = '0:00';
+    return;
+  }
+
+  // arm the countdown + the 15s progress bar
+  const time = document.getElementById('ctvAdTime');
+  ctv.classList.remove('is-running'); void ctv.offsetWidth; ctv.classList.add('is-running');
+  time.textContent = '0:15';
+  const t0 = performance.now();
+  spotCountdown = setInterval(() => {
+    const left = Math.max(0, Math.ceil((SPOT_MS - (performance.now() - t0)) / 1000));
+    time.textContent = `0:${String(left).padStart(2, '0')}`;
+    if (left <= 0) { clearInterval(spotCountdown); spotCountdown = null; }
+  }, 250);
+
+  // beat 1 — brand ident
+  setSpotPhase('spot-ident');
+
+  // beat 2 — the eight cascade in
+  later(() => {
+    setSpotPhase('spot-build');
+    document.querySelectorAll('#ctvBoard .bcard')
+      .forEach((c, i) => later(() => c.classList.add('spot-card-in'), i * 330));
+  }, 1700);
+
+  // beat 3 — players cut to static, the headline lands
+  later(() => {
+    setSpotPhase('spot-wound');
+    document.querySelectorAll('#ctvBoard .bcard').forEach((c, i) => later(() => {
+      c.classList.remove('is-glitch'); void c.offsetWidth; c.classList.add('is-glitch');
+      later(() => c.classList.remove('is-glitch'), 600);
+    }, i * 210));
+  }, 5200);
+
+  // beat 4 — payoff bar + CTA slam in
+  later(() => setSpotPhase('spot-payoff'), 9000);
+
+  // beat 5 — QR end card
+  later(() => setSpotPhase('spot-end'), 12400);
+
+  // restore the resting frame
+  later(() => stopSpot(), SPOT_MS);
+}
+
+function stopSpot() {
+  spotTimers.forEach(clearTimeout); spotTimers = [];
+  if (spotCountdown) { clearInterval(spotCountdown); spotCountdown = null; }
+  const ctv = document.getElementById('ctv');
+  const wasPlaying = spotPlaying || (ctv && ctv.classList.contains('is-spot'));
+  if (ctv) ctv.classList.remove('is-spot', 'is-running', 'spot-ident', 'spot-build', 'spot-wound', 'spot-payoff', 'spot-end');
+  spotPlaying = false;
+  const btn = document.getElementById('reelBtn');
+  if (btn) { btn.classList.remove('is-on'); btn.textContent = '▶ Play the :15 spot'; }
+  if (wasPlaying) renderMixer(true);            // rebuild the clean static frame
+}
+
+/* auto-play the spot once, the first time the mock-up scrolls into view */
+function initSpotAutoplay() {
+  const room = document.getElementById('room');
+  if (!room || reduceMotion() || !('IntersectionObserver' in window)) return;
+  let fired = false;
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting && !fired) {
+      fired = true; io.disconnect();
+      setTimeout(() => { if (!spotPlaying && !spinning) playSpot(); }, 450);
+    }
+  }), { threshold: 0.55 });
+  io.observe(room);
 }
 
 /* ── odometer count-up ───────────────────────────────────────────────*/
@@ -380,7 +454,7 @@ async function detectLocation() {
     const g = await r.json().catch(() => ({}));
     const id = marketFromGeo(g.city, g.region);
     if (id) {
-      stopReel();
+      stopSpot();
       document.getElementById('selMarket').value = id;
       renderMixer();
       const mk = MARKETS.find(m => m.id === id);
@@ -571,6 +645,7 @@ function buildToday() {
 function initBoardGlitch() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const run = () => {
+    if (spotPlaying) { setTimeout(run, 900); return; }   // the spot drives its own glitches
     const cards = document.querySelectorAll('#ctvBoard .bcard');
     if (cards.length) {
       const c = cards[Math.floor(Math.random() * cards.length)];
@@ -648,4 +723,5 @@ initHeroVideo();
 animateOdometer();
 initExpand();
 initBoardGlitch();
+initSpotAutoplay(); // plays the :15 spot once when the mock-up scrolls into view
 initGeo();          // detects market + seeds the mixer (after buildMixer)
