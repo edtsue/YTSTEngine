@@ -155,8 +155,8 @@ const VARIANTS = [0, 1, 2].map(i => (m, d) =>
   (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])[i](m));
 const headlineText = (m, d, i) => VARIANTS[i](m, d).join(' ');
 
-// eyebrow: this week's highest-projected players (Genius Sports)
-const EYEBROW = m => `This week’s top-projected players`;
+// eyebrow: this week's highest-projected players (Genius Sports), localized
+const EYEBROW = m => `This week’s top-projected players in ${m.city}`;
 const surname = name => name.split(' ').slice(1).join(' ');
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
