@@ -201,7 +201,7 @@ em { font-style: normal; color: var(--ink); }
 
 /* the CTV asset */
 .stage { display: flex; flex-direction: column; align-items: center; }
-.ctv { --accent: #ff2d2d; width: 100%; max-width: 760px; }
+.ctv { --accent: #ff2d2d; --knock: #d4ff3d; width: 100%; max-width: 760px; }
 .ctv__screen {
   position: relative; width: 100%; height: 100%; border-radius: 3px; overflow: hidden;
   background: #05070b; display: flex; flex-direction: column; padding-top: 9.5%;
@@ -246,9 +246,10 @@ em { font-style: normal; color: var(--ink); }
 /* eyebrow now sits over the player photos */
 .ctv__boardcol { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1.3cqw; }
 .ctv__headline { line-height: .88; text-wrap: balance; margin: 0; }
-.ctv__hl-lead { display: block; font-family: 'Anton', 'Oswald', sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: 0; font-size: clamp(17px, 6.2cqw, 56px); line-height: .9; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
-/* payoff line — colored marker highlight */
-.ctv__hl-accent { display: inline-block; margin-top: 1.6cqw; font-family: 'Archivo', sans-serif; font-style: italic; font-weight: 600; text-transform: none; letter-spacing: 0; font-size: clamp(9px, 2.7cqw, 18px); line-height: 1.28; color: #0a0d12; background: var(--accent); padding: .16em .42em; border-radius: 3px; box-shadow: 0 2px 12px rgba(0,0,0,.32); }
+.ctv__hl-lead { display: block; font-family: 'Anton', 'Oswald', sans-serif; font-weight: 400; text-transform: uppercase; letter-spacing: 0; font-size: clamp(17px, 6.6cqw, 60px); line-height: .86; color: #fff; text-shadow: 0 2px 18px rgba(0,0,0,.9); }
+/* payoff line — knockout bar (stacked-knockout treatment), fixed lime so it
+   never collides with the red CTA pill or the per-day red accent */
+.ctv__hl-accent { display: inline-block; align-self: flex-start; margin-top: 1.8cqw; font-family: 'Anton', 'Oswald', sans-serif; font-style: normal; font-weight: 400; text-transform: uppercase; letter-spacing: .005em; font-size: clamp(9px, 3.1cqw, 21px); line-height: 1.04; color: #0a0d12; background: var(--knock); padding: .22em .5em .28em; border-radius: 2px; box-shadow: 0 3px 16px rgba(0,0,0,.4); }
 .ctv__cta-btn { align-self: flex-start; margin-top: 1cqw; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(8px, 2.2cqw, 13px); color: #fff; background: var(--red); padding: .62em 1.05em; border-radius: 999px; box-shadow: 0 4px 16px rgba(255,45,45,.4); }
 .ctv__headline.is-reveal .ctv__hl-lead { animation: hlLead .5s cubic-bezier(.2,.75,.2,1) both; }
 .ctv__headline.is-reveal .ctv__hl-accent { animation: hlAcc .5s .12s ease both; }
