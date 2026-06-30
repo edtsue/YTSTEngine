@@ -98,9 +98,7 @@ const DAYS = [
   { id: 'thu',       short: 'Thu',  name: 'Thursday',          dow: 4, emotion: 'Reckless commitment',   register: 'The contrast — a game you can see', accent: '#ff7a3d' },
   { id: 'fri',       short: 'Fri',  name: 'Friday',            dow: 5, emotion: 'Studious dread',        register: 'Prep-mode, ominous',               accent: '#9b6cff' },
   { id: 'sat',       short: 'Sat',  name: 'Saturday',          dow: 6, emotion: 'Restless 2nd-guessing', register: 'Coiled, anticipatory',             accent: '#ff944d' },
-  { id: 'sun-am',    short: 'Sun AM', name: 'Sunday Morning',  dow: 0, emotion: 'Peak panic',           register: 'Urgent, countdown-driven',         accent: '#ff5a3d' },
-  { id: 'sun-pm',    short: 'Sun PM', name: 'Sunday Afternoon', dow: 0, emotion: 'Helplessness',        register: 'The core wound — present tense',    accent: '#ff2d2d' },
-  { id: 'sun-night', short: 'Sun Night', name: 'Sunday Night', dow: 0, emotion: 'Exhausted hope',       register: 'Spent, hanging by a thread',       accent: '#6c7cff' },
+  { id: 'sun',       short: 'Sun',  name: 'Sunday',            dow: 0, emotion: 'Helplessness',          register: 'The core wound — present tense',    accent: '#ff2d2d' },
 ];
 
 /* ── Headlines — playful, witty, concise, and each day's three lines carry
@@ -144,28 +142,16 @@ const DAY_HEADLINES = {
     m => ['One sleep till kickoff.', 'Zero chance it’s on your TV.'],
     m => ['Overthinking every start.', 'Tomorrow they play out of town.'],
   ],
-  // Sunday-morning-beat — peak panic, urgent countdown energy
-  'sun-am': [
-    m => ['Kickoff in an hour.', 'Your eight? Nowhere near your TV.'],
-    m => ['Lineups locking — breathe.', 'Channels still won’t cooperate.'],
-    m => ['It’s go time.', 'For everyone airing your guys.'],
-  ],
-  // Sunday-afternoon-beat — helplessness, the core wound, present tense
-  'sun-pm': [
+  // Sunday-beat — game-day helplessness, present-tense FOMO
+  'sun': [
     m => ['Your guys are cooking right now.', 'You’re watching a spinner.'],
     m => ['Your lineup is balling, live.', 'Not on a screen you’ve got.'],
     m => ['Eight stars on, in real time.', `Zero on ${m.city} TV.`],
   ],
-  // Sunday-night-beat — exhausted hope, spent and hanging by a thread
-  'sun-night': [
-    m => ['Primetime, last gasp.', 'Your season’s off-channel.'],
-    m => ['One game left, eight missed.', 'Hope’s doing heavy lifting.'],
-    m => ['The day’s almost gone.', 'Your guys never aired. Again.'],
-  ],
 };
 // each variant returns a [lead, punch] pair for the selected day
 const VARIANTS = [0, 1, 2].map(i => (m, d) =>
-  (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun-pm'])[i](m));
+  (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])[i](m));
 const headlineText = (m, d, i) => VARIANTS[i](m, d).join(' ');
 
 // eyebrow: simply the market's most popular fantasy players
@@ -310,6 +296,7 @@ function setHeadline(m, d, instant) {
   if (!h) return;
   leadEl.textContent = lead;
   accEl.textContent = accent;
+  accEl.dataset.text = accent;                 // feeds the glitch pseudo-elements
   accEl.style.display = accent ? '' : 'none';
   if (instant || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   h.classList.remove('is-reveal');
@@ -350,7 +337,7 @@ function stopReel() {
 function animateOdometer() {
   const el = document.getElementById('odoNum');
   if (!el) return;
-  const target = 5040; // 210 DMAs × 8 day-moods × 3 copy versions
+  const target = 4410; // 210 DMAs × 7 days × 3 copy versions
   let started = false;
   const run = () => {
     if (started) return; started = true;
@@ -420,9 +407,8 @@ function initGeo() {
 
 function beatForToday() {
   const dow = new Date().getDay();
-  if (dow === 0) return 'sun-pm';
   const hit = DAYS.find(d => d.dow === dow);
-  return hit ? hit.id : 'sun-pm';
+  return hit ? hit.id : 'sun';
 }
 
 function renderMixer(opts) {
