@@ -523,3 +523,29 @@ body.mockup-open { overflow: hidden; }
   .ctv__ident, .ctv__endcard, .ctv__split, .ctv__statement, .ctv__eyebrow,
   .ctv__hl-accent, .ctv__cta-btn, .ctv.is-spot .ctv__board .bcard { transition: none !important; animation: none !important; }
 }
+
+/* ════════════════ FANTASY VIEW — Sunday Ticket feature lockup ════════════════ */
+/* the board of eight IS a Fantasy View: your players, every out-of-market game */
+.ctv__fv { display: flex; flex-direction: column; gap: .55cqw; }
+.ctv__fv-tag { display: inline-flex; align-items: center; gap: .55em; align-self: flex-start;
+  font-family: 'Oswald'; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  font-size: clamp(7px, 2.2cqw, 12px); color: #fff;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 32%, rgba(8,11,16,.72)), rgba(8,11,16,.5));
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, rgba(255,255,255,.22));
+  padding: .3em .62em; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,.42); backdrop-filter: blur(2px); }
+.ctv__fv-dot { width: .5em; height: .5em; border-radius: 50%; background: var(--field);
+  box-shadow: 0 0 0 0 rgba(47,191,107,.55); animation: fvPulse 1.8s infinite; }
+@keyframes fvPulse { 0% { box-shadow: 0 0 0 0 rgba(47,191,107,.55); } 70% { box-shadow: 0 0 0 6px rgba(47,191,107,0); } 100% { box-shadow: 0 0 0 0 rgba(47,191,107,0); } }
+
+/* end-card Fantasy View tagline */
+.ctv__endsub { display: inline-flex; align-items: center; gap: .55em; font-family: 'Oswald';
+  text-transform: uppercase; letter-spacing: .08em; font-size: clamp(7px, 2cqw, 13px);
+  color: var(--ink-dim); }
+.ctv__endsub strong { color: var(--knock); font-weight: 700; }
+
+/* in the spot, Fantasy View "activates" on the payoff beat (the fix lands) */
+.ctv.is-spot.spot-payoff .ctv__fv-tag, .ctv.is-spot.spot-end .ctv__fv-tag {
+  border-color: color-mix(in srgb, var(--field) 70%, transparent);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--field) 45%, transparent); }
+.ctv.is-spot.spot-payoff .ctv__fv-tag { animation: fvActivate .55s ease; }
+@keyframes fvActivate { 0% { transform: scale(1); } 40% { transform: scale(1.07); } 100% { transform: scale(1); } }
