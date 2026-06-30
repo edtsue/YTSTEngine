@@ -2,19 +2,20 @@
    SUNDAY M.I.A.
    A contextual CTV engine for YouTube Sunday Ticket × Fantasy.
 
-   Three live signals fill one template — a BOARD OF EIGHT:
-     • GEOGRAPHY  (IP → DMA + weekly blackout map)  — double duty
-     • DAY → EMOTION  (calendar)                    — the collective tone
-     • THE EIGHT  (Yahoo aggregate, geo-filtered)   — the market's eight
-       most-drafted players, shown together, never a single face.
+   Three live signals fill one template — an AD OF EIGHT:
+     • GEOGRAPHY  (IP → DMA + weekly blackout map)     — double duty
+     • DAY → EMOTION  (calendar)                       — the collective tone
+     • THE EIGHT  (Genius Sports projections, geo-filt) — the players
+       projected to perform best this week, shown together, never one face.
 
    The eight are shown EQUAL WEIGHT — a group feature, never a solo
-   endorsement (NFLPA group-licensing safe). Geometry picks the eight and
-   defines the blackout; the day sets the mood; Gemini renders the generic
-   stadium backdrop behind them (no player likeness in the generated art).
+   endorsement (NFLPA group-licensing safe). Geography filters the week's
+   top-projected players to the out-of-market ones and defines the blackout;
+   the day sets the mood; Gemini renders the generic stadium backdrop behind
+   them (no player likeness in the generated art).
 
    Players / teams are illustrative for the pitch; the live engine pulls the
-   real eight most-drafted per market from Yahoo, geo-filtered.
+   real eight highest-projected each week from Genius Sports, geo-filtered.
    ════════════════════════════════════════════════════════════════════ */
 
 const ESPN_LOGO = abbr => `https://a.espncdn.com/i/teamlogos/nfl/500/${abbr}.png`;
@@ -83,11 +84,11 @@ MARKETS.forEach((m, i) => { m.board = deriveBoard(m, i); });
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
   { icon: '📍', key: 'geo', name: 'Geography', source: 'IP → DMA + weekly blackout map',
-    job: 'Double duty: which of the league’s most-drafted are out of market here, and which of their games is blacked out here.' },
+    job: 'Double duty: which of the week’s top-projected players are out of market here, and which of their games is blacked out here.' },
   { icon: '😰', key: 'day', name: 'Day → Emotion', source: 'Calendar lookup',
     job: 'The frame. Monday grief, Sunday-morning panic, Sunday-afternoon helplessness — the tone of the whole ad.' },
-  { icon: '🏈', key: 'player', name: 'The eight', source: 'Yahoo ownership + Genius Sports data, geo-filtered',
-    job: 'The wound. The eight most-drafted players in that market — Yahoo fantasy ownership blended with Genius Sports engagement. Shown together, equal weight, never a single face.' },
+  { icon: '🏈', key: 'player', name: 'The eight', source: 'Genius Sports performance projections, geo-filtered',
+    job: 'The wound. The eight players projected to perform best this week — modeled on Genius Sports performance data, then geo-filtered to the ones out of market. Shown together, equal weight, never a single face.' },
 ];
 
 /* ── Day → emotion tone grid ───────────────────────────────────────── */
@@ -154,8 +155,8 @@ const VARIANTS = [0, 1, 2].map(i => (m, d) =>
   (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])[i](m));
 const headlineText = (m, d, i) => VARIANTS[i](m, d).join(' ');
 
-// eyebrow: simply the market's most popular fantasy players
-const EYEBROW = m => `${m.city}’s most popular fantasy players`;
+// eyebrow: this week's highest-projected players (Genius Sports)
+const EYEBROW = m => `This week’s top-projected players`;
 const surname = name => name.split(' ').slice(1).join(' ');
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
@@ -166,7 +167,7 @@ function buildSignals() {
       <h3>${s.name}</h3>
       <div class="sig__src">${s.source}</div>
       <p class="sig__job">${s.job}</p>
-      ${s.key === 'player' ? '<div class="sig__logos"><img class="sig__yahoo" src="assets/yahoo-fantasy.jpg" alt="Yahoo Fantasy" /><img class="sig__yahoo" src="assets/genius-sports.svg" alt="Genius Sports" /></div>' : ''}
+      ${s.key === 'player' ? '<div class="sig__logos"><img class="sig__srclogo" src="assets/genius-sports.svg" alt="Genius Sports" /></div>' : ''}
     </article>`).join('<div class="sig-x" aria-hidden="true">×</div>');
 }
 
@@ -191,7 +192,7 @@ function buildWeekRail() {
 
 /* ════════════════════ SECTION 03 — production ════════════════════ */
 function buildProduction() {
-  // 1 · Aggregate — the eight most-drafted, ranked by DMA (logo stack)
+  // 1 · Aggregate — the eight top-projected, filtered out-of-market by DMA (logo stack)
   const dmas = document.getElementById('prodDmas');
   if (dmas) {
     dmas.innerHTML = MARKETS.map(m => {
@@ -425,12 +426,12 @@ function renderMixer(opts) {
 
   document.getElementById('emoNote').textContent = `${d.emotion} — ${d.register}.`;
   document.getElementById('playerNote').innerHTML =
-    `<strong>8 most-drafted starters</strong> · all out-of-market in ${m.city}.`;
+    `<strong>8 top-projected starters</strong> · all out-of-market in ${m.city}.`;
 
   document.getElementById('ctvEyebrow').textContent = EYEBROW(m);
   setHeadline(m, d, instant);
   document.getElementById('stageCap').textContent =
-    `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Ad: ${m.city}’s 8 most-drafted, out-of-market`;
+    `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Ad: this week’s 8 top-projected, out-of-market in ${m.city}`;
   renderVariants(m, d);
   renderBoard(m);
 
