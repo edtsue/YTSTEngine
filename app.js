@@ -102,58 +102,22 @@ const DAYS = [
   { id: 'sun',       short: 'Sun',  name: 'Sunday',            dow: 0, emotion: 'Helplessness',          register: 'The core wound — present tense',    accent: '#ff2d2d' },
 ];
 
-/* ── Headlines — playful, witty, concise, and each day's three lines carry
-   that day's EMOTION (Mon grief → Sun-PM helplessness → Sun-night exhausted
-   hope). Each is a [lead, punch] pair: the lead sets it up (big caps), the
-   punch lands it (accent italic). Three distinct angles per day. ── */
+/* ── Headlines — playful, witty, concise. ONE best headline per day, each
+   carrying that day's EMOTION (Mon grief → Sun-night exhausted hope). Each
+   is a [lead, punch] pair: the lead sets it up (big caps), the punch lands
+   it (accent italic) — and the two lines rhyme like a little couplet. ── */
 const DAY_HEADLINES = {
-  // Monday-beat — grief, rueful morning-after (never names the day)
-  'mon': [
-    m => ['Your studs all hit their peak.', 'Your TV stayed bleak.'],
-    m => ['They hung up forty-four.', `${m.city} never saw the score.`],
-    m => ['The morning-after blues —', 'eight ghosts, zero views.'],
-  ],
-  // Tuesday-beat — resentment turning to hope, the fresh-start pivot
-  'tue': [
-    m => ['New week, new waiver dreams.', 'Same off-air schemes.'],
-    m => ['You reload with hope.', 'The blackout says nope.'],
-    m => ['Turn the page, ink still wet.', 'Same eight you won’t get.'],
-  ],
-  // Wednesday-beat — anxious gambling, wry and knowing
-  'wed': [
-    m => ['Eight stone-cold locks.', 'Zero on your box.'],
-    m => ['Bet the house, bet the car.', 'They’re playing way too far.'],
-    m => ['You sweat each snap and stat.', 'Can’t watch where they’re at.'],
-  ],
-  // Thursday-beat — reckless commitment, the contrast (a game you CAN see)
-  'thu': [
-    m => ['One game on tonight.', 'Then they’re out of sight.'],
-    m => ['Tonight’s your freebie thrill.', 'The weekend’s a bitter pill.'],
-    m => ['Go all-in under the lights.', 'Pay for it the next few nights.'],
-  ],
-  // Friday-beat — studious dread, prep-mode and ominous
-  'fri': [
-    m => ['Lineup locked and read.', 'Your channels fill with dread.'],
-    m => ['You did all the prep.', 'Your TV’s out of step.'],
-    m => ['Charts studied, plans precise.', 'Blacked out — such is the price.'],
-  ],
-  // Saturday-beat — restless second-guessing, coiled and anticipatory
-  'sat': [
-    m => ['Start ’em? Sit ’em?', 'You can’t even get ’em.'],
-    m => ['One sleep till the games.', 'Zero on your frames.'],
-    m => ['You agonize each call.', 'Out of market — see none at all.'],
-  ],
-  // Sunday-beat — game-day helplessness, present-tense FOMO
-  'sun': [
-    m => ['Your guys are cooking hot.', 'You? A buffering dot.'],
-    m => ['Live right now, they shine.', 'Not on a screen of mine.'],
-    m => ['Eight stars in real-time glow.', `Zero on ${m.city}’s show.`],
-  ],
+  'mon': m => ['Your studs all hit their peak.', 'Your TV stayed bleak.'],
+  'tue': m => ['New week, new waiver dreams.', 'Same off-air schemes.'],
+  'wed': m => ['Eight stone-cold locks.', 'Zero on your box.'],
+  'thu': m => ['One game on tonight.', 'Then they’re out of sight.'],
+  'fri': m => ['Lineup locked and read.', 'Your channels fill with dread.'],
+  'sat': m => ['Start ’em? Sit ’em?', 'You can’t even get ’em.'],
+  'sun': m => ['Your guys are cooking hot.', 'You? A buffering dot.'],
 };
-// each variant returns a [lead, punch] pair for the selected day
-const VARIANTS = [0, 1, 2].map(i => (m, d) =>
-  (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])[i](m));
-const headlineText = (m, d, i) => VARIANTS[i](m, d).join(' ');
+// the single best [lead, punch] pair for the selected day
+const headline = (m, d) => (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])(m);
+const headlineText = (m, d) => headline(m, d).join(' ');
 
 // eyebrow: this week's highest-projected players (Genius Sports), localized
 const EYEBROW = m => `This week’s top-projected players in ${m.city}`;
@@ -179,7 +143,7 @@ function buildWeekRail() {
     <button class="mini" data-day="${d.id}" style="--accent:${d.accent}">
       <span class="mini__top"><span class="mini__day">${d.short}</span><span class="mini__brand">▶ Sunday Ticket</span></span>
       <span class="mini__emo">${d.emotion}</span>
-      <span class="mini__hl">${headlineText(m, d, 2)}</span>
+      <span class="mini__hl">${headlineText(m, d)}</span>
       <span class="mini__logos">${logos}<span class="mini__more">+4</span></span>
     </button>`).join('');
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {
@@ -290,7 +254,7 @@ function randomize() {
    Two registers by design — the lead sets it up big, the punch lands it
    italic in the day's accent color. ── */
 function setHeadline(m, d, instant) {
-  const [lead, accent] = VARIANTS[variantIdx](m, d);
+  const [lead, accent] = headline(m, d);
   const h = document.getElementById('ctvHeadline');
   const leadEl = document.getElementById('ctvHlLead');
   const accEl = document.getElementById('ctvHlAccent');
@@ -412,7 +376,7 @@ function initSpotAutoplay() {
 function animateOdometer() {
   const el = document.getElementById('odoNum');
   if (!el) return;
-  const target = 4410; // 210 DMAs × 7 days × 3 copy versions
+  const target = 1470; // 210 DMAs × 7 days — one best ad per DMA / day
   let started = false;
   const run = () => {
     if (started) return; started = true;
@@ -506,7 +470,6 @@ function renderMixer(opts) {
   setHeadline(m, d, instant);
   document.getElementById('stageCap').textContent =
     `DMA: ${m.dma} · Day→Emotion: ${d.emotion} · Ad: this week’s 8 top-projected, out-of-market in ${m.city}`;
-  renderVariants(m, d);
   renderBoard(m);
 
   // generated stadium backdrop → team/day-tinted plate (CSS default)
@@ -525,22 +488,6 @@ function renderBoard(m) {
       <img class="bcard__logo" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />
       <span class="bcard__name">${surname(p.name)}</span>
     </div>`).join('');
-}
-
-/* three copy versions of the same board — click to load one into the asset */
-let variantIdx = 0;
-function renderVariants(m, d) {
-  const wrap = document.getElementById('variantTabs');
-  wrap.innerHTML = VARIANTS.map((fn, i) => `
-    <button class="vtab ${i === variantIdx ? 'is-active' : ''}" data-v="${i}">
-      <span class="vtab__n">Version ${i + 1}</span>
-      <span class="vtab__hl">${headlineText(m, d, i)}</span>
-    </button>`).join('');
-  wrap.querySelectorAll('.vtab').forEach(b => b.addEventListener('click', () => {
-    variantIdx = +b.dataset.v;
-    setHeadline(m, d);
-    wrap.querySelectorAll('.vtab').forEach(x => x.classList.toggle('is-active', x === b));
-  }));
 }
 
 /* client-side cache: re-viewing a backdrop is instant, no re-generation */
