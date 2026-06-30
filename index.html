@@ -6,7 +6,7 @@
   <title>Sunday M.I.A. — YouTube Sunday Ticket × Fantasy</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <link rel="apple-touch-icon" href="assets/favicon.svg" />
-  <meta name="description" content="A contextual CTV engine for YouTube Sunday Ticket. Three live signals — geography, day-emotion, and the eight players projected to perform best this week (Genius Sports data) — render an ad of eight, out-of-market, for every city, every day." />
+  <meta name="description" content="A contextual CTV engine for YouTube Sunday Ticket. Three live signals — DMA, day-emotion, and the eight players projected to perform best this week (Genius Sports data) — render an ad of eight, out-of-market, for every DMA, every day." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -62,7 +62,7 @@
       <h2>Three signals. 7 days. Many contextual ads.</h2>
       <p>The engine reads three live signals and renders a CTV ad that's locally true, emotionally
         timed, and only resolvable by the product. Every spot features the <em>eight</em> players
-        projected to perform best this week — a group, never a single face. Geography does double duty: it
+        projected to perform best this week — a group, never a single face. Your <em>DMA</em> does double duty: it
         picks which of those projected studs are out of market here <em>and</em> defines what's blacked out.</p>
     </div>
 
@@ -115,7 +115,7 @@
         </div>
         <button class="btn btn--ghost btn--rand" id="randBtn">🎲 Randomize signals</button>
         <div class="ctrl">
-          <span class="ctrl__sig ctrl__sig--geo">📍 Geography</span>
+          <span class="ctrl__sig ctrl__sig--geo">📍 DMA</span>
           <label>Market
             <div class="sel"><select id="selMarket"></select></div>
           </label>
@@ -130,7 +130,7 @@
         <div class="ctrl ctrl--derived">
           <span class="ctrl__sig ctrl__sig--player">🏈 The eight <img class="src-chip" src="assets/genius-sports.svg" alt="Genius Sports" /></span>
           <p class="ctrl__note" id="playerNote"></p>
-          <span class="ctrl__derived-tag">↑ Derived from geography — not a dial</span>
+          <span class="ctrl__derived-tag">↑ Derived from your DMA — not a dial</span>
         </div>
 
         <button class="btn btn--solid btn--gen" id="genBtn"><img class="gemini-ic" src="assets/gemini.png" alt="" /> Generate the backdrop</button>
@@ -208,9 +208,10 @@
   <section class="prod" id="production">
     <div class="section-head">
       <span class="section-head__num">03</span>
-      <h2>Production</h2>
+      <h2>Production and Media</h2>
       <p>The end-to-end pipeline, running on a daily clock: aggregate the projection data, let AI assemble
-        the spot, and push a fresh asset to the CTV platform every day of the week.</p>
+        the spot, and push a fresh asset to the CTV platform every day of the week — then flight it against
+        premium CTV inventory.</p>
     </div>
 
     <div class="prod__flow">
@@ -236,9 +237,9 @@
         </div>
         <p class="prod__cap">Three signals composite into a finished CTV ad.</p>
         <div class="prod__tokens">
-          <span class="prod__token prod__token--p">Eight players</span>
-          <span class="prod__token prod__token--g">Geography</span>
-          <span class="prod__token prod__token--h">Headline copy</span>
+          <span class="prod__token prod__token--p">8 projected top-performing players</span>
+          <span class="prod__token prod__token--g">DMA</span>
+          <span class="prod__token prod__token--h">One headline per day</span>
         </div>
         <p class="prod__build">→ ad of eight + generated backdrop + headline + blackout chrome, in seconds</p>
       </article>
@@ -254,6 +255,20 @@
         <p class="prod__cap">A fresh asset delivered every day of the week.</p>
         <div class="prod__week" id="prodWeek"></div>
         <img class="prod__st" src="assets/sunday-ticket-logo.webp" alt="YouTube Sunday Ticket" />
+      </article>
+    </div>
+
+    <!-- ░ MEDIA ░ -->
+    <div class="media">
+      <article class="media__card media__card--partner">
+        <span class="media__label">Preferred platform partner</span>
+        <img class="media__amazon" src="assets/amazon-ads.jpg" alt="Amazon Prime Video — NFL" />
+        <p class="media__note">Placed against Amazon's live-NFL audience on premium, signed-in CTV — Prime Video &amp; Fire TV.</p>
+      </article>
+      <article class="media__card media__card--spend">
+        <span class="media__label">Estimated media spend</span>
+        <div class="media__figure">$750K<span class="media__dash">–</span>$1.25MM</div>
+        <p class="media__note">Flighted across the season, weighted to the markets and days with the deepest blackout gap.</p>
       </article>
     </div>
   </section>

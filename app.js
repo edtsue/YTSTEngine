@@ -3,13 +3,13 @@
    A contextual CTV engine for YouTube Sunday Ticket × Fantasy.
 
    Three live signals fill one template — an AD OF EIGHT:
-     • GEOGRAPHY  (IP → DMA + weekly blackout map)     — double duty
+     • DMA        (IP → DMA + weekly blackout map)     — double duty
      • DAY → EMOTION  (calendar)                       — the collective tone
      • THE EIGHT  (Genius Sports projections, geo-filt) — the players
        projected to perform best this week, shown together, never one face.
 
    The eight are shown EQUAL WEIGHT — a group feature, never a solo
-   endorsement (NFLPA group-licensing safe). Geography filters the week's
+   endorsement (NFLPA group-licensing safe). The DMA filters the week's
    top-projected players to the out-of-market ones and defines the blackout;
    the day sets the mood; Gemini renders the generic stadium backdrop behind
    them (no player likeness in the generated art).
@@ -83,7 +83,7 @@ MARKETS.forEach((m, i) => { m.board = deriveBoard(m, i); });
 
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
-  { icon: '📍', key: 'geo', name: 'Geography', source: 'IP → DMA + weekly blackout map',
+  { icon: '📍', key: 'geo', name: 'DMA', source: 'IP → DMA + weekly blackout map',
     job: 'Double duty: which of the week’s top-projected players are out of market here, and which of their games is blacked out here.' },
   { icon: '😰', key: 'day', name: 'Day → Emotion', source: 'Calendar lookup',
     job: 'The frame. Monday grief, Sunday-morning panic, Sunday-afternoon helplessness — the tone of the whole ad.' },
@@ -505,7 +505,7 @@ function renderMixer(opts) {
   document.getElementById('ctvEyebrow').textContent = EYEBROW(m);
   setHeadline(m, d, instant);
   document.getElementById('stageCap').textContent =
-    `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Ad: this week’s 8 top-projected, out-of-market in ${m.city}`;
+    `DMA: ${m.dma} · Day→Emotion: ${d.emotion} · Ad: this week’s 8 top-projected, out-of-market in ${m.city}`;
   renderVariants(m, d);
   renderBoard(m);
 
