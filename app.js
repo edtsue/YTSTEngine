@@ -288,31 +288,35 @@ function randomize() {
   }, 900);
 }
 
-/* ── headline typewriter / glitch ────────────────────────────────────*/
-let headlineToken = 0;
-function typeHeadline(text, emotion) {
-  const el = document.getElementById('ctvHeadline');
-  if (!el) return;
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = text; return; }
-  const token = ++headlineToken;
-  const panic = /panic/i.test(emotion || '');
-  const base = panic ? 13 : 28;
-  const glyphs = '#%&X0/\\*';
-  el.classList.add('is-typing');
-  let i = 0;
-  const step = () => {
-    if (token !== headlineToken) return;             // a newer headline superseded us
-    if (i <= text.length) {
-      const glitch = (panic && i < text.length) ? glyphs[Math.floor(Math.random() * glyphs.length)] : '';
-      el.textContent = text.slice(0, i) + glitch;
-      i++;
-      setTimeout(step, base + (panic ? Math.random() * 38 : 0));
-    } else {
-      el.textContent = text;
-      el.classList.remove('is-typing');
-    }
-  };
-  step();
+/* ── editorial headline: a caps LEAD + an accent-italic tail ──────────
+   Split each line at its natural pivot (em-dash, colon, sentence break)
+   so the design reads as two intentional registers: the punch, then the
+   turn. The lead is uppercased in CSS; the accent stays sentence-case,
+   italic, in the day's accent color. ── */
+function splitHeadline(t) {
+  const dash = t.indexOf(' — ');
+  if (dash >= 0) return [t.slice(0, dash).trim(), t.slice(dash + 3).trim()];
+  const colon = t.indexOf(': ');
+  if (colon >= 0) return [t.slice(0, colon).trim(), t.slice(colon + 2).trim()];
+  const period = t.search(/[.!?] /);
+  if (period >= 0) return [t.slice(0, period + 1).trim(), t.slice(period + 2).trim()];
+  const semi = t.indexOf('; ');
+  if (semi >= 0) return [t.slice(0, semi + 1).trim(), t.slice(semi + 2).trim()];
+  return [t, ''];
+}
+function setHeadline(m, d, instant) {
+  const [lead, accent] = splitHeadline(VARIANTS[variantIdx](m, d));
+  const h = document.getElementById('ctvHeadline');
+  const leadEl = document.getElementById('ctvHlLead');
+  const accEl = document.getElementById('ctvHlAccent');
+  if (!h) return;
+  leadEl.textContent = lead;
+  accEl.textContent = accent;
+  accEl.style.display = accent ? '' : 'none';
+  if (instant || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  h.classList.remove('is-reveal');
+  void h.offsetWidth;                                // restart the reveal animation
+  h.classList.add('is-reveal');
 }
 
 /* ── engine auto-reel ────────────────────────────────────────────────
@@ -440,9 +444,8 @@ function renderMixer(opts) {
     `<strong>8 most-drafted starters</strong> · all out-of-market in ${m.city}.`;
 
   document.getElementById('ctvEyebrow').textContent = EYEBROW(m);
-  const headline = VARIANTS[variantIdx](m, d);
-  if (instant) document.getElementById('ctvHeadline').textContent = headline;
-  else typeHeadline(headline, d.emotion);
+  document.getElementById('ctvKicker').textContent = `${d.name} · ${d.emotion}`;
+  setHeadline(m, d, instant);
   document.getElementById('stageCap').textContent =
     `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Board: ${m.city}’s 8 most-drafted, out-of-market`;
   renderVariants(m, d);
@@ -477,7 +480,7 @@ function renderVariants(m, d) {
     </button>`).join('');
   wrap.querySelectorAll('.vtab').forEach(b => b.addEventListener('click', () => {
     variantIdx = +b.dataset.v;
-    typeHeadline(VARIANTS[variantIdx](m, d), d.emotion);
+    setHeadline(m, d);
     wrap.querySelectorAll('.vtab').forEach(x => x.classList.toggle('is-active', x === b));
   }));
 }
