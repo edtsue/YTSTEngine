@@ -6,7 +6,7 @@
   <title>Sunday's Most Wanted — YouTube Sunday Ticket × Fantasy</title>
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
   <link rel="apple-touch-icon" href="assets/favicon.svg" />
-  <meta name="description" content="A contextual CTV engine for YouTube Sunday Ticket. Three live signals — geography, day-emotion, and the most popular players in your market (Yahoo fantasy ownership + Genius Sports data) — produce a different ad for every city, every day." />
+  <meta name="description" content="A contextual CTV engine for YouTube Sunday Ticket. Three live signals — geography, day-emotion, and the eight most-drafted players in your market (Yahoo fantasy ownership + Genius Sports data) — render a board of eight, out-of-market, for every city, every day." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700&family=Oswald:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -38,10 +38,10 @@
     <div class="hero__kicker">YouTube Sunday Ticket × Fantasy · Contextual CTV engine</div>
     <h1 class="hero__title">Sunday's<br /><span class="hero__title-wanted">Most Wanted</span></h1>
     <p class="hero__lede">
-      Every market drafts the league's best players. Almost none of them play <em>in</em> that market —
-      they're scattered across out-of-market games your local channels won't carry. <strong>Sunday's Most
-      Wanted</strong> turns that gap into creative: three live signals render a different CTV ad for every
-      city, every day, every week — and only Sunday Ticket can resolve it.
+      Every market drafts the same superstars — and almost none of them play <em>in</em> that market.
+      Your <strong>eight most-drafted starters</strong> are scattered across out-of-market games your local
+      channels won't carry. <strong>Sunday's Most Wanted</strong> puts all eight on one board: a different
+      CTV spot for every city, every day — and only Sunday Ticket can resolve it.
     </p>
     <div class="hero__cta">
       <a href="#how" class="btn btn--ghost">See how it works</a>
@@ -59,10 +59,11 @@
   <section class="how" id="how">
     <div class="section-head">
       <span class="section-head__num">01</span>
-      <h2>Three signals. 7 days. Limitless assets.</h2>
-      <p>The engine reads three live signals and renders a CTV asset that's locally true, emotionally
-        timed, and only resolvable by the product. Geography does double duty — it tells us who's popular
-        <em>and</em> what's blacked out.</p>
+      <h2>Three signals. One board of eight.</h2>
+      <p>The engine reads three live signals and renders a CTV board that's locally true, emotionally
+        timed, and only resolvable by the product. Every spot features the market's <em>eight</em>
+        most-drafted players — a group, never a single face. Geography does double duty: it picks the eight
+        <em>and</em> defines what's blacked out.</p>
     </div>
 
     <div class="signals" id="signals"></div>
@@ -73,22 +74,22 @@
       <i>→</i>
       <span class="pipe__node pipe__node--engine">Sunday's Most Wanted engine</span>
       <i>→</i>
-      <span class="pipe__node">a CTV asset that names <em>their</em> guy &amp; <em>their</em> blackout</span>
+      <span class="pipe__node">a CTV board of <em>their</em> eight &amp; <em>their</em> blackout</span>
     </div>
 
     <!-- odometer — the scale of the engine -->
     <div class="odo" id="odo">
       <div class="odo__lead">up to</div>
       <div class="odo__num"><span id="odoNum">0</span></div>
-      <div class="odo__lbl">unique CTV spots a week</div>
-      <div class="odo__formula">210 DMAs × 8 day-moods × 4 positions × 3 versions</div>
+      <div class="odo__lbl">unique CTV boards a week</div>
+      <div class="odo__formula">210 DMAs × 8 day-moods × 3 copy versions — each board recomposed as the rankings move</div>
     </div>
 
     <!-- weekly strip -->
     <div class="weekstrip">
       <div class="weekstrip__head">
-        <h3>One template. New assets. Every day of the week.</h3>
-        <span>Market held constant (Cleveland). The day flips the mood; the player stays the hook.</span>
+        <h3>One board. New copy. Every day of the week.</h3>
+        <span>Market held constant (Cleveland). The day flips the mood; the eight stay the wound.</span>
       </div>
       <div class="weekstrip__rail" id="weekRail"></div>
       <p class="weekstrip__hint">Tap any day to load it into the builder ↓</p>
@@ -99,9 +100,10 @@
   <section class="mixer" id="mixer">
     <div class="section-head">
       <span class="section-head__num">02</span>
-      <h2>Build the asset</h2>
-      <p>Mix the three signals to composite a YouTube Sunday Ticket CTV spot. The hero image is generated
-        live by Gemini; the branding, headline, and blackout chrome are assembled from the signals.</p>
+      <h2>Build the board</h2>
+      <p>Mix the signals to composite a YouTube Sunday Ticket CTV board. The eight faces are the market's
+        most-drafted, out-of-market starters; Gemini generates the stadium backdrop behind them; the
+        headline and blackout chrome are assembled from the signals.</p>
     </div>
 
     <div class="studio">
@@ -125,16 +127,14 @@
           </label>
           <p class="ctrl__note" id="emoNote"></p>
         </div>
-        <div class="ctrl">
-          <span class="ctrl__sig ctrl__sig--player">🏈 Popular players <img class="yahoo-chip" src="assets/yahoo-fantasy.jpg" alt="Yahoo Fantasy" /><img class="yahoo-chip" src="assets/genius-sports.svg" alt="Genius Sports" /></span>
-          <label>Position
-            <div class="sel"><select id="selPos"></select></div>
-          </label>
+        <div class="ctrl ctrl--derived">
+          <span class="ctrl__sig ctrl__sig--player">🏈 The eight <img class="yahoo-chip" src="assets/yahoo-fantasy.jpg" alt="Yahoo Fantasy" /><img class="yahoo-chip" src="assets/genius-sports.svg" alt="Genius Sports" /></span>
           <p class="ctrl__note" id="playerNote"></p>
+          <span class="ctrl__derived-tag">↑ Derived from geography — not a dial</span>
         </div>
 
-        <button class="btn btn--solid btn--gen" id="genBtn"><img class="gemini-ic" src="assets/gemini.png" alt="" /> Generate action shot</button>
-        <p class="genstatus" id="genStatus">Team-accurate action shot, generated by Gemini.</p>
+        <button class="btn btn--solid btn--gen" id="genBtn"><img class="gemini-ic" src="assets/gemini.png" alt="" /> Generate the backdrop</button>
+        <p class="genstatus" id="genStatus">Stadium backdrop, generated by Gemini — no player likeness.</p>
 
         <button class="btn btn--ghost btn--reel" id="reelBtn">▶ Watch the engine run</button>
       </aside>
@@ -150,10 +150,11 @@
             <div class="ctv__scrim"></div>
             <div class="ctv__loader" id="ctvLoader" hidden><span class="spin"></span><span id="ctvLoaderTxt">Generating with Gemini…</span></div>
             <header class="ctv__chrome">
+              <div class="ctv__eyebrow" id="ctvEyebrow"></div>
               <img class="ctv__stlogo" src="assets/sunday-ticket-logo.webp" alt="NFL Sunday Ticket on YouTube TV" />
             </header>
+            <div class="ctv__board" id="ctvBoard"></div>
             <div class="ctv__body">
-              <div class="ctv__eyebrow" id="ctvEyebrow"></div>
               <h3 class="ctv__headline" id="ctvHeadline"></h3>
               <span class="ctv__cta-btn">Sign up for YouTube Sunday Ticket →</span>
             </div>
@@ -188,7 +189,7 @@
           <h3>Aggregate</h3>
           <img class="prod__logo" src="assets/genius-sports.svg" alt="Genius Sports" />
         </div>
-        <p class="prod__cap">Genius Sports popularity data, ranked by major DMA.</p>
+        <p class="prod__cap">The eight most-drafted players, ranked by major DMA.</p>
         <div class="prod__dmas" id="prodDmas"></div>
         <span class="prod__more" id="prodDmaMore"></span>
       </article>
@@ -201,14 +202,14 @@
           <span class="prod__num">2</span>
           <h3>AI asset assembly</h3>
         </div>
-        <p class="prod__cap">Three signals composite into a finished CTV spot.</p>
+        <p class="prod__cap">Three signals composite into a finished CTV board.</p>
         <div class="prod__tokens">
-          <span class="prod__token prod__token--p">Player name</span>
-          <span class="prod__token prod__token--t">Team</span>
+          <span class="prod__token prod__token--p">Eight players</span>
+          <span class="prod__token prod__token--t">Eight teams</span>
           <span class="prod__token prod__token--g">Geography</span>
           <span class="prod__token prod__token--h">Headline copy</span>
         </div>
-        <p class="prod__build">→ generated hero shot + headline + blackout chrome, in seconds</p>
+        <p class="prod__build">→ board of eight + generated backdrop + headline + blackout chrome, in seconds</p>
       </article>
 
       <i class="prod__arrow" aria-hidden="true">→</i>
@@ -229,7 +230,8 @@
   <footer class="foot">
     <p><strong>Sunday's Most Wanted</strong> — a contextual creative engine concept for YouTube Sunday Ticket.
       Players, logos and brand marks shown are illustrative for pitch purposes; the live engine pulls the real
-      most-popular names per position — blending Yahoo fantasy ownership with Genius Sports data, geo-filtered.</p>
+      eight most-drafted players per market — blending Yahoo fantasy ownership with Genius Sports data,
+      geo-filtered. Every spot features the market's eight together — a group feature, never a solo endorsement.</p>
   </footer>
 
   <script src="app.js"></script>

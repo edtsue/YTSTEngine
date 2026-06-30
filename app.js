@@ -2,73 +2,92 @@
    SUNDAY'S MOST WANTED
    A contextual CTV engine for YouTube Sunday Ticket × Fantasy.
 
-   Three live signals fill one template:
+   Three live signals fill one template — a BOARD OF EIGHT:
      • GEOGRAPHY  (IP → DMA + weekly blackout map)  — double duty
-     • DAY → EMOTION  (calendar)                    — the tone
-     • TOP PLAYER  (Yahoo aggregate, geo-filtered)  — the named hook
+     • DAY → EMOTION  (calendar)                    — the collective tone
+     • THE EIGHT  (Yahoo aggregate, geo-filtered)   — the market's eight
+       most-drafted players, shown together, never a single face.
 
-   Players / teams are illustrative for the pitch; the live engine pulls
-   the real most-drafted name per position from Yahoo, geo-filtered.
+   The eight are shown EQUAL WEIGHT — a group feature, never a solo
+   endorsement (NFLPA group-licensing safe). Geometry picks the eight and
+   defines the blackout; the day sets the mood; Gemini renders the generic
+   stadium backdrop behind them (no player likeness in the generated art).
+
+   Players / teams are illustrative for the pitch; the live engine pulls the
+   real eight most-drafted per market from Yahoo, geo-filtered.
    ════════════════════════════════════════════════════════════════════ */
 
 const ESPN_LOGO = abbr => `https://a.espncdn.com/i/teamlogos/nfl/500/${abbr}.png`;
-
-// team colors drive both the action-shot prompt and the default backdrop tint
-const TEAMS = {
-  cin: { colors: 'black and bright orange tiger-stripe', glow: '#fb4f14' },
-  atl: { colors: 'black, red and white',                 glow: '#a71930' },
-  ari: { colors: 'cardinal red and white',               glow: '#97233f' },
-  buf: { colors: 'royal blue, red and white',            glow: '#00338d' },
-  sf:  { colors: 'scarlet red and metallic gold',        glow: '#aa0000' },
-  kc:  { colors: 'bright red, gold and white',           glow: '#e31837' },
-  phi: { colors: 'midnight green, black and white',      glow: '#1a5f57' },
-  min: { colors: 'deep purple and gold',                 glow: '#4f2683' },
-};
-const ACTION = {
-  WR: 'leaping to make a dramatic one-handed catch',
-  RB: 'breaking a tackle on an explosive run, ball tucked tight',
-  QB: 'firing a deep pass downfield, throwing arm cocked back',
-  TE: 'powering through contact after a catch over the middle',
-};
-
-// Real player photos keyed by ESPN pid, resolved by photoUrl(). A value is
-// either a vendored asset under assets/ (used as-is, served same-origin) or a
-// bare Wikimedia Commons file title resolved through Special:FilePath (Wikimedia
-// does the redirect and clamps ?width to the original, so no dead thumbnails).
-//
-// Prefer genuine in-game ACTION frames. Every roster player gets a photo: a
-// direct shot of the player where one exists, else a same-team action shot
-// (the chrome supplies the player's name, so a teammate in the right uniform
-// reads right).
-const PHOTO = {
-  4362628: 'assets/jamarr-chase.jpg',                        // Ja'Marr Chase (CIN) — supplied in-game action shot (vendored, Bengals white)
-  4262921: 'Justin Jefferson Commanders vs Vikings NOV2022.jpg', // Justin Jefferson (MIN) — in-game, Vikings purple
-  4430807: '2025 Commanders at Falcons 11.jpg',              // Bijan Robinson (ATL) — in-game action, Falcons (Sept 2025; from his Commons category)
-  3139477: 'Patrick Mahomes (51616341245).jpg',             // Patrick Mahomes (KC) — in-game
-  3040151: 'George Kittle 2019 (48940368597).jpg',          // George Kittle (SF) — in-game, 49ers red
-  3915511: 'Joe Burrow Bengals.jpg',                        // Joe Burrow (CIN) — direct, Bengals
-  3918298: 'Josh Allen (43569465444).jpg',                  // Josh Allen (BUF) — in-game, Bills (rookie-year frame)
-  3929630: 'Saquon Barkley 112024.jpg',                     // Saquon Barkley (PHI) — in-game, Eagles (Nov 2024)
-  4361307: 'assets/trey-mcbride.jpg',                       // Trey McBride (ARI) — supplied in-game action shot (vendored, Cardinals red)
-};
-// A PHOTO value is either a vendored asset path / absolute URL (used as-is) or
-// a bare Commons file title resolved through Special:FilePath (Wikimedia does
-// the redirect and clamps ?width to the original, so no dead thumbnails).
-const photoUrl = (v, w = 1280) =>
-  /^(assets\/|https?:)/.test(v) ? v
-    : `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(v)}?width=${w}`;
-// ESPN headshot (deterministic by pid, same host as the team logos) — a
-// guaranteed last-resort so a mockup is never blank if a Commons file fails.
+// ESPN headshot — deterministic by pid, same host as the team logos. Every
+// board cell is a real headshot (transparent PNG) on a team-tinted plate.
 const HEADSHOT = pid => `https://a.espncdn.com/i/headshots/nfl/players/full/${pid}.png`;
+
+// team glow drives the per-cell tint and the backdrop bias light
+const TEAMS = {
+  cin: { glow: '#fb4f14' }, atl: { glow: '#a71930' }, ari: { glow: '#97233f' },
+  buf: { glow: '#00338d' }, sf:  { glow: '#aa0000' }, kc:  { glow: '#e31837' },
+  phi: { glow: '#1a5f57' }, min: { glow: '#4f2683' }, bal: { glow: '#241773' },
+  wsh: { glow: '#7c1415' }, det: { glow: '#0076b6' }, lv:  { glow: '#a5acaf' },
+  mia: { glow: '#008e97' }, dal: { glow: '#003594' }, lar: { glow: '#ffa300' },
+  nyg: { glow: '#0b2265' }, hou: { glow: '#a71930' },
+};
+
+/* ── The national draft pool (rank-ordered, real ESPN pids). The engine
+   derives each market's eight from this pool, filtered to who's out-of-market
+   in that DMA. ── */
+const POOL = [
+  { name: "Ja'Marr Chase",       pos: 'WR', team: 'cin', city: 'Cincinnati',   pid: 4362628 },
+  { name: 'Bijan Robinson',      pos: 'RB', team: 'atl', city: 'Atlanta',      pid: 4430807 },
+  { name: 'Justin Jefferson',    pos: 'WR', team: 'min', city: 'Minnesota',    pid: 4262921 },
+  { name: 'Saquon Barkley',      pos: 'RB', team: 'phi', city: 'Philadelphia', pid: 3929630 },
+  { name: 'Jahmyr Gibbs',        pos: 'RB', team: 'det', city: 'Detroit',      pid: 4429795 },
+  { name: 'CeeDee Lamb',         pos: 'WR', team: 'dal', city: 'Dallas',       pid: 4241389 },
+  { name: 'Christian McCaffrey', pos: 'RB', team: 'sf',  city: 'San Francisco',pid: 3117251 },
+  { name: 'Puka Nacua',          pos: 'WR', team: 'lar', city: 'Los Angeles',  pid: 4426515 },
+  { name: 'Amon-Ra St. Brown',   pos: 'WR', team: 'det', city: 'Detroit',      pid: 4374302 },
+  { name: 'Malik Nabers',        pos: 'WR', team: 'nyg', city: 'New York',     pid: 4595348 },
+  { name: 'Ashton Jeanty',       pos: 'RB', team: 'lv',  city: 'Las Vegas',    pid: 4890973 },
+  { name: "De'Von Achane",       pos: 'RB', team: 'mia', city: 'Miami',        pid: 4429160 },
+  { name: 'Nico Collins',        pos: 'WR', team: 'hou', city: 'Houston',      pid: 4258173 },
+  { name: 'Derrick Henry',       pos: 'RB', team: 'bal', city: 'Baltimore',    pid: 3043078 },
+  { name: 'Brock Bowers',        pos: 'TE', team: 'lv',  city: 'Las Vegas',    pid: 4432665 },
+  { name: 'Trey McBride',        pos: 'TE', team: 'ari', city: 'Arizona',      pid: 4361307 },
+  { name: 'A.J. Brown',          pos: 'WR', team: 'phi', city: 'Philadelphia', pid: 4047646 },
+  { name: 'George Kittle',       pos: 'TE', team: 'sf',  city: 'San Francisco',pid: 3040151 },
+  { name: 'Josh Allen',          pos: 'QB', team: 'buf', city: 'Buffalo',      pid: 3918298 },
+  { name: 'Lamar Jackson',       pos: 'QB', team: 'bal', city: 'Baltimore',    pid: 3916387 },
+  { name: 'Jalen Hurts',         pos: 'QB', team: 'phi', city: 'Philadelphia', pid: 4040715 },
+  { name: 'Joe Burrow',          pos: 'QB', team: 'cin', city: 'Cincinnati',   pid: 3915511 },
+  { name: 'Jayden Daniels',      pos: 'QB', team: 'wsh', city: 'Washington',   pid: 4426348 },
+  { name: 'Patrick Mahomes',     pos: 'QB', team: 'kc',  city: 'Kansas City',  pid: 3139477 },
+];
+
+/* ── Markets — city held constant, day flips the mood. Each market's BOARD is
+   derived below: the national pool minus whoever's in-market there. ── */
+const MARKETS = [
+  { id: 'cle', city: 'Cleveland',   dma: 'Cleveland-Akron', inMarket: ['cle'] },
+  { id: 'nyc', city: 'New York',    dma: 'New York',        inMarket: ['nyg', 'nyj'] },
+  { id: 'la',  city: 'Los Angeles', dma: 'Los Angeles',     inMarket: ['lar', 'lac'] },
+  { id: 'chi', city: 'Chicago',     dma: 'Chicago',         inMarket: ['chi'] },
+];
+// derive an eight-card board: rotate the pool per market (so the boards differ
+// in the demo), drop anyone whose team is in-market (they're not blacked out),
+// take the top eight that remain.
+function deriveBoard(market, i) {
+  const off = (i * 3) % POOL.length;
+  const rotated = POOL.slice(off).concat(POOL.slice(0, off));
+  return rotated.filter(p => !market.inMarket.includes(p.team)).slice(0, 8);
+}
+MARKETS.forEach((m, i) => { m.board = deriveBoard(m, i); });
 
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
   { icon: '📍', key: 'geo', name: 'Geography', source: 'IP → DMA + weekly blackout map',
-    job: 'Double duty: who’s most-drafted here, and which of their games is blacked out here.' },
+    job: 'Double duty: which of the league’s most-drafted are out of market here, and which of their games is blacked out here.' },
   { icon: '😰', key: 'day', name: 'Day → Emotion', source: 'Calendar lookup',
-    job: 'The frame. Monday grief, Sunday-morning panic, Sunday-afternoon helplessness — the tone of the spot.' },
-  { icon: '🏈', key: 'player', name: 'Popular players', source: 'Yahoo ownership + Genius Sports data, geo-filtered',
-    job: 'The hook. The most popular player per position in that market — Yahoo fantasy ownership blended with Genius Sports engagement data. Four faces, one machine.' },
+    job: 'The frame. Monday grief, Sunday-morning panic, Sunday-afternoon helplessness — the tone of the whole board.' },
+  { icon: '🏈', key: 'player', name: 'The eight', source: 'Yahoo ownership + Genius Sports data, geo-filtered',
+    job: 'The wound. The eight most-drafted players in that market — Yahoo fantasy ownership blended with Genius Sports engagement. Shown together, equal weight, never a single face.' },
 ];
 
 /* ── Day → emotion tone grid ───────────────────────────────────────── */
@@ -84,120 +103,63 @@ const DAYS = [
   { id: 'sun-night', short: 'Sun Night', name: 'Sunday Night', dow: 0, emotion: 'Exhausted hope',       register: 'Spent, hanging by a thread',       accent: '#6c7cff' },
 ];
 
-/* ── Markets — city held constant, day flips the mood ──────────────── */
-const MARKETS = [
-  {
-    id: 'cle', city: 'Cleveland', dma: 'Cleveland-Akron',
-    geoClause: 'same state, still out of market', punchline: 'Same state. Different screen.',
-    roster: [
-      { pos: 'QB', name: 'Joe Burrow',     team: 'cin', city: 'Cincinnati',   pid: 3915511 },
-      { pos: 'RB', name: 'Bijan Robinson',  team: 'atl', city: 'Atlanta',      pid: 4430807 },
-      { pos: 'WR', name: "Ja'Marr Chase",   team: 'cin', city: 'Cincinnati',   pid: 4362628, hook: true },
-      { pos: 'TE', name: 'Trey McBride',    team: 'ari', city: 'Arizona',      pid: 4361307 },
-    ],
-  },
-  {
-    id: 'nyc', city: 'New York', dma: 'New York',
-    geoClause: 'off your local Fox and CBS', punchline: 'Different screen entirely.',
-    roster: [
-      { pos: 'QB', name: 'Josh Allen',     team: 'buf', city: 'Buffalo',       pid: 3918298 },
-      { pos: 'RB', name: 'Bijan Robinson', team: 'atl', city: 'Atlanta',       pid: 4430807 },
-      { pos: 'WR', name: "Ja'Marr Chase",  team: 'cin', city: 'Cincinnati',    pid: 4362628, hook: true },
-      { pos: 'TE', name: 'George Kittle',  team: 'sf',  city: 'San Francisco', pid: 3040151 },
-    ],
-  },
-  {
-    id: 'la', city: 'Los Angeles', dma: 'Los Angeles',
-    geoClause: '1,900 miles out of market', punchline: 'A different time zone, a different screen.',
-    roster: [
-      { pos: 'QB', name: 'Patrick Mahomes',  team: 'kc',  city: 'Kansas City',  pid: 3139477 },
-      { pos: 'RB', name: 'Saquon Barkley',   team: 'phi', city: 'Philadelphia', pid: 3929630 },
-      { pos: 'WR', name: 'Justin Jefferson', team: 'min', city: 'Minnesota',    pid: 4262921, hook: true },
-      { pos: 'TE', name: 'George Kittle',    team: 'sf',  city: 'San Francisco', pid: 3040151 },
-    ],
-  },
-  {
-    id: 'chi', city: 'Chicago', dma: 'Chicago',
-    geoClause: 'a division rival you still can’t watch', punchline: 'Same division. Still blacked out.',
-    roster: [
-      { pos: 'QB', name: 'Josh Allen',       team: 'buf', city: 'Buffalo',    pid: 3918298 },
-      { pos: 'RB', name: 'Bijan Robinson',   team: 'atl', city: 'Atlanta',    pid: 4430807 },
-      { pos: 'WR', name: 'Justin Jefferson', team: 'min', city: 'Minnesota',  pid: 4262921, hook: true },
-      { pos: 'TE', name: 'Trey McBride',     team: 'ari', city: 'Arizona',    pid: 4361307 },
-    ],
-  },
-];
-
-/* ── Three headline variants per mockup. Same image, different copy. ──
-   The hook is always: this player is the most-drafted at his position in
-   this market — and you'll miss him without Sunday Ticket. ── */
-const firstName = p => p.name.split(' ')[0];
-// eyebrow: the popularity-in-this-geography fact
-const EYEBROW = (m, p) => `${p.name} — ${m.city}’s most-drafted fantasy ${p.pos} this week`;
-// Three headlines PER DAY, each tuned to that day's emotion. Same image,
-// three selectable copy versions — the tone tracks the calendar (Monday grief
-// is rueful; Sunday-morning panic is all-caps countdown energy). The hook is
-// always: this is the most-popular player at his position in this market, and
-// you'll miss him without Sunday Ticket.
+/* ── Headlines speak to the COLLECTIVE — the eight, the whole lineup —
+   never a single name. Three copy versions per day, tuned to that day's
+   emotion. The hook is always: your whole lineup is most-drafted, all
+   out-of-market, and you'll miss every one without Sunday Ticket. ── */
 const DAY_HEADLINES = {
-  // Monday — grief, rueful morning-after
   'mon': [
-    (m, d, p) => `Monday grief: you’re mourning a ${firstName(p)} game you never saw.`,
-    (m, d, p) => `RIP your weekend. ${firstName(p)} went off — you got the box score.`,
-    (m, d, p) => `Five stages of grief. You’re stuck on “${firstName(p)} did WHAT?”`,
+    (m, d) => `Monday grief: all eight of your starters played — none on a ${m.city} screen.`,
+    (m, d) => `RIP your weekend. Eight studs went off; you got eight box scores.`,
+    (m, d) => `Five stages of grief, eight players deep. ${m.city} aired none of them.`,
   ],
-  // Tuesday — resentment turning to hope, the fresh-start pivot
   'tue': [
-    (m, d, p) => `New week, same blackout: ${firstName(p)} still isn’t on your TV.`,
-    (m, d, p) => `The waiver wire’s open. Your channel lineup isn’t.`,
-    (m, d, p) => `Hope is a ${m.city} fan refreshing ${firstName(p)}’s stat line.`,
+    (m, d) => `New week, same blackout: your eight still aren’t on ${m.city} TV.`,
+    (m, d) => `The waiver wire’s open. Your channel lineup still isn’t.`,
+    (m, d) => `Hope is eight stat lines you refreshed because you couldn’t watch.`,
   ],
-  // Wednesday — anxious gambling, wry and knowing
   'wed': [
-    (m, d, p) => `You’d bet the house on ${firstName(p)}. You can’t even watch him.`,
-    (m, d, p) => `Hump-day math: 100% rostered, 0% on your screen.`,
-    (m, d, p) => `${firstName(p)}’s a lock this week. Seeing him? Long odds.`,
+    (m, d) => `You’d bet the house on all eight. ${m.city} can’t show you one.`,
+    (m, d) => `Hump-day math: eight starters, 0% on your screen.`,
+    (m, d) => `Eight locks this week. Seeing them in ${m.city}? Long odds.`,
   ],
-  // Thursday — reckless commitment, the contrast (a game you CAN see)
   'thu': [
-    (m, d, p) => `Tonight you get a game. Sunday, ${firstName(p)} vanishes.`,
-    (m, d, p) => `Thursday’s on. ${firstName(p)}? Out of market, out of luck.`,
-    (m, d, p) => `Enjoy the one game they give you — ${firstName(p)} isn’t in it.`,
+    (m, d) => `Tonight you get one game. Sunday, all eight vanish.`,
+    (m, d) => `Thursday’s on. Your eight? Out of market, out of luck.`,
+    (m, d) => `Enjoy the one game they give you — your eight aren’t in it.`,
   ],
-  // Friday — studious dread, prep-mode and ominous
   'fri': [
-    (m, d, p) => `You studied every matchup. ${firstName(p)}’s won’t be on your TV.`,
-    (m, d, p) => `Friday prep, Sunday dread: ${firstName(p)} plays where you can’t look.`,
-    (m, d, p) => `Lineup locked, ${firstName(p)} in — your channels still don’t carry him.`,
+    (m, d) => `You studied all eight matchups. ${m.city} carries none of them.`,
+    (m, d) => `Friday prep, Sunday dread: your eight play where you can’t look.`,
+    (m, d) => `Lineup locked, all eight in — your channels still don’t carry them.`,
   ],
-  // Saturday — restless second-guessing, coiled and anticipatory
   'sat': [
-    (m, d, p) => `Start ${firstName(p)}? Bench him? Moot if you can’t see him.`,
-    (m, d, p) => `One sleep till kickoff. Zero chance ${m.city} airs ${firstName(p)}.`,
-    (m, d, p) => `Saturday scaries: tomorrow ${firstName(p)} plays off your channels.`,
+    (m, d) => `Start them? Bench them? Moot — ${m.city} can’t show your eight.`,
+    (m, d) => `One sleep till kickoff. Zero chance ${m.city} airs your eight.`,
+    (m, d) => `Saturday scaries: tomorrow all eight play off your channels.`,
   ],
-  // Sunday morning — PEAK PANIC, urgent countdown energy
   'sun-am': [
-    (m, d, p) => `KICKOFF IN 1 HOUR — and ${firstName(p)} is on ZERO ${m.city} channels. 😰`,
-    (m, d, p) => `PANIC: your ${p.pos}1 ${firstName(p)} is BLACKED OUT. Right. Now.`,
-    (m, d, p) => `Lineups lock, ${firstName(p)} kicks off — your TV has the pregame show.`,
+    (m, d) => `KICKOFF IN 1 HOUR — and all eight are on ZERO ${m.city} channels. 😰`,
+    (m, d) => `PANIC: your entire lineup is BLACKED OUT. All eight. Right now.`,
+    (m, d) => `Lineups lock, eight kick off — your TV has the pregame show.`,
   ],
-  // Sunday afternoon — helplessness, the core wound, present tense
   'sun-pm': [
-    (m, d, p) => `${firstName(p)} is scoring RIGHT NOW — on a screen ${m.city} doesn’t get.`,
-    (m, d, p) => `${firstName(p)} just went off. You’re watching a progress bar.`,
-    (m, d, p) => `Somewhere ${firstName(p)} is winning your week. Not on your TV.`,
+    (m, d) => `All eight are scoring RIGHT NOW — on screens ${m.city} doesn’t get.`,
+    (m, d) => `Your whole lineup just went off. You’re watching a progress bar.`,
+    (m, d) => `Somewhere your eight are winning your week. Not on your TV.`,
   ],
-  // Sunday night — exhausted hope, spent and hanging by a thread
   'sun-night': [
-    (m, d, p) => `Primetime, and your season’s riding on ${firstName(p)} — off-channel.`,
-    (m, d, p) => `One player left: ${firstName(p)}. Of course you can’t see him.`,
-    (m, d, p) => `Last hope, ${firstName(p)} — playing on everything but your TV.`,
+    (m, d) => `Primetime, and your season rides on eight players — all off-channel.`,
+    (m, d) => `Eight starters left. Of course ${m.city} can’t show a single one.`,
+    (m, d) => `Last hope, all eight — playing on everything but your TV.`,
   ],
 };
-// VARIANTS pulls version 1/2/3 for the selected day, with a safe fallback.
-const VARIANTS = [0, 1, 2].map(i => (m, d, p) =>
-  (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun-pm'])[i](m, d, p));
+const VARIANTS = [0, 1, 2].map(i => (m, d) =>
+  (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun-pm'])[i](m, d));
+
+// eyebrow: the popularity-in-this-geography fact, group-framed
+const EYEBROW = m => `${m.city}’s 8 most-drafted — every one out of market`;
+const surname = name => name.split(' ').slice(1).join(' ');
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
 function buildSignals() {
@@ -213,13 +175,14 @@ function buildSignals() {
 
 function buildWeekRail() {
   const m = MARKETS[0]; // Cleveland
-  const p = m.roster.find(r => r.hook);
+  const logos = m.board.slice(0, 4)
+    .map(p => `<img class="mini__lg" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />`).join('');
   document.getElementById('weekRail').innerHTML = DAYS.map(d => `
     <button class="mini" data-day="${d.id}" style="--accent:${d.accent}">
       <span class="mini__top"><span class="mini__day">${d.short}</span><span class="mini__brand">▶ Sunday Ticket</span></span>
       <span class="mini__emo">${d.emotion}</span>
-      <span class="mini__hl">${VARIANTS[2](m, d, p)}</span>
-      <img class="mini__logo" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />
+      <span class="mini__hl">${VARIANTS[2](m, d)}</span>
+      <span class="mini__logos">${logos}<span class="mini__more">+4</span></span>
     </button>`).join('');
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {
     document.getElementById('selDay').value = b.dataset.day;
@@ -231,21 +194,22 @@ function buildWeekRail() {
 
 /* ════════════════════ SECTION 03 — production ════════════════════ */
 function buildProduction() {
-  // 1 · Aggregate — popularity ranked by DMA (real markets, hook player per market)
+  // 1 · Aggregate — the eight most-drafted, ranked by DMA (logo stack)
   const dmas = document.getElementById('prodDmas');
   if (dmas) {
     dmas.innerHTML = MARKETS.map(m => {
-      const p = m.roster.find(r => r.hook) || m.roster[0];
+      const logos = m.board
+        .map(p => `<img src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />`).join('');
       return `<div class="dma">
         <span class="dma__city">${m.city}</span>
         <span class="dma__dma">${m.dma} DMA</span>
-        <span class="dma__top"><img src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />${p.name}</span>
+        <span class="dma__board">${logos}</span>
       </div>`;
     }).join('');
     document.getElementById('prodDmaMore').textContent = `+ ${210 - MARKETS.length} more U.S. DMAs`;
   }
 
-  // 3 · Push to CTV — one fresh asset per day of the week
+  // 3 · Push to CTV — one fresh board per day of the week
   const week = document.getElementById('prodWeek');
   if (week) {
     const WEEK = [
@@ -260,30 +224,26 @@ function buildProduction() {
 function currentSel() {
   const m = MARKETS.find(x => x.id === document.getElementById('selMarket').value);
   const d = DAYS.find(x => x.id === document.getElementById('selDay').value);
-  const pos = document.getElementById('selPos').value;
-  const p = m.roster.find(r => r.pos === pos);
-  return { m, d, p };
+  return { m, d };
 }
 
 function buildMixer() {
   document.getElementById('selMarket').innerHTML = MARKETS.map(m => `<option value="${m.id}">${m.city}</option>`).join('');
   document.getElementById('selDay').innerHTML = DAYS.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
-  document.getElementById('selPos').innerHTML = ['WR', 'QB', 'RB', 'TE'].map(p => `<option value="${p}">${p}</option>`).join('');
 
   document.getElementById('selDay').value = beatForToday();
 
-  ['selMarket', 'selDay', 'selPos'].forEach(id =>
+  ['selMarket', 'selDay'].forEach(id =>
     document.getElementById(id).addEventListener('change', () => { stopReel(); renderMixer(); }));
-  document.getElementById('genBtn').addEventListener('click', () => { stopReel(); generateAsset(); });
+  document.getElementById('genBtn').addEventListener('click', () => { stopReel(); generateBackdrop(); });
   document.getElementById('randBtn').addEventListener('click', randomize);
   document.getElementById('reelBtn').addEventListener('click', toggleReel);
   renderMixer(true);
 }
 
-/* ── slot-machine randomize (feature 4) ──────────────────────────────
-   The three signal selects "roll" and clunk into place one by one, with
-   the whole mockup rolling through combos behind a blur. */
-const POS = ['WR', 'QB', 'RB', 'TE'];
+/* ── slot-machine randomize ──────────────────────────────────────────
+   The two signal selects "roll" and clunk into place — market, then day —
+   with the whole board rolling through combos behind a blur. */
 const pick = a => a[Math.floor(Math.random() * a.length)];
 let spinning = false;
 function randomize() {
@@ -291,11 +251,10 @@ function randomize() {
   stopReel();
   const mEl = document.getElementById('selMarket');
   const dEl = document.getElementById('selDay');
-  const pEl = document.getElementById('selPos');
-  const finalM = pick(MARKETS).id, finalD = pick(DAYS).id, finalP = pick(POS);
+  const finalM = pick(MARKETS).id, finalD = pick(DAYS).id;
 
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    mEl.value = finalM; dEl.value = finalD; pEl.value = finalP;
+    mEl.value = finalM; dEl.value = finalD;
     renderMixer();
     return;
   }
@@ -309,31 +268,27 @@ function randomize() {
   controls.classList.add('is-spinning');
 
   const mIds = MARKETS.map(m => m.id), dIds = DAYS.map(d => d.id);
-  let mDone = false, dDone = false;
+  let mDone = false;
   const flick = setInterval(() => {
     if (!mDone) mEl.value = pick(mIds);
-    if (!dDone) dEl.value = pick(dIds);
-    pEl.value = pick(POS);
-    renderMixer(true);            // instant roll of the whole mockup
+    dEl.value = pick(dIds);
+    renderMixer(true);            // instant roll of the whole board
   }, 75);
 
-  // settle one reel at a time — market, then day, then position
-  setTimeout(() => { mDone = true; mEl.value = finalM; }, 520);
-  setTimeout(() => { dDone = true; dEl.value = finalD; }, 720);
+  // settle one reel at a time — market, then day
+  setTimeout(() => { mDone = true; mEl.value = finalM; }, 560);
   setTimeout(() => {
     clearInterval(flick);
-    pEl.value = finalP;
+    dEl.value = finalD;
     ctv.classList.remove('is-spinning');
     controls.classList.remove('is-spinning');
     btn.disabled = false;
     spinning = false;
     renderMixer();                // final settle, with the headline retype
-  }, 920);
+  }, 900);
 }
 
-/* ── headline typewriter / glitch (feature 5) ────────────────────────
-   Retypes the headline on every change. Panic days type fast with a
-   glitch flicker; slower, heavier emotions type calmly. */
+/* ── headline typewriter / glitch ────────────────────────────────────*/
 let headlineToken = 0;
 function typeHeadline(text, emotion) {
   const el = document.getElementById('ctvHeadline');
@@ -360,10 +315,9 @@ function typeHeadline(text, emotion) {
   step();
 }
 
-/* ── engine auto-reel (feature 3) ────────────────────────────────────
-   Cycles market → day → player every couple seconds so the engine
-   visibly renders a new asset on its own. Uses curated photos (instant,
-   no Gemini call). */
+/* ── engine auto-reel ────────────────────────────────────────────────
+   Cycles market → day every couple seconds so the engine visibly renders
+   a new board on its own. */
 let reelTimer = null;
 function toggleReel() { reelTimer ? stopReel() : startReel(); }
 function startReel() {
@@ -375,7 +329,6 @@ function startReel() {
   const step = () => {
     document.getElementById('selMarket').value = pick(MARKETS).id;
     document.getElementById('selDay').value = pick(DAYS).id;
-    document.getElementById('selPos').value = pick(POS);
     renderMixer();
   };
   step();
@@ -391,11 +344,11 @@ function stopReel() {
   document.getElementById('ctv').classList.remove('is-reeling');
 }
 
-/* ── odometer count-up (feature 3) ───────────────────────────────────*/
+/* ── odometer count-up ───────────────────────────────────────────────*/
 function animateOdometer() {
   const el = document.getElementById('odoNum');
   if (!el) return;
-  const target = 20160; // 210 DMAs × 8 day-moods × 4 positions × 3 versions
+  const target = 5040; // 210 DMAs × 8 day-moods × 3 copy versions
   let started = false;
   const run = () => {
     if (started) return; started = true;
@@ -414,10 +367,9 @@ function animateOdometer() {
   } else { run(); }
 }
 
-/* ── location detection (feature 1), with an opt-out ─────────────────*/
+/* ── location detection, with an opt-out ─────────────────────────────*/
 const GEO_OFF = 'ytst_geo_off';
 const geoEnabled = () => localStorage.getItem(GEO_OFF) !== '1';
-// US state/region → nearest of our four sample markets
 const REGION_MARKET = {
   NY: 'nyc', NJ: 'nyc', CT: 'nyc', MA: 'nyc', RI: 'nyc', NH: 'nyc', VT: 'nyc', ME: 'nyc', PA: 'nyc', MD: 'nyc', DE: 'nyc', DC: 'nyc', VA: 'nyc',
   OH: 'cle', MI: 'cle', IN: 'cle', KY: 'cle', WV: 'cle', TN: 'cle', NC: 'cle', SC: 'cle', GA: 'cle', FL: 'cle', AL: 'cle',
@@ -442,7 +394,7 @@ async function detectLocation() {
       document.getElementById('selMarket').value = id;
       renderMixer();
       const mk = MARKETS.find(m => m.id === id);
-      status.innerHTML = `📍 Detected near <strong>${g.city || mk.region || mk.city}</strong> — showing the ${mk.city} market.`;
+      status.innerHTML = `📍 Detected near <strong>${g.city || mk.city}</strong> — showing the ${mk.city} market.`;
     } else {
       status.textContent = g.city
         ? `📍 ${g.city} — showing a nearby sample market.`
@@ -464,7 +416,6 @@ function initGeo() {
   detectLocation();
 }
 
-
 function beatForToday() {
   const dow = new Date().getDay();
   if (dow === 0) return 'sun-pm';
@@ -474,129 +425,105 @@ function beatForToday() {
 
 function renderMixer(opts) {
   const instant = opts === true || (opts && opts.instant === true);
-  const { m, d, p } = currentSel();
+  const { m, d } = currentSel();
   const ctv = document.getElementById('ctv');
   ctv.style.setProperty('--accent', d.accent);
-  ctv.style.setProperty('--team', (TEAMS[p.team] || {}).glow || d.accent);
+  ctv.style.setProperty('--team', d.accent);
   const room = document.getElementById('room');
   if (room) {
     room.style.setProperty('--accent', d.accent);
-    room.style.setProperty('--team', (TEAMS[p.team] || {}).glow || d.accent);
+    room.style.setProperty('--team', d.accent);
   }
 
   document.getElementById('emoNote').textContent = `${d.emotion} — ${d.register}.`;
   document.getElementById('playerNote').innerHTML =
-    `${p.name} · ${p.city} (${p.team.toUpperCase()}) — out-of-market in ${m.city}.`;
+    `<strong>8 most-drafted starters</strong> · all out-of-market in ${m.city}.`;
 
-  document.getElementById('ctvEyebrow').textContent = EYEBROW(m, p);
-  const headline = VARIANTS[variantIdx](m, d, p);
+  document.getElementById('ctvEyebrow').textContent = EYEBROW(m);
+  const headline = VARIANTS[variantIdx](m, d);
   if (instant) document.getElementById('ctvHeadline').textContent = headline;
   else typeHeadline(headline, d.emotion);
   document.getElementById('stageCap').textContent =
-    `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Player: ${p.name} (${p.team.toUpperCase()})`;
-  renderVariants(m, d, p);
+    `Geography: ${m.dma} · Day→Emotion: ${d.emotion} · Board: ${m.city}’s 8 most-drafted, out-of-market`;
+  renderVariants(m, d);
+  renderBoard(m);
 
-  // generated shot → real photo → team backdrop, in that order
-  applyMedia(imagePrompt(m, d, p), p);
+  // generated stadium backdrop → team/day-tinted plate (CSS default)
+  applyBackdrop(backdropPrompt(d));
 }
 
-/* three copy versions of the same mockup — click to load one into the asset */
+/* ── the board of eight: equal-weight headshot cells ─────────────────*/
+function renderBoard(m) {
+  const el = document.getElementById('ctvBoard');
+  if (!el) return;
+  el.innerHTML = m.board.map(p => `
+    <div class="bcard" style="--team:${(TEAMS[p.team] || {}).glow || '#7a8290'}">
+      <span class="bcard__out">OUT</span>
+      <img class="bcard__face" src="${HEADSHOT(p.pid)}" alt="${p.name}" loading="lazy"
+           onerror="this.style.opacity=0" />
+      <img class="bcard__logo" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />
+      <span class="bcard__name">${surname(p.name)}</span>
+    </div>`).join('');
+}
+
+/* three copy versions of the same board — click to load one into the asset */
 let variantIdx = 0;
-function renderVariants(m, d, p) {
+function renderVariants(m, d) {
   const wrap = document.getElementById('variantTabs');
   wrap.innerHTML = VARIANTS.map((fn, i) => `
     <button class="vtab ${i === variantIdx ? 'is-active' : ''}" data-v="${i}">
       <span class="vtab__n">Version ${i + 1}</span>
-      <span class="vtab__hl">${fn(m, d, p)}</span>
+      <span class="vtab__hl">${fn(m, d)}</span>
     </button>`).join('');
   wrap.querySelectorAll('.vtab').forEach(b => b.addEventListener('click', () => {
     variantIdx = +b.dataset.v;
-    typeHeadline(VARIANTS[variantIdx](m, d, p), d.emotion);
+    typeHeadline(VARIANTS[variantIdx](m, d), d.emotion);
     wrap.querySelectorAll('.vtab').forEach(x => x.classList.toggle('is-active', x === b));
   }));
 }
 
-/* client-side cache: re-viewing a combo is instant, no re-generation */
+/* client-side cache: re-viewing a backdrop is instant, no re-generation */
 const imgCache = {};
-function applyMedia(prompt, p) {
+function applyBackdrop(prompt) {
   const media = document.getElementById('ctvMedia');
   const ctv = document.getElementById('ctv');
-  // Monotonic token: a probe that resolves after the user has moved on is stale
-  // and must not overwrite the newer selection.
-  const token = (media._mediaToken = (media._mediaToken || 0) + 1);
-  const current = () => media._mediaToken === token;
-
-  const backdrop = () => {                 // last resort: team-tinted plate
+  if (imgCache[prompt]) {                  // a generated Gemini backdrop wins
+    media.style.backgroundImage =
+      `linear-gradient(0deg, rgba(4,6,10,.6), rgba(4,6,10,.25)), url("${imgCache[prompt]}")`;
+    media.style.backgroundSize = 'cover';
+    media.style.backgroundPosition = 'center';
+    media.style.backgroundRepeat = 'no-repeat';
+    ctv.classList.add('has-img');
+  } else {                                 // fall back to the team/day-tinted plate
     media.style.cssText = '';
     ctv.classList.remove('has-img');
-  };
-  // ESPN headshot composited over a team-tinted plate. Guaranteed to render
-  // (deterministic per pid), so a mockup is never left blank.
-  const headshot = () => {
-    if (!p) return backdrop();
-    const url = HEADSHOT(p.pid);
-    media.style.backgroundImage =
-      `url("${url}"),` +
-      'radial-gradient(120% 120% at 74% 14%, color-mix(in srgb, var(--team, var(--accent)) 55%, transparent), transparent 62%),' +
-      'linear-gradient(160deg, #14232f, #060a10 72%)';
-    media.style.backgroundSize = 'auto 96%, cover, cover';
-    media.style.backgroundPosition = 'right 4% bottom, center, center';
-    media.style.backgroundRepeat = 'no-repeat';
-    ctv.classList.add('has-img');
-    const probe = new Image();
-    probe.onerror = () => { if (current()) backdrop(); };
-    probe.src = url;
-  };
-  // A full-bleed photo (curated Commons shot, or a generated Gemini shot).
-  const fill = (url, pos, onfail) => {
-    media.style.backgroundImage = `url("${url}")`;
-    media.style.backgroundSize = 'cover';
-    media.style.backgroundPosition = pos;
-    media.style.backgroundRepeat = 'no-repeat';
-    ctv.classList.add('has-img');
-    if (!onfail) return;
-    const probe = new Image();
-    probe.onerror = () => { if (current()) onfail(); };
-    probe.src = url;
-  };
-
-  if (imgCache[prompt]) {                  // a generated Gemini shot wins
-    fill(imgCache[prompt], 'center');
-  } else if (p && PHOTO[p.pid]) {          // curated real photo, headshot on failure
-    // Anchor to the top so the player's head is always in frame: a tall photo
-    // cropped to 16:9 shows only its middle band at 'center', which slices
-    // heads off — 'top' keeps them; 'center' horizontally keeps a wide
-    // (landscape) subject from being cropped out the side.
-    fill(photoUrl(PHOTO[p.pid]), 'center top', headshot);
-  } else {                                 // no curated entry → headshot
-    headshot();
   }
 }
 
-/* image prompt — a clean photographic plate; our chrome supplies all text/branding */
-function imagePrompt(m, d, p) {
-  const t = TEAMS[p.team] || { colors: `${p.city} team colors` };
+/* backdrop prompt — a generic, player-free stadium plate. Our chrome and the
+   real headshots supply everything else, so the generated art never renders a
+   player likeness (rights-clean by construction). */
+function backdropPrompt(d) {
   return [
-    'Cinematic, photoreal 16:9 sports-photography action shot for a connected-TV advertisement.',
-    `Subject: a professional American-football ${p.pos} in a generic ${t.colors} uniform, ${ACTION[p.pos]}, under dramatic stadium floodlights.`,
-    'Real photographic style: motion blur, turf spray, shallow depth of field, telephoto compression, premium broadcast mood.',
+    'Cinematic, photoreal 16:9 establishing shot of an empty professional American-football stadium at dusk — no players, no people in frame.',
+    'Stadium floodlights, drifting field haze, deep shadows, telephoto compression, shallow depth of field, premium broadcast atmosphere.',
     `Emotional tone: ${d.emotion.toLowerCase()} — ${d.register.toLowerCase()}.`,
-    'Keep the left third darker and clean as copy space for an overlaid headline.',
-    'No readable text, no numbers, no team names, no logos, no jersey lettering, no sponsor marks, no watermarks.',
+    'Muted and desaturated, designed to sit behind a grid of overlaid player cards and a headline.',
+    'No readable text, no numbers, no team names, no logos, no jersey lettering, no sponsor marks, no watermarks, no players.',
   ].join(' ');
 }
 
-async function generateAsset() {
-  const { m, d, p } = currentSel();
-  const prompt = imagePrompt(m, d, p);
+async function generateBackdrop() {
+  const { d } = currentSel();
+  const prompt = backdropPrompt(d);
   const btn = document.getElementById('genBtn');
   const loader = document.getElementById('ctvLoader');
   const status = document.getElementById('genStatus');
 
-  // already rendered this exact combo — show it instantly
+  // already rendered this exact backdrop — show it instantly
   if (imgCache[prompt]) {
-    applyMedia(prompt, p);
-    status.textContent = '✓ Showing saved render — change a signal for a new one.';
+    applyBackdrop(prompt);
+    status.textContent = '✓ Showing saved backdrop — change the day for a new one.';
     return;
   }
 
@@ -605,14 +532,12 @@ async function generateAsset() {
   status.textContent = 'Generating with Gemini…';
   const txt = document.getElementById('ctvLoaderTxt');
 
-  // live elapsed counter so the wait never looks frozen
   const t0 = Date.now();
   const tick = setInterval(() => {
     const s = ((Date.now() - t0) / 1000).toFixed(0);
     txt.textContent = `Generating with Gemini… ${s}s`;
   }, 250);
 
-  // hard ceiling so a hung request can't spin forever
   const ctrl = new AbortController();
   const timeout = setTimeout(() => ctrl.abort(), 55000);
 
@@ -626,13 +551,13 @@ async function generateAsset() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.image) {
       const reason = data.error === 'no_key'
-        ? 'Add YTST_KEY in Vercel to generate the photographic hero — showing the styled preview.'
+        ? 'Add YTST_KEY in Vercel to generate the photographic backdrop — showing the styled plate.'
         : (data.message || data.error || `Generation failed (${res.status}).`);
       throw new Error(reason);
     }
     imgCache[prompt] = data.image;
-    applyMedia(prompt, p);
-    status.textContent = `✓ Hero generated in ${((Date.now() - t0) / 1000).toFixed(1)}s.`;
+    applyBackdrop(prompt);
+    status.textContent = `✓ Backdrop generated in ${((Date.now() - t0) / 1000).toFixed(1)}s.`;
   } catch (e) {
     status.textContent = e.name === 'AbortError'
       ? '⚠ Timed out — try again.'
@@ -651,18 +576,17 @@ function buildToday() {
   const d = DAYS.find(x => x.id === beatForToday());
   if (!d) return;
   document.getElementById('todayName').textContent = d.name.replace(' Afternoon', '').replace(' Morning', ' morning').replace(' Night', ' night');
-  document.getElementById('todayMsg').textContent = `${d.emotion} — today's spot writes itself in this register.`;
+  document.getElementById('todayMsg').textContent = `${d.emotion} — today's board writes itself in this register.`;
   document.getElementById('todayChip').hidden = false;
 }
 
-/* ── hero video: deferred load (Beckett treatment) ─────────────────── */
+/* ── hero video: deferred load ─────────────────────────────────────── */
 function initHeroVideo() {
   const v = document.getElementById('heroVid');
   if (!v) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const saveData = navigator.connection && navigator.connection.saveData;
-  if (reduce || saveData) return; // keep the poster still; never autoplay
-  // defer the fetch until the page is otherwise loaded, so it never blocks paint
+  if (reduce || saveData) return;
   const load = () => {
     v.src = 'assets/hero.mp4';
     v.addEventListener('playing', () => v.classList.add('is-ready'), { once: true });
