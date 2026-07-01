@@ -635,6 +635,36 @@ function initInsightGlitch() {
   }, 2900);
 }
 
+/* ── INSIGHT stat counters — slot-machine count-up on scroll-in ─────── */
+function initStatCounters() {
+  const vals = document.querySelectorAll('.istat__val');
+  if (!vals.length) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const ease = t => 1 - Math.pow(1 - t, 3);                 // easeOutCubic — decisive stop
+  const run = el => {
+    const target = parseInt(el.dataset.count, 10) || 0;
+    if (reduce) { el.textContent = target; return; }
+    const dur = 1500; let start = null;
+    const step = ts => {
+      if (start == null) start = ts;
+      const p = Math.min((ts - start) / dur, 1);
+      el.textContent = Math.round(ease(p) * target);
+      el.classList.toggle('is-spinning', p < 1);
+      if (p < 1) requestAnimationFrame(step);
+      else el.textContent = target;
+    };
+    requestAnimationFrame(step);
+  };
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => {
+      if (e.isIntersecting) { run(e.target); io.unobserve(e.target); }
+    }), { threshold: 0.6 });
+    vals.forEach(v => io.observe(v));
+  } else {
+    vals.forEach(run);
+  }
+}
+
 /* ── BRIEF — modal overlay embedding the Google Doc ───────────────────
    Uses the /preview endpoint (embeddable); /edit refuses to iframe. If the
    doc's sharing blocks embedding, the "Open in Google Docs" link is the
@@ -738,6 +768,7 @@ animateOdometer();
 initExpand();
 initBoardGlitch();
 initInsightGlitch(); // glitch-swaps the INSIGHT stakes phrase with "fantasy sports"
+initStatCounters();  // slot-machine count-up on the 3 INSIGHT stats
 initSpotAutoplay(); // plays the :15 spot once when the mock-up scrolls into view
 initGeo();          // detects market + seeds the mixer (after buildMixer)
 initBrief();        // BRIEF nav button → Google Doc modal overlay

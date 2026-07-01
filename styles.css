@@ -176,6 +176,8 @@ em { font-style: normal; color: var(--ink); }
 .istat__num { font-family: 'Anton', 'Oswald', sans-serif; font-size: clamp(34px, 5vw, 60px); line-height: .95;
   color: var(--ink); letter-spacing: .01em; }
 .istat__num em { color: var(--red-soft); font-style: normal; }
+.istat__val { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+.istat__val.is-spinning { color: color-mix(in srgb, var(--ink) 82%, var(--red-soft)); }
 .istat__i { font-family: 'Oswald'; font-size: .42em; font-weight: 600; color: var(--red-soft); vertical-align: super; margin-left: 1px; }
 .istat__lbl { margin-top: 10px; font-size: clamp(13px, 1.3vw, 15px); color: var(--ink-dim); line-height: 1.4; max-width: 22ch; }
 .istat__lbl em { font-style: normal; color: var(--ink-faint); }
