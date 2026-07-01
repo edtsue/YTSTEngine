@@ -159,19 +159,17 @@ function buildWeekRail() {
 
 /* ════════════════════ SECTION 03 — production ════════════════════ */
 function buildProduction() {
-  // 1 · Aggregate — the eight top-projected, filtered out-of-market by DMA (logo stack)
+  // 1 · Aggregate — the same eight, reframed by each day's emotion (logo stack)
   const dmas = document.getElementById('prodDmas');
   if (dmas) {
-    dmas.innerHTML = MARKETS.map(m => {
-      const logos = m.board
-        .map(p => `<img src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />`).join('');
-      return `<div class="dma">
-        <span class="dma__city">${m.city}</span>
-        <span class="dma__dma">${m.dma} DMA</span>
+    const logos = MARKETS[0].board
+      .map(p => `<img src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />`).join('');
+    dmas.innerHTML = DAYS.map(d => `<div class="dma dma--day" style="--a:${d.accent}">
+        <span class="dma__city">${d.name}</span>
+        <span class="dma__dma">${d.emotion}</span>
         <span class="dma__board">${logos}</span>
-      </div>`;
-    }).join('');
-    document.getElementById('prodDmaMore').textContent = `+ ${210 - MARKETS.length} more U.S. DMAs`;
+      </div>`).join('');
+    document.getElementById('prodDmaMore').textContent = 'One headline per day · across all 210 DMAs';
   }
 
   // 3 · Push to CTV — one fresh board per day of the week

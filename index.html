@@ -243,7 +243,7 @@
           <h3>Aggregate</h3>
           <img class="prod__logo" src="assets/genius-sports.svg" alt="Genius Sports" />
         </div>
-        <p class="prod__cap">The week's eight highest-projected players, filtered out-of-market by DMA.</p>
+        <p class="prod__cap">The same eight, reframed by each day's emotion — a fresh headline every day of the week.</p>
         <div class="prod__dmas" id="prodDmas"></div>
         <span class="prod__more" id="prodDmaMore"></span>
       </article>
@@ -257,10 +257,19 @@
           <h3>AI asset assembly</h3>
         </div>
         <p class="prod__cap">Three signals composite into a finished CTV ad.</p>
-        <div class="prod__tokens">
-          <span class="prod__token prod__token--p">8 projected top-performing players</span>
-          <span class="prod__token prod__token--g">DMA</span>
-          <span class="prod__token prod__token--h">One headline per day</span>
+        <div class="asm">
+          <div class="asm__ings">
+            <span class="prod__token prod__token--p asm__ing" style="--i:0">8 projected top-performing players</span>
+            <span class="prod__token prod__token--g asm__ing" style="--i:1">DMA</span>
+            <span class="prod__token prod__token--h asm__ing" style="--i:2">One headline per day</span>
+          </div>
+          <div class="asm__cue" aria-hidden="true">↓ assembling</div>
+          <div class="asm__ad" aria-hidden="true">
+            <div class="asm__layer asm__bg" style="--i:1"></div>
+            <div class="asm__layer asm__grid" style="--i:0"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="asm__layer asm__hl" style="--i:2"><b>Eight stars.</b><i>None near you.</i></div>
+            <div class="asm__layer asm__tag" style="--i:1">AD · blackout</div>
+          </div>
         </div>
         <p class="prod__build">→ ad of eight + generated backdrop + headline + blackout chrome, in seconds</p>
       </article>
