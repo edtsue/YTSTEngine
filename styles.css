@@ -78,7 +78,7 @@ em { font-style: normal; color: var(--ink); }
 
 /* ── HERO ── */
 .hero { position: relative; overflow: hidden; }
-.hero__inner { position: relative; z-index: 2; max-width: var(--maxw); margin: 0 auto; padding: 50px 28px 40px; }
+.hero__inner { position: relative; z-index: 2; max-width: var(--maxw); margin: 0 auto; padding: 110px 28px 100px; }
 .hero__video { position: absolute; inset: 0; z-index: 0; }
 .hero__video-el { /* poster shows immediately; deferred src swaps in seamlessly */
   width: 100%; height: 100%; object-fit: cover; opacity: .72; transition: opacity 1.1s ease;
@@ -154,7 +154,7 @@ em { font-style: normal; color: var(--ink); }
 .insight__setup { font-family: 'Archivo', sans-serif; font-weight: 600; color: var(--ink-dim);
   font-size: clamp(18px, 2vw, 26px); letter-spacing: .01em; }
 .insight__big { font-family: 'Anton', 'Oswald', sans-serif; text-transform: uppercase; font-weight: 400;
-  font-size: clamp(40px, 7vw, 86px); line-height: .92; letter-spacing: .01em; margin: 10px 0 0; color: var(--ink); }
+  font-size: clamp(30px, 5.25vw, 65px); line-height: .92; letter-spacing: .01em; margin: 10px 0 0; color: var(--ink); }
 .insight__turn { font-family: 'Archivo', sans-serif; font-weight: 700; letter-spacing: -.015em;
   font-size: clamp(15px, 2.35vw, 30px); line-height: 1.16; margin-top: 26px; white-space: nowrap; color: var(--ink); }
 .insight__hot { color: var(--red); }
@@ -177,7 +177,6 @@ em { font-style: normal; color: var(--ink); }
   color: var(--ink); letter-spacing: .01em; }
 .istat__num em { color: var(--red-soft); font-style: normal; }
 .istat__val { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
-.istat__val.is-spinning { color: color-mix(in srgb, var(--ink) 82%, var(--red-soft)); }
 .istat__i { font-family: 'Oswald'; font-size: .42em; font-weight: 600; color: var(--red-soft); vertical-align: super; margin-left: 1px; }
 .istat__lbl { margin-top: 10px; font-size: clamp(13px, 1.3vw, 15px); color: var(--ink-dim); line-height: 1.4; max-width: 22ch; }
 .istat__lbl em { font-style: normal; color: var(--ink-faint); }

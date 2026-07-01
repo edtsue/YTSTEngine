@@ -648,10 +648,12 @@ function initStatCounters() {
     const step = ts => {
       if (start == null) start = ts;
       const p = Math.min((ts - start) / dur, 1);
-      el.textContent = Math.round(ease(p) * target);
-      el.classList.toggle('is-spinning', p < 1);
-      if (p < 1) requestAnimationFrame(step);
-      else el.textContent = target;
+      const e = ease(p);
+      el.textContent = Math.round(e * target);
+      // color scrolls from black → white (var(--ink)) in lockstep with the number
+      el.style.color = `rgb(${Math.round(e * 238)},${Math.round(e * 242)},${Math.round(e * 248)})`;
+      if (p < 1) { requestAnimationFrame(step); }
+      else { el.textContent = target; el.style.color = ''; }   // settle to CSS default
     };
     requestAnimationFrame(step);
   };
