@@ -344,10 +344,12 @@ em { font-style: normal; color: var(--ink); }
 .ctv__hl-accent { display: inline-block; align-self: flex-start; margin-top: 1.8cqw; font-family: 'Anton', 'Oswald', sans-serif; font-style: normal; font-weight: 400; text-transform: uppercase; letter-spacing: .005em; font-size: clamp(9px, 3.1cqw, 21px); line-height: 1.04; color: #0a0d12; background: var(--knock); padding: .22em .5em .28em; border-radius: 2px; box-shadow: 0 3px 16px rgba(0,0,0,.4); }
 .ctv__cta-btn { align-self: flex-start; margin-top: 1cqw; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .02em; font-size: clamp(8px, 2.2cqw, 13px); color: #fff; background: var(--red); padding: .62em 1.05em; border-radius: 999px; box-shadow: 0 4px 16px rgba(255,45,45,.4); }
 .ctv__headline.is-reveal .ctv__hl-lead { animation: hlLead .5s cubic-bezier(.2,.75,.2,1) both; }
-.ctv__headline.is-reveal .ctv__hl-accent { animation: hlAcc .5s .12s ease both; }
+.ctv__headline.is-reveal .ctv__hl-accent { animation: hlAcc .5s .34s cubic-bezier(.2,.75,.2,1) both; }
+.ctv:not(.is-spot) .ctv__headline.is-reveal + .ctv__cta-btn { animation: hlCta .5s .64s cubic-bezier(.2,.75,.2,1) both; }
 @keyframes hlLead { from { opacity: 0; transform: translateY(9px); clip-path: inset(0 100% 0 0); } to { opacity: 1; transform: none; clip-path: inset(0 0 0 0); } }
 @keyframes hlAcc { from { opacity: 0; transform: translateX(-7px); } to { opacity: 1; transform: none; } }
-@media (prefers-reduced-motion: reduce) { .ctv__headline.is-reveal .ctv__hl-lead, .ctv__headline.is-reveal .ctv__hl-accent { animation: none; } }
+@keyframes hlCta { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ctv__headline.is-reveal .ctv__hl-lead, .ctv__headline.is-reveal .ctv__hl-accent, .ctv:not(.is-spot) .ctv__headline.is-reveal + .ctv__cta-btn { animation: none; } }
 
 /* ── the board of eight — equal-weight headshot cells (right column) ── */
 .ctv__board {
