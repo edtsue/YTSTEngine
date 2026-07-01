@@ -111,18 +111,20 @@ const DAYS = [
   { id: 'sun',       short: 'Sun',  name: 'Sunday',            dow: 0, task: 'Lock & watch',        emoji: '🔒', register: 'Last-call projections before the 1:00 lock', accent: '#ff2d2d' },
 ];
 
-/* ── Headlines — ONE best [lead, payoff] pair per day. The LEAD sits the
-   viewer at that day's roster decision with the Genius data edge; the PAYOFF
-   (accent line) is a Sunday Ticket utility — watch every player/game,
-   Fantasy View, out-of-market. Plan → decide → lock → watch. ── */
+/* ── Headlines — ONE best [lead, payoff] pair per day. Fantasy is played in a
+   league of friends, so the stakes are SOCIAL: win the week and you get
+   bragging rights in the group chat; blow it and you're the loser they roast.
+   The LEAD sits you at the day's roster decision + that social stake (Genius
+   data is the edge); the PAYOFF lands the bragging right or the Sunday Ticket
+   watch utility. Plan → decide → lock → flex. ── */
 const DAY_HEADLINES = {
-  'mon': () => ['Genius flags this week’s risers.', 'See them live Sunday.'],
-  'tue': () => ['Lock your waiver claims tonight.', 'Watch the payoff Sunday.'],
-  'wed': () => ['The matchup data says start him.', 'Every game on Sunday Ticket.'],
-  'thu': () => ['Thursday locks in an hour — start him?', 'Track it in Fantasy View.'],
-  'fri': () => ['Inactives dropping. Genius re-projects.', 'Follow them all, out of market.'],
-  'sat': () => ['Set the lineup Genius projects to win.', 'Kick back for Sunday.'],
-  'sun': () => ['Rosters lock at 1:00. Last call.', 'Now watch every player, every game.'],
+  'mon': () => ['Last week’s winner won’t stop gloating.', 'Genius says your turn’s next.'],
+  'tue': () => ['Claim him before the group chat wakes up.', 'Beat your league to the wire.'],
+  'wed': () => ['The matchup data says start him.', 'Bragging rights start Sunday.'],
+  'thu': () => ['Forget to set Thursday? The chat never forgets.', 'Catch it in Fantasy View.'],
+  'fri': () => ['Injuries hit — fix it before your league notices.', 'Follow them all, out of market.'],
+  'sat': () => ['Set the lineup that wins the group chat.', 'Screenshots ready for Sunday.'],
+  'sun': () => ['Rosters lock at 1:00. Winners flex, losers cope.', 'Watch every player, every game.'],
 };
 // the single best [lead, payoff] pair for the selected day
 const headline = d => (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])();
@@ -798,6 +800,30 @@ function initExpand() {
   btn.addEventListener('click', () => room.classList.contains('is-expanded') ? close() : open());
 }
 
+/* ── hero title: the week flaps past and lands on SUNDAY ──────────────
+   MON → TUE → … → SAT flip by (last few slow down), then SUNDAY lands in
+   bold lime with a definitive thump. */
+function initHeroFlap() {
+  const el = document.querySelector('.hero__title-mia');
+  if (!el) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = 'Sunday'; el.classList.add('landed'); return; }
+  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  let i = 0;
+  const step = () => {
+    el.textContent = days[i];
+    if (i < days.length - 1) {
+      el.classList.remove('flap'); void el.offsetWidth; el.classList.add('flap');
+      const slow = i >= days.length - 3;            // decelerate into the landing
+      i++;
+      setTimeout(step, slow ? 300 : 130);
+    } else {
+      el.classList.remove('flap'); void el.offsetWidth;
+      el.classList.add('landed');                   // bold lime SUNDAY + thump
+    }
+  };
+  setTimeout(step, 450);
+}
+
 /* ── hero video: deferred load ─────────────────────────────────────── */
 function initHeroVideo() {
   const v = document.getElementById('heroVid');
@@ -820,6 +846,7 @@ buildWeekRail();
 buildMixer();
 buildProduction();
 initHeroVideo();
+initHeroFlap();     // week flaps past → SUNDAY lands in lime with a thump
 animateOdometer();
 initExpand();
 initBoardGlitch();

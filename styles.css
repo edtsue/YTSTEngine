@@ -96,43 +96,15 @@ em { font-style: normal; color: var(--ink); }
 /* keep the whole wordmark on one line */
 .hero__title--mia { white-space: nowrap; font-size: clamp(28px, 11vw, 118px); }
 
-/* "M.I.A." — signal-lost glitch (no signal = missing from your TV) */
-.hero__title-mia { position: relative; display: inline-block; color: #fff; letter-spacing: .01em; animation: miaFlicker 2.4s steps(1) infinite; }
-.hero__title-mia::before, .hero__title-mia::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; }
-.hero__title-mia::before { color: #ff2d3a; transform: translate(-3px, 1px); animation: miaGlitchR 2.4s steps(1) infinite; }
-.hero__title-mia::after  { color: #1fd8ff; transform: translate(3px, -1px); animation: miaGlitchC 2.4s steps(1) infinite; }
-@keyframes miaFlicker {
-  0%, 100% { opacity: 1; }
-  9% { opacity: .65; } 10% { opacity: 1; }
-  27% { opacity: .4; } 28% { opacity: .92; }
-  44% { opacity: .7; } 45% { opacity: 1; }
-  61% { opacity: .35; } 62% { opacity: .9; }
-  79% { opacity: .6; } 80% { opacity: 1; }
-  93% { opacity: .45; } 94% { opacity: .95; }
-}
-@keyframes miaGlitchR {
-  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(-3px, 1px); }
-  8%  { clip-path: inset(8% 0 72% 0);  transform: translate(-11px, -3px); }
-  16% { clip-path: inset(54% 0 22% 0); transform: translate(9px, 2px); }
-  26% { clip-path: inset(30% 0 46% 0); transform: translate(-8px, 3px); }
-  40% { clip-path: inset(0 0 0 0);     transform: translate(-3px, 1px); }
-  54% { clip-path: inset(74% 0 6% 0);  transform: translate(10px, -2px); }
-  64% { clip-path: inset(16% 0 64% 0); transform: translate(-10px, 2px); }
-  78% { clip-path: inset(44% 0 30% 0); transform: translate(8px, -3px); }
-  92% { clip-path: inset(10% 0 70% 0); transform: translate(-9px, 2px); }
-}
-@keyframes miaGlitchC {
-  0%, 100% { clip-path: inset(0 0 0 0); transform: translate(3px, -1px); }
-  8%  { clip-path: inset(66% 0 10% 0); transform: translate(11px, 2px); }
-  16% { clip-path: inset(12% 0 68% 0); transform: translate(-9px, -2px); }
-  26% { clip-path: inset(48% 0 28% 0); transform: translate(8px, -3px); }
-  40% { clip-path: inset(0 0 0 0);     transform: translate(3px, -1px); }
-  54% { clip-path: inset(20% 0 60% 0); transform: translate(-10px, 2px); }
-  64% { clip-path: inset(58% 0 16% 0); transform: translate(10px, -2px); }
-  78% { clip-path: inset(34% 0 42% 0); transform: translate(-8px, 3px); }
-  92% { clip-path: inset(70% 0 6% 0);  transform: translate(9px, -2px); }
-}
-@media (prefers-reduced-motion: reduce) { .hero__title-mia, .hero__title-mia::before, .hero__title-mia::after { animation: none; } }
+/* "SUNDAY" — the week flaps past and lands on Sunday (Set Your Sunday) */
+.hero__title-mia { position: relative; display: inline-block; color: #fff; letter-spacing: .01em; transform-origin: top center; }
+.hero__title-mia.flap { animation: heroFlap .14s ease; }
+@keyframes heroFlap { 0% { transform: perspective(520px) rotateX(-88deg); opacity: .12; } 100% { transform: none; opacity: 1; } }
+/* the landing — a bold lime SUNDAY with a definitive thump */
+.hero__title-mia.landed { color: var(--knock); animation: heroThump .36s cubic-bezier(.2,.9,.25,1.35) both;
+  text-shadow: 0 0 36px rgba(212,255,61,.45), 0 2px 18px rgba(0,0,0,.9); }
+@keyframes heroThump { 0% { transform: scale(1.34); } 52% { transform: scale(.93); } 78% { transform: scale(1.05); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .hero__title-mia.flap, .hero__title-mia.landed { animation: none; } }
 .hero__lede { margin-top: 26px; max-width: 680px; color: var(--ink-dim); font-size: clamp(15px, 1.7vw, 18px); }
 .hero__lede strong { color: var(--ink); }
 .hero__cta { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
