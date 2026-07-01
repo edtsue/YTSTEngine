@@ -102,12 +102,12 @@ const SIGNALS = [
 /* ── The fantasy planning cycle: each day is a roster DECISION, paired with
    the Genius data that helps make it. Emotion is out; utility is in. ── */
 const DAYS = [
-  { id: 'mon',       short: 'Mon',  name: 'Monday',            dow: 1, task: 'Plan the week',       emoji: '📊', register: 'This week’s projected risers, flagged',     accent: '#5b8cff' },
-  { id: 'tue',       short: 'Tue',  name: 'Tuesday',           dow: 2, task: 'Set your claims',     emoji: '📝', register: 'Projections rank your waiver targets',      accent: '#3fb6a8' },
-  { id: 'wed',       short: 'Wed',  name: 'Wednesday',         dow: 3, task: 'Read the matchups',   emoji: '🔍', register: 'Matchup grades sort your starts',           accent: '#e0a83d' },
-  { id: 'thu',       short: 'Thu',  name: 'Thursday',          dow: 4, task: 'TNF start / sit',     emoji: '🏈', register: 'Final Thursday-night projections land',      accent: '#ff7a3d' },
-  { id: 'fri',       short: 'Fri',  name: 'Friday',            dow: 5, task: 'Injury check',        emoji: '🩹', register: 'Injury-adjusted projections update',         accent: '#9b6cff' },
-  { id: 'sat',       short: 'Sat',  name: 'Saturday',          dow: 6, task: 'Finalize the lineup', emoji: '✅', register: 'The model’s best lineup, set',               accent: '#ff944d' },
+  { id: 'mon',       short: 'Mon',  name: 'Monday',            dow: 1, task: 'Plan the week',       emoji: '📊', register: 'This week’s projected risers, flagged',     accent: '#ff2d2d' },
+  { id: 'tue',       short: 'Tue',  name: 'Tuesday',           dow: 2, task: 'Set your claims',     emoji: '📝', register: 'Projections rank your waiver targets',      accent: '#ff2d2d' },
+  { id: 'wed',       short: 'Wed',  name: 'Wednesday',         dow: 3, task: 'Read the matchups',   emoji: '🔍', register: 'Matchup grades sort your starts',           accent: '#ff2d2d' },
+  { id: 'thu',       short: 'Thu',  name: 'Thursday',          dow: 4, task: 'TNF start / sit',     emoji: '🏈', register: 'Final Thursday-night projections land',      accent: '#ff2d2d' },
+  { id: 'fri',       short: 'Fri',  name: 'Friday',            dow: 5, task: 'Injury check',        emoji: '🩹', register: 'Injury-adjusted projections update',         accent: '#ff2d2d' },
+  { id: 'sat',       short: 'Sat',  name: 'Saturday',          dow: 6, task: 'Finalize the lineup', emoji: '✅', register: 'The model’s best lineup, set',               accent: '#ff2d2d' },
   { id: 'sun',       short: 'Sun',  name: 'Sunday',            dow: 0, task: 'Lock & watch',        emoji: '🔒', register: 'Last-call projections before the 1:00 lock', accent: '#ff2d2d' },
 ];
 
@@ -672,7 +672,7 @@ function initInsightGlitch() {
   const el = document.querySelector('.insight__stakes');
   if (!el) return;
   const words  = ['something even higher stakes', 'fantasy sports', 'your lineup', 'fantasy sports', 'the waiver wire', 'fantasy sports', 'start/sit calls', 'fantasy sports', 'roster moves', 'fantasy sports', 'the data edge', 'fantasy sports'];
-  const colors = ['#5b8cff', '#d4ff3d', '#3fb6a8', '#d4ff3d', '#e0a83d', '#d4ff3d', '#9b6cff', '#d4ff3d', '#ff944d', '#d4ff3d', '#5b8cff', '#d4ff3d'];
+  const colors = ['#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d'];
   let i = 0;
   el.style.color = colors[0];
   const swap = () => { i = (i + 1) % words.length; el.textContent = words[i]; el.style.color = colors[i]; };
@@ -806,19 +806,24 @@ function initExpand() {
 function initHeroFlap() {
   const el = document.querySelector('.hero__title-mia');
   if (!el) return;
+  const inner = document.querySelector('.hero__inner');
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = 'Sunday'; el.classList.add('landed'); return; }
-  const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  const wk = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const seq = wk.concat(wk).concat(['Sunday']);     // two fast spins through the week, then SLAM on Sunday
   let i = 0;
   const step = () => {
-    el.textContent = days[i];
-    if (i < days.length - 1) {
+    el.textContent = seq[i];
+    if (i < seq.length - 1) {
       el.classList.remove('flap'); void el.offsetWidth; el.classList.add('flap');
-      const slow = i >= days.length - 3;            // decelerate into the landing
+      const remaining = seq.length - 1 - i;         // blur fast in the middle, brake hard into the landing
+      const d = remaining <= 3 ? 300 : (remaining <= 6 ? 150 : 80);
       i++;
-      setTimeout(step, slow ? 300 : 130);
+      setTimeout(step, d);
     } else {
       el.classList.remove('flap'); void el.offsetWidth;
-      el.classList.add('landed');                   // bold lime SUNDAY + thump
+      el.classList.add('landed');                   // bold lime SUNDAY + slam + glow + ring
+      if (inner) { inner.classList.remove('shake'); void inner.offsetWidth; inner.classList.add('shake');
+        setTimeout(() => inner.classList.remove('shake'), 460); }
     }
   };
   setTimeout(step, 450);
