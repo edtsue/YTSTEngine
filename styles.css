@@ -77,7 +77,7 @@ em { font-style: normal; color: var(--ink); }
 @media (max-width: 620px) { .nav__brief { padding: 6px 12px; } }
 
 /* ── HERO ── */
-.hero { position: relative; overflow: hidden; }
+.hero { position: relative; overflow: hidden; min-height: 92vh; display: flex; flex-direction: column; justify-content: center; }
 .hero__inner { position: relative; z-index: 2; max-width: var(--maxw); margin: 0 auto; padding: 110px 28px 100px; }
 .hero__video { position: absolute; inset: 0; z-index: 0; }
 .hero__video-el { /* poster shows immediately; deferred src swaps in seamlessly */
