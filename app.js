@@ -1,5 +1,5 @@
 /* ════════════════════════════════════════════════════════════════════
-   SUNDAY'S MOST WANTED
+   SET YOUR SUNDAY
    A contextual CTV engine for YouTube Sunday Ticket × Fantasy.
 
    The pitch: Genius Sports data helps fantasy managers set a smarter lineup
