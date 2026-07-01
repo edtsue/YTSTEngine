@@ -95,7 +95,7 @@ const SIGNALS = [
 const DAYS = [
   { id: 'mon',       short: 'Mon',  name: 'Monday',            dow: 1, emotion: 'Grief',                 register: 'Rueful, the morning-after',        accent: '#5b8cff' },
   { id: 'tue',       short: 'Tue',  name: 'Tuesday',           dow: 2, emotion: 'Resentment → hope',     register: 'The fresh-start pivot',            accent: '#3fb6a8' },
-  { id: 'wed',       short: 'Wed',  name: 'Wednesday',         dow: 3, emotion: 'Anxious gambling',      register: 'Wry, knowing',                     accent: '#e0a83d' },
+  { id: 'wed',       short: 'Wed',  name: 'Wednesday',         dow: 3, emotion: 'Anxious anticipation',  register: 'Wry, knowing',                     accent: '#e0a83d' },
   { id: 'thu',       short: 'Thu',  name: 'Thursday',          dow: 4, emotion: 'Reckless commitment',   register: 'The contrast — a game you can see', accent: '#ff7a3d' },
   { id: 'fri',       short: 'Fri',  name: 'Friday',            dow: 5, emotion: 'Studious dread',        register: 'Prep-mode, ominous',               accent: '#9b6cff' },
   { id: 'sat',       short: 'Sat',  name: 'Saturday',          dow: 6, emotion: 'Restless 2nd-guessing', register: 'Coiled, anticipatory',             accent: '#ff944d' },
@@ -109,7 +109,7 @@ const DAYS = [
 const DAY_HEADLINES = {
   'mon': m => ['Your studs all hit their peak.', 'Your TV stayed bleak.'],
   'tue': m => ['New week, new waiver dreams.', 'Same off-air schemes.'],
-  'wed': m => ['Eight stone-cold locks.', 'Zero on your box.'],
+  'wed': m => ['Eight projected to pop.', 'Your screen? A flop.'],
   'thu': m => ['One game on tonight.', 'Then they’re out of sight.'],
   'fri': m => ['Lineup locked and read.', 'Your channels fill with dread.'],
   'sat': m => ['Start ’em? Sit ’em?', 'You can’t even get ’em.'],
