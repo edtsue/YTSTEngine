@@ -118,7 +118,7 @@ const DAYS = [
    data is the edge); the PAYOFF lands the bragging right or the Sunday Ticket
    watch utility. Plan → decide → lock → flex. ── */
 const DAY_HEADLINES = {
-  'mon': () => ['Last week’s winner won’t stop gloating.', 'Genius says your turn’s next.'],
+  'mon': () => ['Last week’s winner won’t stop gloating.', 'This Sunday, you answer back.'],
   'tue': () => ['Claim him before the group chat wakes up.', 'Beat your league to the wire.'],
   'wed': () => ['The matchup data says start him.', 'Bragging rights start Sunday.'],
   'thu': () => ['Forget to set Thursday? The chat never forgets.', 'Catch it in Fantasy View.'],
