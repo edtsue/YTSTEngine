@@ -650,8 +650,8 @@ function initStatCounters() {
       const p = Math.min((ts - start) / dur, 1);
       const e = ease(p);
       el.textContent = Math.round(e * target);
-      // color scrolls from black → white (var(--ink)) in lockstep with the number
-      el.style.color = `rgb(${Math.round(e * 238)},${Math.round(e * 242)},${Math.round(e * 248)})`;
+      // color scrolls from a dark-but-visible grey → white (var(--ink)) in lockstep with the number
+      el.style.color = `rgb(${Math.round(70 + e * 168)},${Math.round(72 + e * 170)},${Math.round(78 + e * 170)})`;
       if (p < 1) { requestAnimationFrame(step); }
       else { el.textContent = target; el.style.color = ''; }   // settle to CSS default
     };
