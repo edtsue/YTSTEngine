@@ -87,19 +87,19 @@ const SIGNALS = [
     job: 'Double duty: which of the week’s top-projected players are out of market here, and which of their games is blacked out here.' },
   { icon: '😰', key: 'day', name: 'Day → Emotion', source: 'Calendar lookup',
     job: 'The frame. Monday grief, Sunday-morning panic, Sunday-afternoon helplessness — the tone of the whole ad.' },
-  { icon: '🏈', key: 'player', name: 'The eight', source: 'Genius Sports performance projections, geo-filtered',
-    job: 'The wound. The eight players projected to perform best this week — modeled on Genius Sports performance data, then geo-filtered to the ones out of market. Shown together, equal weight, never a single face.' },
+  { icon: '🏈', key: 'player', name: 'The Elite Eight', source: 'Genius Sports performance projections, geo-filtered',
+    job: 'The wound. The Elite Eight players projected to perform best this week — modeled on Genius Sports performance data, then geo-filtered to the ones out of market. Shown together, equal weight, never a single face.' },
 ];
 
 /* ── Day → emotion tone grid ───────────────────────────────────────── */
 const DAYS = [
-  { id: 'mon',       short: 'Mon',  name: 'Monday',            dow: 1, emotion: 'Grief',                 register: 'Rueful, the morning-after',        accent: '#5b8cff' },
-  { id: 'tue',       short: 'Tue',  name: 'Tuesday',           dow: 2, emotion: 'Resentment → hope',     register: 'The fresh-start pivot',            accent: '#3fb6a8' },
-  { id: 'wed',       short: 'Wed',  name: 'Wednesday',         dow: 3, emotion: 'Anxious anticipation',  register: 'Wry, knowing',                     accent: '#e0a83d' },
-  { id: 'thu',       short: 'Thu',  name: 'Thursday',          dow: 4, emotion: 'Reckless commitment',   register: 'The contrast — a game you can see', accent: '#ff7a3d' },
-  { id: 'fri',       short: 'Fri',  name: 'Friday',            dow: 5, emotion: 'Studious dread',        register: 'Prep-mode, ominous',               accent: '#9b6cff' },
-  { id: 'sat',       short: 'Sat',  name: 'Saturday',          dow: 6, emotion: 'Restless 2nd-guessing', register: 'Coiled, anticipatory',             accent: '#ff944d' },
-  { id: 'sun',       short: 'Sun',  name: 'Sunday',            dow: 0, emotion: 'Helplessness',          register: 'The core wound — present tense',    accent: '#ff2d2d' },
+  { id: 'mon',       short: 'Mon',  name: 'Monday',            dow: 1, emotion: 'Grief',                 emoji: '😔', register: 'Rueful, the morning-after',        accent: '#5b8cff' },
+  { id: 'tue',       short: 'Tue',  name: 'Tuesday',           dow: 2, emotion: 'Resentment → hope',     emoji: '😤', register: 'The fresh-start pivot',            accent: '#3fb6a8' },
+  { id: 'wed',       short: 'Wed',  name: 'Wednesday',         dow: 3, emotion: 'Anxious anticipation',  emoji: '😰', register: 'Wry, knowing',                     accent: '#e0a83d' },
+  { id: 'thu',       short: 'Thu',  name: 'Thursday',          dow: 4, emotion: 'Reckless commitment',   emoji: '🤪', register: 'The contrast — a game you can see', accent: '#ff7a3d' },
+  { id: 'fri',       short: 'Fri',  name: 'Friday',            dow: 5, emotion: 'Studious dread',        emoji: '😨', register: 'Prep-mode, ominous',               accent: '#9b6cff' },
+  { id: 'sat',       short: 'Sat',  name: 'Saturday',          dow: 6, emotion: 'Restless 2nd-guessing', emoji: '😬', register: 'Coiled, anticipatory',             accent: '#ff944d' },
+  { id: 'sun',       short: 'Sun',  name: 'Sunday',            dow: 0, emotion: 'Helplessness',          emoji: '😭', register: 'The core wound — present tense',    accent: '#ff2d2d' },
 ];
 
 /* ── Headlines — playful, witty, concise. ONE best headline per day, each
@@ -109,7 +109,7 @@ const DAYS = [
 const DAY_HEADLINES = {
   'mon': m => ['Your studs all hit their peak.', 'Your TV stayed bleak.'],
   'tue': m => ['New week, new waiver dreams.', 'Same off-air schemes.'],
-  'wed': m => ['Eight projected to pop.', 'Your screen? A flop.'],
+  'wed': m => ['Elite Eight, projected to pop.', 'Your screen? A flop.'],
   'thu': m => ['One game on tonight.', 'Then they’re out of sight.'],
   'fri': m => ['Lineup locked and read.', 'Your channels fill with dread.'],
   'sat': m => ['Start ’em? Sit ’em?', 'You can’t even get ’em.'],
@@ -128,7 +128,7 @@ function buildSignals() {
   document.getElementById('signals').innerHTML = SIGNALS.map(s => `
     <article class="sig sig--${s.key}">
       <div class="sig__icon">${s.icon}</div>
-      <h3>${s.name}</h3>
+      <h3>${s.name}${s.key === 'player' ? ' <span class="first-badge first-badge--sm">First time ever</span>' : ''}</h3>
       <div class="sig__src">${s.source}</div>
       <p class="sig__job">${s.job}</p>
       ${s.key === 'player' ? '<div class="sig__logos"><img class="sig__srclogo" src="assets/genius-sports.svg" alt="Genius Sports" /></div>' : ''}
@@ -137,8 +137,6 @@ function buildSignals() {
 
 function buildWeekRail() {
   const m = MARKETS[0]; // Cleveland
-  const logos = m.board.slice(0, 4)
-    .map(p => `<img class="mini__lg" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />`).join('');
   document.getElementById('weekRail').innerHTML = DAYS.map(d => `
     <button class="mini" data-day="${d.id}" style="--accent:${d.accent}">
       <span class="mini__rings" aria-hidden="true"></span>
@@ -146,7 +144,7 @@ function buildWeekRail() {
       <span class="mini__body">
         <span class="mini__emo">${d.emotion}</span>
         <span class="mini__hl">${headlineText(m, d)}</span>
-        <span class="mini__logos">${logos}<span class="mini__more">+4</span></span>
+        <span class="mini__face" aria-hidden="true">${d.emoji}</span>
       </span>
     </button>`).join('');
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {
@@ -155,32 +153,59 @@ function buildWeekRail() {
     renderMixer();
     document.getElementById('mixer').scrollIntoView({ behavior: 'smooth' });
   }));
+  initWeekAutoScroll();
+}
+
+// slow auto-scroll: Monday → Sunday, hold, snap back to Monday, repeat
+function initWeekAutoScroll() {
+  const rail = document.getElementById('weekRail');
+  if (!rail || (typeof reduceMotion === 'function' && reduceMotion())) return;
+  const SPEED = 0.4;                 // px/frame — a slow drift
+  let paused = false, phase = 'scroll', hold = 0, pos = 0;
+  const pause = () => { paused = true; };
+  const resume = () => { paused = false; pos = rail.scrollLeft; };
+  ['pointerenter', 'pointerdown', 'focusin'].forEach(e => rail.addEventListener(e, pause, { passive: true }));
+  ['pointerleave', 'focusout'].forEach(e => rail.addEventListener(e, resume));
+  rail.style.scrollSnapType = 'none';   // don't fight the drift
+  function tick() {
+    const max = rail.scrollWidth - rail.clientWidth;
+    if (max > 4 && !paused) {
+      if (phase === 'scroll') {
+        pos += SPEED;
+        if (pos >= max) { pos = max; phase = 'holdEnd'; hold = 100; }
+        rail.scrollLeft = pos;
+      } else if (phase === 'holdEnd') {
+        if (--hold <= 0) { phase = 'snap'; hold = 70; rail.scrollTo({ left: 0, behavior: 'smooth' }); }
+      } else if (phase === 'snap') {
+        if (--hold <= 0) { pos = 0; phase = 'scroll'; }
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 }
 
 /* ════════════════════ SECTION 03 — production ════════════════════ */
 function buildProduction() {
-  // 1 · Aggregate — the same eight, reframed by each day's emotion (logo stack)
+  // 1 · Aggregate — the same eight, reframed by each day's emotion
   const dmas = document.getElementById('prodDmas');
   if (dmas) {
-    const logos = MARKETS[0].board
-      .map(p => `<img src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />`).join('');
     dmas.innerHTML = DAYS.map(d => `<div class="dma dma--day" style="--a:${d.accent}">
         <span class="dma__city">${d.name}</span>
         <span class="dma__dma">${d.emotion}</span>
-        <span class="dma__board">${logos}</span>
       </div>`).join('');
     document.getElementById('prodDmaMore').textContent = 'One headline per day · across all 210 DMAs';
   }
 
-  // 3 · Push to CTV — one fresh board per day of the week
-  const week = document.getElementById('prodWeek');
-  if (week) {
-    const WEEK = [
-      ['Mon', '#5b8cff'], ['Tue', '#3fb6a8'], ['Wed', '#e0a83d'], ['Thu', '#ff7a3d'],
-      ['Fri', '#9b6cff'], ['Sat', '#ff944d'], ['Sun', '#ff2d2d'],
-    ];
-    week.innerHTML = WEEK.map(([s, a]) => `<span class="wk" style="--a:${a}">${s}</span>`).join('');
+  // 2 · AI asset assembly — the ingredients that show up in the composited ad:
+  //     DMA (location + blackout chrome), the eight (headshots), the headline.
+  const asmGrid = document.getElementById('asmGrid');
+  if (asmGrid) {
+    asmGrid.innerHTML = MARKETS[0].board.map(p =>
+      `<span class="asm__cell"><img src="${HEADSHOT(p.pid)}" alt="" loading="lazy" onerror="this.style.opacity=0" /></span>`).join('');
   }
+  const asmDma = document.getElementById('asmDma');
+  if (asmDma) asmDma.textContent = `${MARKETS[0].dma} DMA · blackout`;
 }
 
 /* ════════════════════ SECTION 02 — the mixer ════════════════════ */
@@ -583,15 +608,6 @@ async function generateBackdrop() {
   }
 }
 
-/* ── contextual day-of-week chip in the hero ───────────────────────── */
-function buildToday() {
-  const d = DAYS.find(x => x.id === beatForToday());
-  if (!d) return;
-  document.getElementById('todayName').textContent = d.name.replace(' Afternoon', '').replace(' Morning', ' morning').replace(' Night', ' night');
-  document.getElementById('todayMsg').textContent = `${d.emotion} — today's ad writes itself in this register.`;
-  document.getElementById('todayChip').hidden = false;
-}
-
 /* ── random signal glitch on the board, one player at a time ───────── */
 /* ── INSIGHT — glitch-swap the stakes phrase with "fantasy sports" ─────
    Every few seconds the lime phrase glitches (chromatic split) and, mid-
@@ -599,8 +615,8 @@ function buildToday() {
 function initInsightGlitch() {
   const el = document.querySelector('.insight__stakes');
   if (!el) return;
-  const words  = ['something even higher stakes', 'fantasy sports', 'emotions'];
-  const colors = ['#5b8cff', '#d4ff3d', '#9b6cff'];   // stakes=blue · fantasy sports=lime · emotions=purple
+  const words  = ['something even higher stakes', 'fantasy sports', '😭', 'emotions', '😰', '🤯', '😤', '😩'];
+  const colors = ['#5b8cff', '#d4ff3d', '#ff5a4d', '#9b6cff', '#3fb6a8', '#e0a83d', '#ff944d', '#ff2d2d'];
   let i = 0;
   el.style.color = colors[0];
   const swap = () => { i = (i + 1) % words.length; el.textContent = words[i]; el.style.color = colors[i]; };
@@ -617,6 +633,28 @@ function initInsightGlitch() {
     setTimeout(swap, 150);                                  // swap mid-glitch
     setTimeout(() => el.classList.remove('is-glitching'), 440);
   }, 2900);
+}
+
+/* ── BRIEF — modal overlay embedding the Google Doc ───────────────────
+   Uses the /preview endpoint (embeddable); /edit refuses to iframe. If the
+   doc's sharing blocks embedding, the "Open in Google Docs" link is the
+   fallback. The iframe src is set on first open so it doesn't load upfront. */
+function initBrief() {
+  const modal = document.getElementById('briefModal');
+  const btn = document.getElementById('briefBtn');
+  const frame = document.getElementById('briefFrame');
+  if (!modal || !btn || !frame) return;
+  const SRC = 'https://docs.google.com/document/d/1A_CQNyy7HaVu7_4b_4H0bxm8AY2sc5RIOoSjI0Sr4gs/preview';
+  const open = () => {
+    if (!frame.getAttribute('src')) frame.setAttribute('src', SRC);
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    document.getElementById('briefClose').focus();
+  };
+  const close = () => { modal.hidden = true; document.body.style.overflow = ''; btn.focus(); };
+  btn.addEventListener('click', open);
+  modal.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', close));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
 }
 
 function initBoardGlitch() {
@@ -695,7 +733,6 @@ buildSignals();
 buildWeekRail();
 buildMixer();
 buildProduction();
-buildToday();
 initHeroVideo();
 animateOdometer();
 initExpand();
@@ -703,3 +740,4 @@ initBoardGlitch();
 initInsightGlitch(); // glitch-swaps the INSIGHT stakes phrase with "fantasy sports"
 initSpotAutoplay(); // plays the :15 spot once when the mock-up scrolls into view
 initGeo();          // detects market + seeds the mixer (after buildMixer)
+initBrief();        // BRIEF nav button → Google Doc modal overlay
