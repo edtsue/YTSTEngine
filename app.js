@@ -599,11 +599,11 @@ function buildToday() {
 function initInsightGlitch() {
   const el = document.querySelector('.insight__stakes');
   if (!el) return;
-  const words  = ['something even higher stakes', 'fantasy sports'];
-  const colors = ['#5b8cff', '#d4ff3d'];   // stakes = blue · fantasy sports = lime
+  const words  = ['something even higher stakes', 'fantasy sports', 'emotions'];
+  const colors = ['#5b8cff', '#d4ff3d', '#9b6cff'];   // stakes=blue · fantasy sports=lime · emotions=purple
   let i = 0;
   el.style.color = colors[0];
-  const swap = () => { i ^= 1; el.textContent = words[i]; el.style.color = colors[i]; };
+  const swap = () => { i = (i + 1) % words.length; el.textContent = words[i]; el.style.color = colors[i]; };
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let onScreen = true;
   if ('IntersectionObserver' in window) {
