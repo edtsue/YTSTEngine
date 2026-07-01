@@ -1,21 +1,24 @@
 /* ════════════════════════════════════════════════════════════════════
-   SUNDAY M.I.A.
+   SUNDAY'S MOST WANTED
    A contextual CTV engine for YouTube Sunday Ticket × Fantasy.
 
-   Three live signals fill one template — an AD OF EIGHT:
-     • DMA        (IP → DMA + weekly blackout map)     — double duty
-     • DAY → EMOTION  (calendar)                       — the collective tone
-     • THE EIGHT  (Genius Sports projections, geo-filt) — the players
-       projected to perform best this week, shown together, never one face.
+   The pitch: Genius Sports data helps fantasy managers set a smarter lineup
+   through the week; Sunday Ticket is how they watch it pay off. Three live
+   signals fill one template — an AD OF EIGHT:
+     • GENIUS DATA (performance projections, usage, matchup) — the advantage
+     • PLANNING DAY (calendar)                               — the decision
+       you're making today: waivers, matchups, start/sit, lineup lock.
+     • THE ELITE EIGHT (Genius top-projected)                — this week's
+       must-starts, shown together, equal weight, never one face.
 
    The eight are shown EQUAL WEIGHT — a group feature, never a solo
-   endorsement (NFLPA group-licensing safe). The DMA filters the week's
-   top-projected players to the out-of-market ones and defines the blackout;
-   the day sets the mood; Gemini renders the generic stadium backdrop behind
-   them (no player likeness in the generated art).
+   endorsement (NFLPA group-licensing safe). The day sets the decision; the
+   data sharpens the call; the payoff line points to a Sunday Ticket utility
+   (every game, out-of-market, Fantasy View). Gemini renders the generic
+   stadium backdrop behind them (no player likeness in the generated art).
 
    Players / teams are illustrative for the pitch; the live engine pulls the
-   real eight highest-projected each week from Genius Sports, geo-filtered.
+   real eight highest-projected each week from Genius Sports.
    ════════════════════════════════════════════════════════════════════ */
 
 const ESPN_LOGO = abbr => `https://a.espncdn.com/i/teamlogos/nfl/500/${abbr}.png`;
@@ -81,46 +84,52 @@ function deriveBoard(market, i) {
 }
 MARKETS.forEach((m, i) => { m.board = deriveBoard(m, i); });
 
+/* ── The Elite Eight: this week's national top-projected must-starts. No
+   geo-filter — the city element is gone; the same eight lead the ad all week,
+   the DAY changes the decision around them. ── */
+const BOARD = POOL.slice(0, 8);
+
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
-  { icon: '📍', key: 'geo', name: 'DMA', source: 'IP → DMA + weekly blackout map',
-    job: 'Double duty: which of the week’s top-projected players are out of market here, and which of their games is blacked out here.' },
-  { icon: '😰', key: 'day', name: 'Day → Emotion', source: 'Calendar lookup',
-    job: 'The frame. Monday grief, Sunday-morning panic, Sunday-afternoon helplessness — the tone of the whole ad.' },
-  { icon: '🏈', key: 'player', name: 'The Elite Eight', source: 'Genius Sports performance projections, geo-filtered',
-    job: 'The wound. The Elite Eight players projected to perform best this week — modeled on Genius Sports performance data, then geo-filtered to the ones out of market. Shown together, equal weight, never a single face.' },
+  { icon: '📊', key: 'data', name: 'Genius Sports data', source: 'Performance projections · usage · matchup grades',
+    job: 'The advantage. Genius Sports projects who’s about to go off — usage, matchup and snap-count signals turned into a start/sit edge, refreshed every day of the week.' },
+  { icon: '🗓️', key: 'day', name: 'The planning day', source: 'Where you are in the fantasy week',
+    job: 'The decision. Waivers, matchups, start/sit, lineup lock — the ad meets you at the exact call you’re making today, from Monday planning to Sunday’s 1:00 lock.' },
+  { icon: '🏈', key: 'player', name: 'The Elite Eight', source: 'Genius Sports top-projected must-starts',
+    job: 'The players. The eight Genius projects highest this week — the names to target and start. Shown together, equal weight, never a single face — and only Sunday Ticket lets you watch every one of them.' },
 ];
 
-/* ── Day → emotion tone grid ───────────────────────────────────────── */
+/* ── The fantasy planning cycle: each day is a roster DECISION, paired with
+   the Genius data that helps make it. Emotion is out; utility is in. ── */
 const DAYS = [
-  { id: 'mon',       short: 'Mon',  name: 'Monday',            dow: 1, emotion: 'Grief',                 emoji: '😔', register: 'Rueful, the morning-after',        accent: '#5b8cff' },
-  { id: 'tue',       short: 'Tue',  name: 'Tuesday',           dow: 2, emotion: 'Resentment → hope',     emoji: '😤', register: 'The fresh-start pivot',            accent: '#3fb6a8' },
-  { id: 'wed',       short: 'Wed',  name: 'Wednesday',         dow: 3, emotion: 'Anxious anticipation',  emoji: '😰', register: 'Wry, knowing',                     accent: '#e0a83d' },
-  { id: 'thu',       short: 'Thu',  name: 'Thursday',          dow: 4, emotion: 'Reckless commitment',   emoji: '🤪', register: 'The contrast — a game you can see', accent: '#ff7a3d' },
-  { id: 'fri',       short: 'Fri',  name: 'Friday',            dow: 5, emotion: 'Studious dread',        emoji: '😨', register: 'Prep-mode, ominous',               accent: '#9b6cff' },
-  { id: 'sat',       short: 'Sat',  name: 'Saturday',          dow: 6, emotion: 'Restless 2nd-guessing', emoji: '😬', register: 'Coiled, anticipatory',             accent: '#ff944d' },
-  { id: 'sun',       short: 'Sun',  name: 'Sunday',            dow: 0, emotion: 'Helplessness',          emoji: '😭', register: 'The core wound — present tense',    accent: '#ff2d2d' },
+  { id: 'mon',       short: 'Mon',  name: 'Monday',            dow: 1, task: 'Plan the week',       emoji: '📊', register: 'Genius flags the week’s risers',            accent: '#5b8cff' },
+  { id: 'tue',       short: 'Tue',  name: 'Tuesday',           dow: 2, task: 'Set your claims',     emoji: '📝', register: 'Projections rank your waiver targets',      accent: '#3fb6a8' },
+  { id: 'wed',       short: 'Wed',  name: 'Wednesday',         dow: 3, task: 'Read the matchups',   emoji: '🔍', register: 'Matchup grades sort your starts',           accent: '#e0a83d' },
+  { id: 'thu',       short: 'Thu',  name: 'Thursday',          dow: 4, task: 'TNF start / sit',     emoji: '🏈', register: 'Final Thursday-night projections land',      accent: '#ff7a3d' },
+  { id: 'fri',       short: 'Fri',  name: 'Friday',            dow: 5, task: 'Injury check',        emoji: '🩹', register: 'Injury-adjusted projections update',         accent: '#9b6cff' },
+  { id: 'sat',       short: 'Sat',  name: 'Saturday',          dow: 6, task: 'Finalize the lineup', emoji: '✅', register: 'The model’s best lineup, set',               accent: '#ff944d' },
+  { id: 'sun',       short: 'Sun',  name: 'Sunday',            dow: 0, task: 'Lock & watch',        emoji: '🔒', register: 'Last-call projections before the 1:00 lock', accent: '#ff2d2d' },
 ];
 
-/* ── Headlines — playful, witty, concise. ONE best headline per day, each
-   carrying that day's EMOTION (Mon grief → Sun-night exhausted hope). Each
-   is a [lead, punch] pair: the lead sets it up (big caps), the punch lands
-   it (accent italic) — and the two lines rhyme like a little couplet. ── */
+/* ── Headlines — ONE best [lead, payoff] pair per day. The LEAD sits the
+   viewer at that day's roster decision with the Genius data edge; the PAYOFF
+   (accent line) is a Sunday Ticket utility — watch every player/game,
+   Fantasy View, out-of-market. Plan → decide → lock → watch. ── */
 const DAY_HEADLINES = {
-  'mon': m => ['Your studs all hit their peak.', 'Your TV stayed bleak.'],
-  'tue': m => ['New week, new waiver dreams.', 'Same off-air schemes.'],
-  'wed': m => ['Elite Eight, projected to pop.', 'Your screen? A flop.'],
-  'thu': m => ['One game on tonight.', 'Then they’re out of sight.'],
-  'fri': m => ['Lineup locked and read.', 'Your channels fill with dread.'],
-  'sat': m => ['Start ’em? Sit ’em?', 'You can’t even get ’em.'],
-  'sun': m => ['Your guys are cooking hot.', 'You? A buffering dot.'],
+  'mon': () => ['Genius flags this week’s risers.', 'See them live Sunday.'],
+  'tue': () => ['Lock your waiver claims tonight.', 'Watch the payoff Sunday.'],
+  'wed': () => ['The matchup data says start him.', 'Every game on Sunday Ticket.'],
+  'thu': () => ['Thursday locks in an hour — start him?', 'Track it in Fantasy View.'],
+  'fri': () => ['Inactives dropping. Genius re-projects.', 'Follow them all, out of market.'],
+  'sat': () => ['Set the lineup Genius projects to win.', 'Kick back for Sunday.'],
+  'sun': () => ['Rosters lock at 1:00. Last call.', 'Now watch every player, every game.'],
 };
-// the single best [lead, punch] pair for the selected day
-const headline = (m, d) => (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])(m);
-const headlineText = (m, d) => headline(m, d).join(' ');
+// the single best [lead, payoff] pair for the selected day
+const headline = d => (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])();
+const headlineText = d => headline(d).join(' ');
 
-// eyebrow: this week's highest-projected players (Genius Sports), localized
-const EYEBROW = m => `This week’s top-projected players in ${m.city}`;
+// eyebrow: this week's top-projected must-starts (Genius Sports)
+const EYEBROW = 'This week’s top-projected must-starts';
 const surname = name => name.split(' ').slice(1).join(' ');
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
@@ -128,22 +137,21 @@ function buildSignals() {
   document.getElementById('signals').innerHTML = SIGNALS.map(s => `
     <article class="sig sig--${s.key}">
       <div class="sig__icon">${s.icon}</div>
-      <h3>${s.name}${s.key === 'player' ? ' <span class="first-badge first-badge--sm">First time ever</span>' : ''}</h3>
+      <h3>${s.name}${s.key === 'data' ? ' <span class="first-badge first-badge--sm">First time ever</span>' : ''}</h3>
       <div class="sig__src">${s.source}</div>
       <p class="sig__job">${s.job}</p>
-      ${s.key === 'player' ? '<div class="sig__logos"><img class="sig__srclogo" src="assets/genius-sports.svg" alt="Genius Sports" /></div>' : ''}
+      ${s.key === 'data' ? '<div class="sig__logos"><img class="sig__srclogo" src="assets/genius-sports.svg" alt="Genius Sports" /></div>' : ''}
     </article>`).join('<div class="sig-x" aria-hidden="true">×</div>');
 }
 
 function buildWeekRail() {
-  const m = MARKETS[0]; // Cleveland
   document.getElementById('weekRail').innerHTML = DAYS.map((d, i) => `
     <button class="mini" data-day="${d.id}" style="--accent:${d.accent}">
       <span class="mini__rings" aria-hidden="true"></span>
       <span class="mini__top"><span class="mini__day">${d.name}</span><span class="mini__brand">▶ Sunday Ticket</span></span>
       <span class="mini__body">
-        <span class="mini__emo">${d.emotion}</span>
-        <span class="mini__hl">${headlineText(m, d)}</span>
+        <span class="mini__emo">${d.task}</span>
+        <span class="mini__hl">${headlineText(d)}</span>
         <span class="mini__face" aria-hidden="true">${d.emoji}</span>
       </span>
       <span class="mini__scrub" aria-hidden="true">
@@ -154,7 +162,6 @@ function buildWeekRail() {
     </button>`).join('');
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {
     document.getElementById('selDay').value = b.dataset.day;
-    document.getElementById('selMarket').value = m.id;
     renderMixer();
     document.getElementById('mixer').scrollIntoView({ behavior: 'smooth' });
   }));
@@ -192,42 +199,39 @@ function initWeekAutoScroll() {
 
 /* ════════════════════ SECTION 03 — production ════════════════════ */
 function buildProduction() {
-  // 1 · Aggregate — the same eight, reframed by each day's emotion
+  // 1 · Planning cycle — the same eight, matched to each day's decision
   const dmas = document.getElementById('prodDmas');
   if (dmas) {
     dmas.innerHTML = DAYS.map(d => `<div class="dma dma--day" style="--a:${d.accent}">
         <span class="dma__city">${d.name}</span>
-        <span class="dma__dma">${d.emotion}</span>
+        <span class="dma__dma">${d.task}</span>
       </div>`).join('');
-    document.getElementById('prodDmaMore').textContent = 'One headline per day · across all 210 DMAs';
+    document.getElementById('prodDmaMore').textContent = 'One headline per planning day · Monday to lock';
   }
 
   // 2 · AI asset assembly — the ingredients that show up in the composited ad:
-  //     DMA (location + blackout chrome), the eight (headshots), the headline.
+  //     the planning day, the Elite Eight (headshots), the headline.
   const asmGrid = document.getElementById('asmGrid');
   if (asmGrid) {
-    asmGrid.innerHTML = MARKETS[0].board.map(p =>
+    asmGrid.innerHTML = BOARD.map(p =>
       `<span class="asm__cell"><img src="${HEADSHOT(p.pid)}" alt="" loading="lazy" onerror="this.style.opacity=0" /></span>`).join('');
   }
   const asmDma = document.getElementById('asmDma');
-  if (asmDma) asmDma.textContent = `${MARKETS[0].dma} DMA · blackout`;
+  if (asmDma) asmDma.textContent = 'This week · top-projected';
 }
 
 /* ════════════════════ SECTION 02 — the mixer ════════════════════ */
 function currentSel() {
-  const m = MARKETS.find(x => x.id === document.getElementById('selMarket').value);
-  const d = DAYS.find(x => x.id === document.getElementById('selDay').value);
-  return { m, d };
+  const d = DAYS.find(x => x.id === document.getElementById('selDay').value) || DAYS[DAYS.length - 1];
+  return { d };
 }
 
 function buildMixer() {
-  document.getElementById('selMarket').innerHTML = MARKETS.map(m => `<option value="${m.id}">${m.city}</option>`).join('');
-  document.getElementById('selDay').innerHTML = DAYS.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+  document.getElementById('selDay').innerHTML = DAYS.map(d => `<option value="${d.id}">${d.name} — ${d.task}</option>`).join('');
 
   document.getElementById('selDay').value = beatForToday();
 
-  ['selMarket', 'selDay'].forEach(id =>
-    document.getElementById(id).addEventListener('change', () => { stopSpot(); renderMixer(); }));
+  document.getElementById('selDay').addEventListener('change', () => { stopSpot(); renderMixer(); });
   document.getElementById('genBtn').addEventListener('click', async () => {
     if (spotPlaying) { stopSpot(); return; }   // playing → this click stops it
     stopSpot();
@@ -239,19 +243,18 @@ function buildMixer() {
 }
 
 /* ── slot-machine randomize ──────────────────────────────────────────
-   The two signal selects "roll" and clunk into place — market, then day —
-   with the whole board rolling through combos behind a blur. */
+   The day select "rolls" and clunks into place, the whole board rolling
+   through the week's decisions behind a blur. */
 const pick = a => a[Math.floor(Math.random() * a.length)];
 let spinning = false;
 function randomize() {
   if (spinning) return;
   stopSpot();
-  const mEl = document.getElementById('selMarket');
   const dEl = document.getElementById('selDay');
-  const finalM = pick(MARKETS).id, finalD = pick(DAYS).id;
+  const finalD = pick(DAYS).id;
 
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    mEl.value = finalM; dEl.value = finalD;
+    dEl.value = finalD;
     renderMixer();
     return;
   }
@@ -264,16 +267,12 @@ function randomize() {
   ctv.classList.add('is-spinning');
   controls.classList.add('is-spinning');
 
-  const mIds = MARKETS.map(m => m.id), dIds = DAYS.map(d => d.id);
-  let mDone = false;
+  const dIds = DAYS.map(d => d.id);
   const flick = setInterval(() => {
-    if (!mDone) mEl.value = pick(mIds);
     dEl.value = pick(dIds);
     renderMixer(true);            // instant roll of the whole board
   }, 75);
 
-  // settle one reel at a time — market, then day
-  setTimeout(() => { mDone = true; mEl.value = finalM; }, 560);
   setTimeout(() => {
     clearInterval(flick);
     dEl.value = finalD;
@@ -288,8 +287,8 @@ function randomize() {
 /* ── headline: a caps LEAD (the setup) + an accent-italic PUNCH ───────
    Two registers by design — the lead sets it up big, the punch lands it
    italic in the day's accent color. ── */
-function setHeadline(m, d, instant) {
-  const [lead, accent] = headline(m, d);
+function setHeadline(d, instant) {
+  const [lead, accent] = headline(d);
   const h = document.getElementById('ctvHeadline');
   const leadEl = document.getElementById('ctvHlLead');
   const accEl = document.getElementById('ctvHlAccent');
@@ -460,7 +459,7 @@ function initSpotAutoplay() {
 function animateOdometer() {
   const el = document.getElementById('odoNum');
   if (!el) return;
-  const target = 1470; // 210 DMAs × 7 days — one best ad per DMA / day
+  const target = 24; // 24MM fantasy managers — a data-driven nudge for every roster
   let started = false;
   const run = () => {
     if (started) return; started = true;
@@ -536,7 +535,7 @@ function beatForToday() {
 
 function renderMixer(opts) {
   const instant = opts === true || (opts && opts.instant === true);
-  const { m, d } = currentSel();
+  const { d } = currentSel();
   const ctv = document.getElementById('ctv');
   ctv.style.setProperty('--accent', d.accent);
   ctv.style.setProperty('--team', d.accent);
@@ -546,25 +545,25 @@ function renderMixer(opts) {
     room.style.setProperty('--team', d.accent);
   }
 
-  document.getElementById('emoNote').textContent = `${d.emotion} — ${d.register}.`;
+  document.getElementById('emoNote').textContent = `${d.task} — ${d.register}.`;
   document.getElementById('playerNote').innerHTML =
-    `<strong>8 top-projected starters</strong> · all out-of-market in ${m.city}.`;
+    `<strong>8 top-projected must-starts</strong> · ranked by Genius Sports projections.`;
 
-  document.getElementById('ctvEyebrow').textContent = EYEBROW(m);
-  setHeadline(m, d, instant);
+  document.getElementById('ctvEyebrow').textContent = EYEBROW;
+  setHeadline(d, instant);
   document.getElementById('stageCap').textContent =
-    `DMA: ${m.dma} · Day→Emotion: ${d.emotion} · Ad: this week’s 8 top-projected, out-of-market in ${m.city}`;
-  renderBoard(m);
+    `Planning day: ${d.name} (${d.task}) · Data: ${d.register} · Ad: this week’s 8 top-projected must-starts`;
+  renderBoard();
 
   // generated stadium backdrop → team/day-tinted plate (CSS default)
   applyBackdrop(backdropPrompt(d));
 }
 
 /* ── the board of eight: equal-weight headshot cells ─────────────────*/
-function renderBoard(m) {
+function renderBoard() {
   const el = document.getElementById('ctvBoard');
   if (!el) return;
-  el.innerHTML = m.board.map(p => `
+  el.innerHTML = BOARD.map(p => `
     <div class="bcard" style="--team:${(TEAMS[p.team] || {}).glow || '#7a8290'}">
       <span class="bcard__pos">${p.pos}</span>
       <img class="bcard__face" src="${HEADSHOT(p.pid)}" alt="${p.name}" loading="lazy"
@@ -599,7 +598,7 @@ function backdropPrompt(d) {
   return [
     'Cinematic, photoreal 16:9 establishing shot of an empty professional American-football stadium at dusk — no players, no people in frame.',
     'Stadium floodlights, drifting field haze, deep shadows, telephoto compression, shallow depth of field, premium broadcast atmosphere.',
-    `Emotional tone: ${d.emotion.toLowerCase()} — ${d.register.toLowerCase()}.`,
+    'Tone: premium, confident, data-driven broadcast atmosphere — not somber.',
     'Muted and desaturated, designed to sit behind a grid of overlaid player cards and a headline.',
     'No readable text, no numbers, no team names, no logos, no jersey lettering, no sponsor marks, no watermarks, no players.',
   ].join(' ');
@@ -670,8 +669,8 @@ async function generateBackdrop() {
 function initInsightGlitch() {
   const el = document.querySelector('.insight__stakes');
   if (!el) return;
-  const words  = ['something even higher stakes', 'fantasy sports', '😭', 'fantasy sports', 'emotions', 'fantasy sports', '😰', '🤯', 'fantasy sports', '😤', '😩', 'fantasy sports'];
-  const colors = ['#5b8cff', '#d4ff3d', '#ff5a4d', '#d4ff3d', '#9b6cff', '#d4ff3d', '#3fb6a8', '#e0a83d', '#d4ff3d', '#ff944d', '#ff2d2d', '#d4ff3d'];
+  const words  = ['something even higher stakes', 'fantasy sports', 'your lineup', 'fantasy sports', 'the waiver wire', 'fantasy sports', 'start/sit calls', 'fantasy sports', 'roster moves', 'fantasy sports', 'the data edge', 'fantasy sports'];
+  const colors = ['#5b8cff', '#d4ff3d', '#3fb6a8', '#d4ff3d', '#e0a83d', '#d4ff3d', '#9b6cff', '#d4ff3d', '#ff944d', '#d4ff3d', '#5b8cff', '#d4ff3d'];
   let i = 0;
   el.style.color = colors[0];
   const swap = () => { i = (i + 1) % words.length; el.textContent = words[i]; el.style.color = colors[i]; };
@@ -829,5 +828,4 @@ initStatCounters();  // slot-machine count-up on the 3 INSIGHT stats
 initSpotAutoplay(); // plays the :15 spot once when the mock-up scrolls into view
 initAdScrubber();   // keeps the resting scrubber moving as the ad counts 0:15 → 0:00
 initGeniusTooltips(); // hover explainer on every Genius Sports logo
-initGeo();          // detects market + seeds the mixer (after buildMixer)
 initBrief();        // BRIEF nav button → Google Doc modal overlay
