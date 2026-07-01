@@ -415,6 +415,33 @@ function initAdScrubber() {
   requestAnimationFrame(loop);
 }
 
+/* hover tooltip on every Genius Sports logo — one delegated box covers all
+   instances, including the ones injected on render. */
+function initGeniusTooltips() {
+  const TXT = 'Genius Sports is the official data provider for the NFL, EPL and sportsbooks — meaning they hold the data that predicts how well any player will perform.';
+  const tip = document.createElement('div');
+  tip.className = 'gs-tip'; tip.setAttribute('role', 'tooltip');
+  tip.innerHTML = `<strong>Genius Sports</strong><span>${TXT}</span>`;
+  document.body.appendChild(tip);
+  let cur = null;
+  const isLogo = el => el && el.tagName === 'IMG' && /genius-sports/.test(el.getAttribute('src') || '');
+  const place = el => {
+    const r = el.getBoundingClientRect(), tr = tip.getBoundingClientRect();
+    let left = r.left + r.width / 2 - tr.width / 2 + window.scrollX;
+    left = Math.max(10, Math.min(left, window.scrollX + document.documentElement.clientWidth - tr.width - 10));
+    let top = r.top + window.scrollY - tr.height - 10;
+    if (top < window.scrollY + 6) top = r.bottom + window.scrollY + 10;   // flip below if no room above
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  };
+  document.addEventListener('mouseover', e => {
+    if (isLogo(e.target)) { cur = e.target; place(cur); tip.classList.add('is-on'); }
+  });
+  document.addEventListener('mouseout', e => {
+    if (cur && e.target === cur) { cur = null; tip.classList.remove('is-on'); }
+  });
+  window.addEventListener('scroll', () => { if (cur) place(cur); }, { passive: true });
+}
+
 /* auto-play the spot once, the first time the mock-up scrolls into view */
 function initSpotAutoplay() {
   const room = document.getElementById('room');
@@ -801,5 +828,6 @@ initInsightGlitch(); // glitch-swaps the INSIGHT stakes phrase with "fantasy spo
 initStatCounters();  // slot-machine count-up on the 3 INSIGHT stats
 initSpotAutoplay(); // plays the :15 spot once when the mock-up scrolls into view
 initAdScrubber();   // keeps the resting scrubber moving as the ad counts 0:15 → 0:00
+initGeniusTooltips(); // hover explainer on every Genius Sports logo
 initGeo();          // detects market + seeds the mixer (after buildMixer)
 initBrief();        // BRIEF nav button → Google Doc modal overlay
