@@ -392,6 +392,29 @@ function stopSpot() {
   if (wasPlaying) renderMixer(true);            // rebuild the clean static frame
 }
 
+/* resting scrubber — keeps the ad frame alive: the bar advances while the
+   timer ticks 0:15 → 0:00 on a loop. Yields to the real spot when it plays. */
+function initAdScrubber() {
+  const fill = document.getElementById('ctvAdProg');
+  const time = document.getElementById('ctvAdTime');
+  const ctv = document.getElementById('ctv');
+  if (!fill || !time || !ctv || reduceMotion()) return;    // reduced motion → static 16% resting fill
+  const DUR = 15000;
+  let t0 = null;
+  const loop = ts => {
+    requestAnimationFrame(loop);
+    if (ctv.classList.contains('is-spot')) {                // the :15 spot drives its own bar/timer
+      if (fill.style.width) fill.style.width = '';          // clear inline so the spot's CSS wins
+      t0 = null; return;
+    }
+    if (t0 == null) t0 = ts;
+    const p = ((ts - t0) % DUR) / DUR;                      // 0 → 1, looping
+    fill.style.width = (p * 100).toFixed(2) + '%';
+    time.textContent = '0:' + String(Math.max(0, Math.ceil((1 - p) * 15))).padStart(2, '0');
+  };
+  requestAnimationFrame(loop);
+}
+
 /* auto-play the spot once, the first time the mock-up scrolls into view */
 function initSpotAutoplay() {
   const room = document.getElementById('room');
@@ -777,5 +800,6 @@ initBoardGlitch();
 initInsightGlitch(); // glitch-swaps the INSIGHT stakes phrase with "fantasy sports"
 initStatCounters();  // slot-machine count-up on the 3 INSIGHT stats
 initSpotAutoplay(); // plays the :15 spot once when the mock-up scrolls into view
+initAdScrubber();   // keeps the resting scrubber moving as the ad counts 0:15 → 0:00
 initGeo();          // detects market + seeds the mixer (after buildMixer)
 initBrief();        // BRIEF nav button → Google Doc modal overlay
