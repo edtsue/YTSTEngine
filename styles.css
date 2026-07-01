@@ -13,6 +13,7 @@
   --blue: #5b8cff;
   --field: #2fbf6b;
   --gold: #e7b53c;
+  --knock: #d4ff3d;
   --accent: #ff2d2d;
   --radius: 16px;
   --maxw: 1200px;
@@ -138,10 +139,25 @@ em { font-style: normal; color: var(--ink); }
   text-transform: uppercase; font-weight: 600; color: var(--red-soft); margin-bottom: 22px; }
 .insight__label::before { content: ''; display: inline-block; width: 26px; height: 2px; background: var(--red);
   vertical-align: middle; margin-right: 12px; transform: translateY(-4px); }
-.insight__quote { font-family: 'Archivo', sans-serif; font-weight: 700; letter-spacing: -.012em;
-  font-size: clamp(27px, 4.4vw, 54px); line-height: 1.14; color: var(--ink); text-wrap: balance; }
+.insight__setup { font-family: 'Archivo', sans-serif; font-weight: 600; color: var(--ink-dim);
+  font-size: clamp(18px, 2vw, 26px); letter-spacing: .01em; }
+.insight__big { font-family: 'Anton', 'Oswald', sans-serif; text-transform: uppercase; font-weight: 400;
+  font-size: clamp(40px, 7vw, 86px); line-height: .92; letter-spacing: .01em; margin: 10px 0 0; color: var(--ink); }
+.insight__turn { font-family: 'Archivo', sans-serif; font-weight: 700; letter-spacing: -.01em;
+  font-size: clamp(22px, 3vw, 38px); line-height: 1.16; margin-top: 26px; max-width: 22ch; color: var(--ink); }
 .insight__hot { color: var(--red); }
-.insight__stakes { color: #d4ff3d; }
+.insight__stakes { color: var(--knock); }
+/* glitch-swap: 'something even higher stakes' <-> 'fantasy sports' */
+.insight__stakes.is-glitching { animation: stakeGlitch .42s steps(1, end) 1; }
+@keyframes stakeGlitch {
+  0%   { text-shadow: 2px 0 var(--red), -2px 0 #00e6ff; opacity: 1; letter-spacing: 0; }
+  18%  { text-shadow: -3px 0 var(--red), 3px 0 #00e6ff; opacity: .55; letter-spacing: .5px; }
+  36%  { text-shadow: 3px 0 var(--red), -3px 0 #00e6ff; opacity: .9; letter-spacing: -1px; }
+  54%  { text-shadow: -2px 0 var(--red), 2px 0 #00e6ff; opacity: .5; letter-spacing: 1px; }
+  72%  { text-shadow: 2px 0 var(--red), -2px 0 #00e6ff; opacity: .95; letter-spacing: 0; }
+  100% { text-shadow: none; opacity: 1; letter-spacing: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .insight__stakes.is-glitching { animation: none; } }
 /* stat row */
 .insight__stats { margin-top: 52px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
   border-top: 1px solid var(--line); padding-top: 34px; }

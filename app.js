@@ -595,6 +595,30 @@ function buildToday() {
 }
 
 /* ── random signal glitch on the board, one player at a time ───────── */
+/* ── INSIGHT — glitch-swap the stakes phrase with "fantasy sports" ─────
+   Every few seconds the lime phrase glitches (chromatic split) and, mid-
+   glitch, swaps between the two readings. Only runs while it's on screen. */
+function initInsightGlitch() {
+  const el = document.querySelector('.insight__stakes');
+  if (!el) return;
+  const words = ['something even higher stakes', 'fantasy sports'];
+  let i = 0;
+  const swap = () => { i ^= 1; el.textContent = words[i]; };
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let onScreen = true;
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => es.forEach(e => { onScreen = e.isIntersecting; }), { threshold: 0.2 });
+    io.observe(el);
+  }
+  setInterval(() => {
+    if (!onScreen || document.hidden) return;
+    if (reduce) { swap(); return; }
+    el.classList.add('is-glitching');
+    setTimeout(swap, 150);                                  // swap mid-glitch
+    setTimeout(() => el.classList.remove('is-glitching'), 440);
+  }, 2900);
+}
+
 function initBoardGlitch() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const run = () => {
@@ -676,5 +700,6 @@ initHeroVideo();
 animateOdometer();
 initExpand();
 initBoardGlitch();
+initInsightGlitch(); // glitch-swaps the INSIGHT stakes phrase with "fantasy sports"
 initSpotAutoplay(); // plays the :15 spot once when the mock-up scrolls into view
 initGeo();          // detects market + seeds the mixer (after buildMixer)
