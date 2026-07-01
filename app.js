@@ -102,7 +102,7 @@ const SIGNALS = [
 /* ── The fantasy planning cycle: each day is a roster DECISION, paired with
    the Genius data that helps make it. Emotion is out; utility is in. ── */
 const DAYS = [
-  { id: 'mon',       short: 'Mon',  name: 'Monday',            dow: 1, task: 'Plan the week',       emoji: '📊', register: 'Genius flags the week’s risers',            accent: '#5b8cff' },
+  { id: 'mon',       short: 'Mon',  name: 'Monday',            dow: 1, task: 'Plan the week',       emoji: '📊', register: 'This week’s projected risers, flagged',     accent: '#5b8cff' },
   { id: 'tue',       short: 'Tue',  name: 'Tuesday',           dow: 2, task: 'Set your claims',     emoji: '📝', register: 'Projections rank your waiver targets',      accent: '#3fb6a8' },
   { id: 'wed',       short: 'Wed',  name: 'Wednesday',         dow: 3, task: 'Read the matchups',   emoji: '🔍', register: 'Matchup grades sort your starts',           accent: '#e0a83d' },
   { id: 'thu',       short: 'Thu',  name: 'Thursday',          dow: 4, task: 'TNF start / sit',     emoji: '🏈', register: 'Final Thursday-night projections land',      accent: '#ff7a3d' },
@@ -549,7 +549,7 @@ function renderMixer(opts) {
 
   document.getElementById('emoNote').textContent = `${d.task} — ${d.register}.`;
   document.getElementById('playerNote').innerHTML =
-    `<strong>8 top-projected must-starts</strong> · ranked by Genius Sports projections.`;
+    `<strong>8 top-projected must-starts</strong> · ranked by this week's performance projections.`;
 
   document.getElementById('ctvEyebrow').textContent = EYEBROW;
   setHeadline(d, instant);
