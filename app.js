@@ -137,7 +137,7 @@ function buildSignals() {
 
 function buildWeekRail() {
   const m = MARKETS[0]; // Cleveland
-  document.getElementById('weekRail').innerHTML = DAYS.map(d => `
+  document.getElementById('weekRail').innerHTML = DAYS.map((d, i) => `
     <button class="mini" data-day="${d.id}" style="--accent:${d.accent}">
       <span class="mini__rings" aria-hidden="true"></span>
       <span class="mini__top"><span class="mini__day">${d.name}</span><span class="mini__brand">▶ Sunday Ticket</span></span>
@@ -145,6 +145,11 @@ function buildWeekRail() {
         <span class="mini__emo">${d.emotion}</span>
         <span class="mini__hl">${headlineText(m, d)}</span>
         <span class="mini__face" aria-hidden="true">${d.emoji}</span>
+      </span>
+      <span class="mini__scrub" aria-hidden="true">
+        <span class="mini__scrub-tag">Ad</span>
+        <span class="mini__scrub-bar"><span class="mini__scrub-fill" style="width:${18 + i * 11}%"></span></span>
+        <span class="mini__scrub-t">0:15</span>
       </span>
     </button>`).join('');
   document.querySelectorAll('.mini').forEach(b => b.addEventListener('click', () => {

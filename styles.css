@@ -173,7 +173,7 @@ em { font-style: normal; color: var(--ink); }
 /* stat row */
 .insight__stats { margin-top: 52px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px;
   border-top: 1px solid var(--line); padding-top: 34px; }
-.istat__num { font-family: 'Anton', 'Oswald', sans-serif; font-size: clamp(34px, 5vw, 60px); line-height: .95;
+.istat__num { font-family: 'Anton', 'Oswald', sans-serif; font-size: clamp(26px, 3.6vw, 44px); line-height: .95;
   color: var(--ink); letter-spacing: .01em; }
 .istat__num em { color: var(--red-soft); font-style: normal; }
 .istat__val { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
@@ -263,6 +263,14 @@ em { font-style: normal; color: var(--ink); }
 .mini__hl { font-size: 14px; color: #1b1e25; line-height: 1.42; font-weight: 500; }
 .mini__face { margin-top: auto; font-size: 30px; line-height: 1; align-self: flex-start;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,.18)); }
+/* real-ad scrubber footer — makes each daily card read as a YouTube ad frame */
+.mini__scrub { display: flex; align-items: center; gap: 6px; padding: 6px 10px 7px; background: #0b0f17;
+  border-top: 1px solid rgba(0,0,0,.4); }
+.mini__scrub-tag { font-family: 'Oswald'; font-size: 8px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .06em; color: #0a0d12; background: #fff; padding: 1px 4px; border-radius: 2px; }
+.mini__scrub-bar { flex: 1 1 auto; height: 3px; border-radius: 2px; background: rgba(255,255,255,.2); overflow: hidden; }
+.mini__scrub-fill { display: block; height: 100%; background: var(--knock); }
+.mini__scrub-t { font-family: 'Oswald'; font-size: 9px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
 .mini__logos { display: flex; align-items: center; gap: 5px; margin-top: auto; }
 .mini__lg { width: 18px; height: 18px; object-fit: contain; }
 .mini__more { font-family: 'Oswald'; font-size: 11px; color: #9a8e72; letter-spacing: .04em; }
@@ -332,7 +340,7 @@ em { font-style: normal; color: var(--ink); }
 .ctv__eyebrow { font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .05em; font-size: clamp(6px, 2.02cqw, 12px); line-height: 1.2; color: var(--accent); text-shadow: 0 1px 8px rgba(0,0,0,.95); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* ── SPLIT BLOCK — bold stacked statement | board of eight ── */
-.ctv__split { position: relative; z-index: 4; flex: 1 1 auto; min-height: 0; display: flex; align-items: stretch; gap: 3%; padding: 1.4% 3.4% 3.6%; }
+.ctv__split { position: relative; z-index: 4; flex: 1 1 auto; min-height: 0; display: flex; align-items: stretch; gap: 3%; padding: 1.4% 3.4% 8.4%; }
 .ctv__statement { flex: 0 0 38%; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 2.2cqw; }
 /* eyebrow now sits over the player photos */
 .ctv__boardcol { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1.3cqw; }
@@ -612,16 +620,18 @@ body.mockup-open { overflow: hidden; }
 .ctv__hl-accent, .ctv__cta-btn { transition: opacity .45s ease, transform .45s ease; }
 
 /* CTV ad furniture — countdown + non-skippable progress bar */
-.ctv__adbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; display: none;
+.ctv__adbar { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; display: flex;
   align-items: center; gap: 2.2cqw; padding: 2.2cqw 3.2cqw 2.4cqw; font-family: 'Oswald';
   background: linear-gradient(0deg, rgba(3,5,9,.92), rgba(3,5,9,.42) 60%, transparent); }
-.ctv.is-spot .ctv__adbar { display: flex; }
+/* the endcard covers the whole frame — hide the bar under it */
+.ctv.is-spot.spot-end .ctv__adbar { display: none; }
 .ctv__adtag { font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
   font-size: clamp(6px, 1.7cqw, 10px); color: #0a0d12; background: #fff; padding: .2em .5em; border-radius: 2px; }
 .ctv__adtime { font-weight: 700; font-size: clamp(7px, 2cqw, 12px); color: #fff; font-variant-numeric: tabular-nums; }
 .ctv__adskip { font-size: clamp(6px, 1.6cqw, 10px); color: rgba(255,255,255,.55); text-transform: uppercase; letter-spacing: .06em; }
 .ctv__adprog { flex: 1 1 auto; height: 3px; border-radius: 2px; background: rgba(255,255,255,.18); overflow: hidden; }
 .ctv__adprog-fill { display: block; height: 100%; width: 0; background: var(--knock); }
+.ctv:not(.is-spot) .ctv__adprog-fill { width: 16%; }   /* resting scrubber — looks like a real ad frame */
 .ctv.is-running .ctv__adprog-fill { width: 100%; transition: width 15s linear; }
 
 /* brand ident (open) + QR end card (close) */
