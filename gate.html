@@ -46,15 +46,10 @@
 </head>
 <body>
   <form class="card" id="gate">
-    <div class="eyebrow">▶ YouTube Sunday Ticket · Engine</div>
-    <h1>Sunday's<br />Most Wanted</h1>
-    <p class="sub">This preview is password-protected.</p>
     <label for="pw">Password</label>
     <input type="password" id="pw" name="password" autocomplete="current-password" autofocus />
-    <label class="remember"><input type="checkbox" id="remember" /> Remember me for 7 days</label>
-    <button type="submit" id="btn">Enter →</button>
-    <p class="err" id="err" hidden>Wrong password — try again.</p>
-    <p class="foot">A contextual CTV engine concept.</p>
+    <button type="submit" id="btn" aria-label="Enter">→</button>
+    <p class="err" id="err" hidden></p>
   </form>
   <script>
     const form = document.getElementById('gate');
@@ -64,21 +59,18 @@
       e.preventDefault();
       err.hidden = true;
       btn.disabled = true;
-      btn.textContent = 'Checking…';
       try {
         const r = await fetch('/api/gate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             password: document.getElementById('pw').value,
-            remember: document.getElementById('remember').checked,
           }),
         });
         if (r.ok) { location.replace('/'); return; }
       } catch {}
       err.hidden = false;
       btn.disabled = false;
-      btn.textContent = 'Enter →';
       document.getElementById('pw').select();
     });
   </script>
