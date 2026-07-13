@@ -671,7 +671,7 @@ async function generateBackdrop() {
 function initInsightGlitch() {
   const el = document.querySelector('.insight__stakes');
   if (!el) return;
-  const words  = ['something even higher stakes', 'fantasy sports', 'your lineup', 'fantasy sports', 'the waiver wire', 'fantasy sports', 'start/sit calls', 'fantasy sports', 'roster moves', 'fantasy sports', 'the data edge', 'fantasy sports', 'pride', 'fantasy sports', 'humiliation', 'fantasy sports', 'bragging rights', 'fantasy sports'];
+  const words  = ['something even higher stakes', 'fantasy sports', 'bragging rights', 'pride', 'humiliation', 'your lineup', 'the waiver wire', 'start/sit calls', 'roster moves', 'the data edge'];
   const colors = words.map(() => '#ff2d2d');
   let i = 0;
   el.style.color = colors[0];
@@ -688,7 +688,7 @@ function initInsightGlitch() {
     el.classList.add('is-glitching');
     setTimeout(swap, 150);                                  // swap mid-glitch
     setTimeout(() => el.classList.remove('is-glitching'), 440);
-  }, 2900);
+  }, 1500);
 }
 
 /* ── INSIGHT stat counters — slot-machine count-up on scroll-in ─────── */
