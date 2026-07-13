@@ -818,7 +818,9 @@ function initHeroFlap() {
   const el = document.querySelector('.hero__title-mia');
   if (!el) return;
   const inner = document.querySelector('.hero__inner');
+  const lede = document.querySelector('.hero__lede');
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) { el.textContent = 'Sunday'; el.classList.add('landed'); return; }
+  if (lede) lede.classList.add('pre-in');             // hide the lede until SUNDAY lands
   const wk = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const seq = wk.concat(wk).concat(['Sunday']);     // two fast spins through the week, then SLAM on Sunday
   let i = 0;
@@ -835,6 +837,7 @@ function initHeroFlap() {
       el.classList.add('landed');                   // bold lime SUNDAY + slam + glow + ring
       if (inner) { inner.classList.remove('shake'); void inner.offsetWidth; inner.classList.add('shake');
         setTimeout(() => inner.classList.remove('shake'), 460); }
+      if (lede) setTimeout(() => lede.classList.remove('pre-in'), 550);  // beat, then fade the lede in
     }
   };
   setTimeout(step, 450);

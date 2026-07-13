@@ -129,7 +129,11 @@ em { font-style: normal; color: var(--ink); }
 @keyframes heroShake { 0%,100% { transform: translate3d(0,0,0); } 12% { transform: translate3d(-8px,4px,0); } 26% { transform: translate3d(9px,-4px,0); } 40% { transform: translate3d(-7px,3px,0); } 54% { transform: translate3d(5px,-3px,0); } 68% { transform: translate3d(-4px,2px,0); } 82% { transform: translate3d(2px,-1px,0); } }
 @media (prefers-reduced-motion: reduce) { .hero__title-mia.flap, .hero__title-mia.landed, .hero__title-mia.landed::after, .hero__inner.shake { animation: none; } }
 .hero__lede { margin-top: 26px; max-width: 680px; color: #e8edf5; font-size: clamp(15px, 1.7vw, 18px);
-  line-height: 1.5; text-shadow: 0 2px 16px rgba(0,0,0,.92), 0 1px 4px rgba(0,0,0,.9); }
+  line-height: 1.5; text-shadow: 0 2px 16px rgba(0,0,0,.92), 0 1px 4px rgba(0,0,0,.9);
+  transition: opacity .85s ease, transform .85s ease; }
+/* JS adds .pre-in until SUNDAY lands, then removes it to fade the lede up in */
+.hero__lede.pre-in { opacity: 0; transform: translateY(12px); }
+@media (prefers-reduced-motion: reduce) { .hero__lede { transition: none; } .hero__lede.pre-in { opacity: 1; transform: none; } }
 .hero__lede strong { color: #fff; }
 .hero__cta { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
 
