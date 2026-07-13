@@ -438,13 +438,23 @@ em { font-style: normal; color: var(--ink); }
 }
 .room__ambient, .room__console { display: none; }
 
+/* the centerpiece breathes — a slow cinematic float + an ambient glow that
+   drifts red → cyan (the two-tone), only while resting (not in the lightbox) */
+.room:not(.is-expanded) { animation: roomFloat 7.5s ease-in-out infinite, roomGlow 6.5s ease-in-out infinite; will-change: transform; }
+@keyframes roomFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes roomGlow {
+  0%, 100% { box-shadow: 0 34px 80px rgba(0,0,0,.45), inset 0 0 0 1px rgba(0,0,0,.06), 0 20px 74px -26px rgba(255,45,45,.24); }
+  50%      { box-shadow: 0 42px 96px rgba(0,0,0,.5),  inset 0 0 0 1px rgba(0,0,0,.06), 0 28px 92px -22px rgba(0,230,255,.26); }
+}
+@media (prefers-reduced-motion: reduce) { .room:not(.is-expanded) { animation: none; } }
+
 /* expand the mock-up into a centered lightbox */
 .btn--expand { margin-top: 16px; align-self: center; }
 body.mockup-open { overflow: hidden; }
 .lightbox-backdrop { position: fixed; inset: 0; z-index: 199; background: rgba(2,4,8,.86); backdrop-filter: blur(5px); animation: lbFade .2s ease; }
 .lightbox-close { position: fixed; z-index: 201; top: 18px; right: 20px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,.25); background: rgba(0,0,0,.5); color: #fff; font-size: 18px; line-height: 1; cursor: pointer; transition: background .2s, transform .2s; }
 .lightbox-close:hover { background: rgba(0,0,0,.75); transform: scale(1.06); }
-.room.is-expanded { position: fixed; z-index: 200; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(94vw, 120vh, 1320px); max-width: none; box-shadow: 0 40px 120px rgba(0,0,0,.7); animation: lbPop .26s cubic-bezier(.2,.8,.2,1); }
+.room.is-expanded { position: fixed; z-index: 200; top: 50%; left: 50%; transform: translate(-50%, -50%); width: min(94vw, 120vh, 1320px); max-width: none; box-shadow: 0 40px 120px rgba(0,0,0,.7), 0 0 140px -24px rgba(0,230,255,.2); animation: lbPop .3s cubic-bezier(.2,.8,.2,1); }
 @keyframes lbFade { from { opacity: 0; } to { opacity: 1; } }
 @keyframes lbPop { from { opacity: 0; transform: translate(-50%, -50%) scale(.94); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 @media (prefers-reduced-motion: reduce) { .room.is-expanded, .lightbox-backdrop { animation: none; } }
