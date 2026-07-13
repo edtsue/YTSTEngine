@@ -103,7 +103,7 @@ em { font-style: normal; color: var(--ink); }
     linear-gradient(0deg, var(--bg) 0%, rgba(6,8,13,.08) 38%, rgba(6,8,13,.3) 100%);
 }
 .hero__kicker { text-transform: uppercase; letter-spacing: .2em; font-size: 12px; color: var(--red-soft); font-weight: 600; margin-bottom: 20px; }
-.hero__title { font-family: 'Anton'; font-size: clamp(54px, 11vw, 132px); line-height: .86; text-transform: uppercase; letter-spacing: -.01em; }
+.hero__title { font-family: 'Anton'; font-size: clamp(42px, 11vw, 132px); line-height: .86; text-transform: uppercase; letter-spacing: -.01em; }
 /* keep the whole wordmark on one line */
 .hero__title--mia { white-space: nowrap; font-size: clamp(28px, 11vw, 118px); }
 
@@ -668,7 +668,7 @@ img[src*="genius-sports"] { cursor: help; }
   font-size: clamp(30px, 5vw, 60px); line-height: .95; letter-spacing: .01em; margin: 0; }
 .wish__lede { max-width: 620px; color: var(--ink-dim); font-size: clamp(15px, 1.7vw, 18px); margin: 16px 0 40px; }
 .wish__grid { display: grid; grid-auto-flow: column; grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(3, auto); gap: 12px 24px; }
+  grid-template-rows: repeat(2, auto); gap: 12px 24px; }
 .wish__item { display: flex; align-items: flex-start; gap: 16px; cursor: pointer; background: #0a0e16;
   border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px;
   transition: border-color .18s, background .18s, transform .12s; }
@@ -720,12 +720,31 @@ img[src*="genius-sports"] { cursor: help; }
 
 /* ── RESPONSIVE ── */
 @media (max-width: 920px) {
-  .nav__links { display: none; }
+  .nav__links a { display: none; }   /* keep the Brief button, drop the section anchors */
   .signals { grid-template-columns: 1fr; }
   .studio { grid-template-columns: 1fr; }
   .controls { position: static; }
   .prod__flow { grid-template-columns: 1fr; }
   .prod__arrow { transform: rotate(90deg); }
+}
+
+/* ── phones: unlock width, tame the big type, let nowrap lines wrap ─── */
+@media (max-width: 600px) {
+  /* reclaim horizontal room — 28px each side is a lot on a 360px screen */
+  .nav, .hero__inner, .section-head, .insight__inner, .signals, .weekstrip,
+  .studio, .prod__flow, .media, .pipe, .wish__inner, .firsts__inner {
+    padding-left: 18px; padding-right: 18px;
+  }
+  .nav { padding-top: 16px; padding-bottom: 16px; }
+  .nav__wordmark { font-size: 13px; }
+  .nav__brief { padding: 6px 12px; }
+  /* trim the tall vertical rhythm so there's less endless scrolling */
+  .hero__inner { padding-top: 86px; padding-bottom: 72px; }
+  .insight { padding: 60px 0; }
+  .firsts__inner { padding-top: 64px; }
+  .wish__inner { padding-top: 60px; padding-bottom: 56px; }
+  /* the turn line is nowrap by default — it must wrap on a phone */
+  .insight__turn { white-space: normal; }
 }
 
 /* ════════════════ :15 CTV SPOT — playthrough chrome + beats ════════════════ */
