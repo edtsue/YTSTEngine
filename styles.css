@@ -597,6 +597,34 @@ img[src*="genius-sports"] { cursor: help; }
 .creator__txt b { display: block; font-size: 14px; font-weight: 700; }
 .creator__txt i { display: block; font-style: normal; font-size: 12px; color: var(--ink-dim); margin-top: 2px; line-height: 1.35; }
 
+/* ── The wishlist ──────────────────────────────────────────────────── */
+.wish { border-top: 1px solid var(--line); }
+.wish__inner { max-width: var(--maxw); margin: 0 auto; padding: 84px 28px 76px; }
+.wish__eyebrow { display: inline-flex; align-items: center; font-family: 'Oswald'; text-transform: uppercase;
+  letter-spacing: .28em; font-size: 13px; font-weight: 600; color: var(--red-soft); margin-bottom: 18px; }
+.wish__title { font-family: 'Anton', 'Oswald', sans-serif; text-transform: uppercase; font-weight: 400;
+  font-size: clamp(30px, 5vw, 60px); line-height: .95; letter-spacing: .01em; margin: 0; }
+.wish__lede { max-width: 620px; color: var(--ink-dim); font-size: clamp(15px, 1.7vw, 18px); margin: 16px 0 40px; }
+.wish__grid { display: grid; grid-auto-flow: column; grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, auto); gap: 12px 24px; }
+.wish__item { display: flex; align-items: center; gap: 16px; cursor: pointer; background: #0a0e16;
+  border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px;
+  transition: border-color .18s, background .18s, transform .12s; }
+.wish__item:hover { border-color: var(--red); transform: translateX(2px); }
+.wish__box { position: absolute; opacity: 0; width: 0; height: 0; }
+.wish__check { flex: 0 0 auto; width: 24px; height: 24px; border-radius: 6px; border: 2px solid var(--ink-faint);
+  position: relative; transition: border-color .18s, background .18s; }
+.wish__check::after { content: ''; position: absolute; left: 7px; top: 3px; width: 6px; height: 11px;
+  border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg) scale(0); opacity: 0;
+  transition: transform .18s, opacity .18s; }
+.wish__box:checked ~ .wish__check { background: var(--red); border-color: var(--red); }
+.wish__box:checked ~ .wish__check::after { transform: rotate(45deg) scale(1); opacity: 1; }
+.wish__box:focus-visible ~ .wish__check { outline: 2px solid var(--red-soft); outline-offset: 2px; }
+.wish__txt { font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .01em; font-weight: 600;
+  font-size: clamp(14px, 1.5vw, 17px); line-height: 1.25; color: var(--ink); }
+.wish__box:checked ~ .wish__txt { color: var(--ink-dim); }
+@media (max-width: 720px) { .wish__grid { grid-auto-flow: row; grid-template-columns: 1fr; grid-template-rows: none; } }
+
 /* ── First-time-ever recap ─────────────────────────────────────────── */
 .firsts { border-top: 1px solid var(--line);
   background: radial-gradient(120% 90% at 50% 0%, rgba(255,45,45,.06), transparent 60%); }

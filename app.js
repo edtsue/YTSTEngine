@@ -8,7 +8,7 @@
      • GENIUS DATA (performance projections, usage, matchup) — the advantage
      • PLANNING DAY (calendar)                               — the decision
        you're making today: waivers, matchups, start/sit, lineup lock.
-     • THE ELITE EIGHT (Genius top-projected)                — this week's
+     • THE TOP PICKS (Genius top-projected)                — this week's
        must-starts, shown together, equal weight, never one face.
 
    The eight are shown EQUAL WEIGHT — a group feature, never a solo
@@ -84,7 +84,7 @@ function deriveBoard(market, i) {
 }
 MARKETS.forEach((m, i) => { m.board = deriveBoard(m, i); });
 
-/* ── The Elite Eight: this week's national top-projected must-starts. No
+/* ── The Top Picks: this week's national top-projected must-starts. No
    geo-filter — the city element is gone; the same eight lead the ad all week,
    the DAY changes the decision around them. ── */
 const BOARD = POOL.slice(0, 8);
@@ -95,7 +95,7 @@ const SIGNALS = [
     job: 'The advantage. Genius Sports projects who’s about to go off — usage, matchup and snap-count signals turned into a start/sit edge, refreshed every day of the week.' },
   { icon: '🗓️', key: 'day', name: 'The planning day', source: 'Where you are in the fantasy week',
     job: 'The decision. Waivers, matchups, start/sit, lineup lock — the ad meets you at the exact call you’re making today, from Monday planning to Sunday’s 1:00 lock.' },
-  { icon: '🏈', key: 'player', name: 'The Elite Eight', source: 'Genius Sports top-projected must-starts',
+  { icon: '🏈', key: 'player', name: 'The Top Picks', source: 'Genius Sports top-projected must-starts',
     job: 'The players. The eight Genius projects highest this week — the names to target and start. Shown together, equal weight, never a single face — and only Sunday Ticket lets you watch every one of them.' },
 ];
 
@@ -212,7 +212,7 @@ function buildProduction() {
   }
 
   // 2 · AI asset assembly — the ingredients that show up in the composited ad:
-  //     the planning day, the Elite Eight (headshots), the headline.
+  //     the planning day, the Top Picks (headshots), the headline.
   const asmGrid = document.getElementById('asmGrid');
   if (asmGrid) {
     asmGrid.innerHTML = BOARD.map(p =>
