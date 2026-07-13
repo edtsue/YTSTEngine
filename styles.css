@@ -667,8 +667,8 @@ img[src*="genius-sports"] { cursor: help; }
 .wish__title { font-family: 'Anton', 'Oswald', sans-serif; text-transform: uppercase; font-weight: 400;
   font-size: clamp(30px, 5vw, 60px); line-height: .95; letter-spacing: .01em; margin: 0; }
 .wish__lede { max-width: 620px; color: var(--ink-dim); font-size: clamp(15px, 1.7vw, 18px); margin: 16px 0 40px; }
-.wish__grid { display: grid; grid-auto-flow: column; grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, auto); gap: 12px 24px; }
+.wish__grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 24px; }
+.wish__item--wide { grid-column: 1 / -1; }
 .wish__item { display: flex; align-items: flex-start; gap: 16px; cursor: pointer; background: #0a0e16;
   border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px;
   transition: border-color .18s, background .18s, transform .12s; }
