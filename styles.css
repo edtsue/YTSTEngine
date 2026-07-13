@@ -133,6 +133,30 @@ em { font-style: normal; color: var(--ink); }
 .hero__lede strong { color: #fff; }
 .hero__cta { margin-top: 28px; display: flex; gap: 12px; flex-wrap: wrap; }
 
+/* ── living data texture — a projection line that draws itself behind
+   Section 01, so "data" is felt, not just stated ─────────────────────── */
+.how { overflow: hidden; }
+.how .section-head, .how .signals { position: relative; z-index: 1; }
+.datatex { position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: .5;
+  -webkit-mask-image: radial-gradient(130% 110% at 68% 42%, #000 26%, transparent 76%);
+          mask-image: radial-gradient(130% 110% at 68% 42%, #000 26%, transparent 76%); }
+.datatex svg { position: absolute; right: -3%; top: 6%; width: 80%; height: auto; }
+.datatex__grid line { stroke: rgba(255,255,255,.05); stroke-width: 1; }
+.datatex__spark { fill: none; stroke: var(--cyan); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 0 6px rgba(0,230,255,.35)); stroke-dasharray: 3000; animation: sparkDraw 8s ease-in-out infinite; }
+.datatex__dot { fill: var(--cyan-soft); filter: drop-shadow(0 0 5px rgba(0,230,255,.6)); animation: sparkDot 8s ease-in-out infinite; }
+@keyframes sparkDraw {
+  0% { stroke-dashoffset: 3000; opacity: 0; }
+  10% { opacity: .85; }
+  62% { stroke-dashoffset: 0; opacity: .85; }
+  86%, 100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes sparkDot { 0%, 58% { opacity: 0; } 66% { opacity: 1; } 86%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .datatex__spark { animation: none; stroke-dashoffset: 0; opacity: .5; }
+  .datatex__dot { animation: none; opacity: .7; }
+}
+
 /* ── SECTION HEADS ── */
 .section-head { max-width: var(--maxw); margin: 0 auto; padding: 0 28px; }
 .section-head__num { font-family: 'Oswald'; font-size: 13px; color: var(--red-soft); letter-spacing: .2em; font-weight: 600; }
