@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid slice">
+  <!-- Baked default CTV backdrop: an empty, muted stadium at dusk. No players,
+       no text, no marks — rights-clean by construction, matching the Gemini
+       generation prompt so the live-generated raster is a like-for-like swap. -->
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0a141f"/>
+      <stop offset=".5" stop-color="#0d1a26"/>
+      <stop offset="1" stop-color="#0a1813"/>
+    </linearGradient>
+    <radialGradient id="flL" cx=".2" cy="0" r=".55">
+      <stop offset="0" stop-color="#cfe0ff" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#cfe0ff" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="flR" cx=".8" cy="0" r=".55">
+      <stop offset="0" stop-color="#e6f0ff" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#e6f0ff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="field" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1b3823"/>
+      <stop offset="1" stop-color="#0b1d13"/>
+    </linearGradient>
+    <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#9db6d6" stop-opacity="0"/>
+      <stop offset=".5" stop-color="#9db6d6" stop-opacity=".15"/>
+      <stop offset="1" stop-color="#9db6d6" stop-opacity="0"/>
+    </linearGradient>
+    <radialGradient id="vig" cx=".5" cy=".46" r=".72">
+      <stop offset=".5" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000" stop-opacity=".62"/>
+    </radialGradient>
+  </defs>
+
+  <!-- bowl / sky -->
+  <rect width="1280" height="720" fill="url(#sky)"/>
+
+  <!-- upper deck band -->
+  <rect x="0" y="120" width="1280" height="200" fill="#0a141d" opacity=".72"/>
+  <!-- faint stadium-light / crowd speckle -->
+  <g fill="#8397b1" opacity=".22">
+    <rect x="90"  y="176" width="3" height="3"/><rect x="240" y="168" width="3" height="3"/>
+    <rect x="360" y="184" width="3" height="3"/><rect x="470" y="172" width="3" height="3"/>
+    <rect x="590" y="188" width="3" height="3"/><rect x="700" y="170" width="3" height="3"/>
+    <rect x="820" y="182" width="3" height="3"/><rect x="930" y="174" width="3" height="3"/>
+    <rect x="1040" y="186" width="3" height="3"/><rect x="1160" y="176" width="3" height="3"/>
+    <rect x="150" y="232" width="3" height="3"/><rect x="300" y="244" width="3" height="3"/>
+    <rect x="430" y="236" width="3" height="3"/><rect x="560" y="248" width="3" height="3"/>
+    <rect x="680" y="238" width="3" height="3"/><rect x="800" y="250" width="3" height="3"/>
+    <rect x="920" y="240" width="3" height="3"/><rect x="1080" y="246" width="3" height="3"/>
+  </g>
+
+  <!-- floodlight bloom -->
+  <rect width="1280" height="430" fill="url(#flL)"/>
+  <rect width="1280" height="430" fill="url(#flR)"/>
+
+  <!-- drifting midfield haze -->
+  <rect x="0" y="300" width="1280" height="150" fill="url(#haze)"/>
+
+  <!-- field with perspective -->
+  <polygon points="0,470 1280,470 1280,720 0,720" fill="url(#field)"/>
+  <g stroke="#dcefe4" stroke-opacity=".13" stroke-width="2">
+    <line x1="0"    y1="720" x2="424" y2="470"/>
+    <line x1="160"  y1="720" x2="478" y2="470"/>
+    <line x1="320"  y1="720" x2="532" y2="470"/>
+    <line x1="480"  y1="720" x2="586" y2="470"/>
+    <line x1="640"  y1="720" x2="640" y2="470"/>
+    <line x1="800"  y1="720" x2="694" y2="470"/>
+    <line x1="960"  y1="720" x2="748" y2="470"/>
+    <line x1="1120" y1="720" x2="802" y2="470"/>
+    <line x1="1280" y1="720" x2="856" y2="470"/>
+  </g>
+  <line x1="0" y1="470" x2="1280" y2="470" stroke="#dcefe4" stroke-opacity=".1" stroke-width="2"/>
+
+  <!-- vignette -->
+  <rect width="1280" height="720" fill="url(#vig)"/>
+</svg>

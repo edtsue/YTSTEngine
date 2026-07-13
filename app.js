@@ -644,7 +644,7 @@ async function generateBackdrop() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.image) {
       const reason = data.error === 'no_key'
-        ? 'Add YTST_KEY in Vercel to generate the photographic backdrop — showing the styled plate.'
+        ? 'Add YTST_KEY in Vercel to swap in a photographic backdrop — showing the baked stadium plate.'
         : (data.message || data.error || `Generation failed (${res.status}).`);
       throw new Error(reason);
     }
