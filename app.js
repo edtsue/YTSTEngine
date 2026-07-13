@@ -672,7 +672,9 @@ function initInsightGlitch() {
   const el = document.querySelector('.insight__stakes');
   if (!el) return;
   const words  = ['something even higher stakes', 'bragging rights', 'your lineup', 'pride', 'the waiver wire', 'humiliation', 'start/sit calls', 'fantasy sports', 'roster moves', 'the data edge'];
-  const colors = words.map(() => '#ff2d2d');
+  // two-tone: emotion/stakes glow red, the data/edge terms glow cyan
+  const dataWords = new Set(['your lineup', 'the waiver wire', 'start/sit calls', 'roster moves', 'the data edge']);
+  const colors = words.map(w => dataWords.has(w) ? '#00e6ff' : '#ff2d2d');
   let i = 0;
   el.style.color = colors[0];
   const swap = () => { i = (i + 1) % words.length; el.textContent = words[i]; el.style.color = colors[i]; };
