@@ -34,6 +34,14 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 section, header, footer { position: relative; z-index: 1; }
+
+/* reveal-on-scroll — the class is added by JS, so content is never hidden
+   without JS, and it is skipped entirely under reduced-motion */
+.reveal { opacity: 0; transform: translateY(22px);
+  transition: opacity .7s cubic-bezier(.16,.9,.2,1), transform .7s cubic-bezier(.16,.9,.2,1);
+  transition-delay: var(--rd, 0ms); }
+.reveal.is-in { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
 h1, h2, h3 { font-family: 'Oswald', sans-serif; letter-spacing: .01em; }
 a { color: inherit; text-decoration: none; }
 em { font-style: normal; color: var(--ink); }

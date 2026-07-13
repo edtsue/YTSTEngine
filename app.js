@@ -831,6 +831,26 @@ function initHeroFlap() {
   setTimeout(step, 450);
 }
 
+/* ── reveal-on-scroll: staggered slide-up as sections enter view ─────── */
+function initReveals() {
+  if (reduceMotion() || !('IntersectionObserver' in window)) return;
+  const sel = '.section-head, .sig, .weekstrip, .prod__stage, .media__card, ' +
+              '.firsts__card, .firsts__title, .firsts__lede, .wish__title, .wish__lede, .wish__item';
+  const groups = {};
+  const io = new IntersectionObserver((entries, obs) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('is-in'); obs.unobserve(e.target); } });
+  }, { threshold: 0.1, rootMargin: '0px 0px -6% 0px' });
+  document.querySelectorAll(sel).forEach(el => {
+    // stagger siblings that share a parent so rows cascade, not the whole page
+    const key = el.parentElement ? el.parentElement.className + '>' + el.className.split(' ')[0] : el.className;
+    groups[key] = (groups[key] || 0);
+    el.classList.add('reveal');
+    el.style.setProperty('--rd', Math.min(groups[key] * 70, 350) + 'ms');
+    groups[key]++;
+    io.observe(el);
+  });
+}
+
 /* ── hero video: deferred load ─────────────────────────────────────── */
 function initHeroVideo() {
   const v = document.getElementById('heroVid');
@@ -863,3 +883,4 @@ initSpotAutoplay(); // plays the :15 spot once when the mock-up scrolls into vie
 initAdScrubber();   // keeps the resting scrubber moving as the ad counts 0:15 → 0:00
 initGeniusTooltips(); // hover explainer on every Genius Sports logo
 initBrief();        // BRIEF nav button → Google Doc modal overlay
+initReveals();      // staggered slide-up as each section scrolls into view
