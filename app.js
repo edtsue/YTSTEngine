@@ -671,8 +671,8 @@ async function generateBackdrop() {
 function initInsightGlitch() {
   const el = document.querySelector('.insight__stakes');
   if (!el) return;
-  const words  = ['something even higher stakes', 'fantasy sports', 'your lineup', 'fantasy sports', 'the waiver wire', 'fantasy sports', 'start/sit calls', 'fantasy sports', 'roster moves', 'fantasy sports', 'the data edge', 'fantasy sports'];
-  const colors = ['#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d', '#ff2d2d'];
+  const words  = ['something even higher stakes', 'fantasy sports', 'your lineup', 'fantasy sports', 'the waiver wire', 'fantasy sports', 'start/sit calls', 'fantasy sports', 'roster moves', 'fantasy sports', 'the data edge', 'fantasy sports', 'pride', 'fantasy sports', 'humiliation', 'fantasy sports', 'bragging rights', 'fantasy sports'];
+  const colors = words.map(() => '#ff2d2d');
   let i = 0;
   el.style.color = colors[0];
   const swap = () => { i = (i + 1) % words.length; el.textContent = words[i]; el.style.color = colors[i]; };
