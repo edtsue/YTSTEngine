@@ -89,13 +89,22 @@ MARKETS.forEach((m, i) => { m.board = deriveBoard(m, i); });
    the DAY changes the decision around them. ── */
 const BOARD = POOL.slice(0, 8);
 
+/* ── monoline icon set — replaces placeholder emoji with a cohesive stroke
+   set that inherits currentColor (so each picks up its accent) ──────── */
+const ICONS = {
+  data: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4v16h16"/><path d="M7 15l4-4 3 3 5-6"/></svg>',
+  day: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/><circle cx="12" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg>',
+  player: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><g transform="rotate(45 12 12)"><ellipse cx="12" cy="12" rx="8.5" ry="5"/><path d="M8 12h8M10.5 10.6v2.8M13.5 10.6v2.8"/></g></svg>',
+  die: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.1" fill="currentColor" stroke="none"/></svg>',
+};
+
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
-  { icon: '📊', key: 'data', name: 'Genius Sports data', source: 'Performance projections · usage · matchup grades',
+  { icon: ICONS.data, key: 'data', name: 'Genius Sports data', source: 'Performance projections · usage · matchup grades',
     job: 'The advantage. Genius Sports projects who’s about to go off — usage, matchup and snap-count signals turned into a start/sit edge, refreshed every day of the week.' },
-  { icon: '🗓️', key: 'day', name: 'The planning day', source: 'Where you are in the fantasy week',
+  { icon: ICONS.day, key: 'day', name: 'The planning day', source: 'Where you are in the fantasy week',
     job: 'The decision. Waivers, matchups, start/sit, lineup lock — the ad meets you at the exact call you’re making today, from Monday planning to Sunday’s 1:00 lock.' },
-  { icon: '🏈', key: 'player', name: 'The Top Picks', source: 'Genius Sports top-projected must-starts',
+  { icon: ICONS.player, key: 'player', name: 'The Top Picks', source: 'Genius Sports top-projected must-starts',
     job: 'The players. The eight Genius projects highest this week — the names to target and start. Shown together, equal weight, never a single face — and only Sunday Ticket lets you watch every one of them.' },
 ];
 

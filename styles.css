@@ -208,7 +208,12 @@ em { font-style: normal; color: var(--ink); }
 .sig--day { border-top-color: var(--gold); }
 .sig--player { border-top-color: var(--blue); }
 .sig__icon { font-size: 26px; }
+.sig__icon svg { width: 32px; height: 32px; display: block; }
 .sig--data .sig__icon { color: var(--cyan); }
+.sig--day .sig__icon { color: var(--gold); }
+.sig--player .sig__icon { color: var(--blue); }
+.btn__ic { width: 16px; height: 16px; flex: none; }
+.ctrl__sig-ic { width: 14px; height: 14px; vertical-align: -2px; margin-right: 6px; }
 .sig--data .sig__src { color: var(--cyan-soft); }
 .sig h3 { font-size: 22px; text-transform: uppercase; margin: 8px 0 4px; }
 .sig__src { font-size: 12px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .06em; }
