@@ -837,7 +837,7 @@ function initHeroFlap() {
       el.classList.add('landed');                   // bold lime SUNDAY + slam + glow + ring
       if (inner) { inner.classList.remove('shake'); void inner.offsetWidth; inner.classList.add('shake');
         setTimeout(() => inner.classList.remove('shake'), 460); }
-      if (lede) setTimeout(() => lede.classList.remove('pre-in'), 550);  // beat, then fade the lede in
+      if (lede) setTimeout(() => lede.classList.remove('pre-in'), 900);  // longer beat, then a slow dim→white fade
     }
   };
   setTimeout(step, 450);
