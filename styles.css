@@ -351,6 +351,18 @@ em { font-style: normal; color: var(--ink); }
     url("assets/stadium-backdrop.svg");
 }
 .ctv.has-img .ctv__media { background-blend-mode: normal; }
+.ctv__fpo { position: absolute; top: 0; right: 0; z-index: 12; pointer-events: none;
+  display: flex; flex-direction: column; align-items: flex-end; gap: .35cqw;
+  padding: 2.6cqw 3cqw; text-align: right;
+  background: linear-gradient(225deg, rgba(231,181,60,.22), transparent 62%);
+  border-bottom-left-radius: 10px; }
+.ctv__fpo-main { font-family: 'Oswald', sans-serif; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .16em; font-size: clamp(6px, 1.9cqw, 12px); line-height: 1.05; color: #ffe9a8;
+  text-shadow: 0 1px 4px rgba(0,0,0,.85); }
+.ctv__fpo-sub { font-family: 'Anton', 'Oswald', sans-serif; letter-spacing: .22em;
+  font-size: clamp(9px, 3.2cqw, 22px); line-height: 1; color: var(--gold);
+  border: .16cqw dashed rgba(231,181,60,.75); padding: .12em .5em; border-radius: 3px;
+  background: rgba(6,9,14,.5); text-shadow: 0 1px 4px rgba(0,0,0,.8); }
 .ctv__scrim { position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(4,6,10,.94) 0%, rgba(4,6,10,.7) 26%, rgba(4,6,10,.22) 46%, rgba(4,6,10,.22) 72%, rgba(4,6,10,.4) 100%), linear-gradient(180deg, rgba(4,6,10,.6) 0%, transparent 26%, transparent 70%, rgba(4,6,10,.55) 100%); }
 
 .ctv__loader { position: absolute; inset: 0; z-index: 5; display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(4,6,10,.7); color: #fff; font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .08em; font-size: 14px; }
