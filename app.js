@@ -756,6 +756,24 @@ function initBrief() {
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
 }
 
+/* ── FAQ — modal overlay opened by the footer button ────────────────── */
+function initFaq() {
+  const modal = document.getElementById('faqModal');
+  const btn = document.getElementById('faqBtn');
+  if (!modal || !btn) return;
+  const body = modal.querySelector('.faqmodal__body');
+  const open = () => {
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    if (body) body.scrollTop = 0;
+    document.getElementById('faqClose').focus();
+  };
+  const close = () => { modal.hidden = true; document.body.style.overflow = ''; btn.focus(); };
+  btn.addEventListener('click', open);
+  modal.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', close));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) close(); });
+}
+
 function initBoardGlitch() {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const run = () => {
@@ -895,4 +913,5 @@ initSpotAutoplay(); // plays the :15 spot once when the mock-up scrolls into vie
 initAdScrubber();   // keeps the resting scrubber moving as the ad counts 0:15 → 0:00
 initGeniusTooltips(); // hover explainer on every Genius Sports logo
 initBrief();        // BRIEF nav button → Google Doc modal overlay
+initFaq();          // FAQ footer button → FAQ modal overlay
 initReveals();      // staggered slide-up as each section scrolls into view

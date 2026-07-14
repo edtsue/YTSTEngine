@@ -446,14 +446,26 @@
   </section>
 
 
-  <!-- ░░ SECTION 08 — FAQ ░░ -->
-  <section class="faq" id="faq">
-    <div class="section-head">
-      <span class="section-head__num">08</span>
-      <h2>Questions, answered.</h2>
-      <p>The short version of everything above — what Set Your Sunday is, how the engine actually works,
-        and what it takes to ship it rights-clean.</p>
-    </div>
+  <!-- ░░ FOOTER — FAQ launcher ░░ -->
+  <footer class="foot foot--faq" id="faq">
+    <button class="faq-cta" id="faqBtn" type="button">
+      <span class="faq-cta__q" aria-hidden="true">?</span>FAQs
+    </button>
+    <p class="foot__note">The short version of everything above — what Set Your Sunday is, how the engine
+      works, and what it takes to ship it rights-clean.</p>
+  </footer>
+
+  <!-- ░░ FAQ MODAL ░░ -->
+  <div class="faqmodal" id="faqModal" hidden>
+    <div class="faqmodal__backdrop" data-close></div>
+    <div class="faqmodal__panel" role="dialog" aria-modal="true" aria-label="Frequently asked questions">
+      <div class="faqmodal__bar">
+        <span class="faqmodal__title">Questions, answered.</span>
+        <button class="faqmodal__close" id="faqClose" type="button" data-close aria-label="Close FAQs">✕</button>
+      </div>
+      <div class="faqmodal__body">
+        <p class="faqmodal__lede">Everything about Set Your Sunday — what it is, how the engine actually works,
+          and what it takes to ship it rights-clean.</p>
 
     <div class="faq__list">
       <details class="faq__item">
@@ -564,7 +576,9 @@
         </div>
       </details>
     </div>
-  </section>
+      </div>
+    </div>
+  </div>
 
   <!-- ░░ BRIEF MODAL ░░ -->
   <div class="brief" id="briefModal" hidden>
