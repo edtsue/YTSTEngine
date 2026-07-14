@@ -743,6 +743,27 @@ img[src*="genius-sports"] { cursor: help; }
 .foot { max-width: var(--maxw); margin: 24px auto 0; padding: 30px 28px 64px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 13px; }
 .foot strong { color: var(--ink-dim); }
 
+/* ── FAQ ───────────────────────────────────────────────────────────── */
+.faq { border-top: 1px solid var(--line); padding: 72px 0 28px; }
+.faq__list { max-width: 860px; margin: 34px auto 0; padding: 0 28px; display: flex; flex-direction: column; gap: 10px; }
+.faq__item { border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,.015);
+  transition: border-color .18s, background .18s; }
+.faq__item:hover { border-color: #33405a; }
+.faq__item[open] { background: rgba(255,255,255,.03); border-color: color-mix(in srgb, var(--red) 34%, var(--line)); }
+.faq__q { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+  gap: 18px; padding: 18px 20px; }
+.faq__q::-webkit-details-marker { display: none; }
+.faq__q-txt { font-family: 'Oswald'; font-weight: 600; text-transform: uppercase; letter-spacing: .01em;
+  font-size: clamp(14px, 1.6vw, 17px); line-height: 1.25; color: var(--ink); }
+.faq__q-txt::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--red);
+  vertical-align: middle; margin-right: 12px; transform: translateY(-3px); }
+.faq__chev { flex: 0 0 auto; color: var(--red-soft); font-size: 15px; transition: transform .25s ease; }
+.faq__item[open] .faq__chev { transform: rotate(180deg); }
+.faq__a { padding: 0 20px 20px 52px; }
+.faq__a p { color: var(--ink-dim); font-size: 14.5px; line-height: 1.6; margin: 0; }
+.faq__a p b { color: var(--ink); }
+@media (max-width: 620px) { .faq__a { padding-left: 20px; } }
+
 /* ── RESPONSIVE ── */
 @media (max-width: 920px) {
   .nav__links a { display: none; }   /* keep the Brief button, drop the section anchors */
