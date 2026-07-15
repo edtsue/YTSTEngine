@@ -1,6 +1,6 @@
 # Sticky Notes Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **10 tasks.** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add shared, restorable, rich-text sticky notes that can be dropped anywhere on the Set Your Sunday pitch site and persist server-side.
 
@@ -1148,11 +1148,13 @@ Create `notes.js`:
     addBtn.setAttribute('aria-pressed', 'false');
     document.body.appendChild(addBtn);
 
+    // Nothing is fetched until the user opens the layer. A client loading the
+    // pitch must not pay a network request for a feature they never open —
+    // cold-load weight on this site is hard-won.
     toggle.addEventListener('click', () => {
       state.on = !state.on;
       document.body.classList.toggle('sn-on', state.on);
-      if (!state.on) arm(false);
-      if (state.on && !state.notes.length) load();
+      if (state.on) load(); else arm(false);
     });
 
     addBtn.addEventListener('click', () => arm(!state.arming));
@@ -1188,8 +1190,6 @@ Create `notes.js`:
     addEventListener('resize', onLayout);
     new ResizeObserver(onLayout).observe(document.body);
     document.fonts?.ready.then(onLayout);
-
-    load();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -1216,6 +1216,7 @@ and the script immediately before `</body>`:
 With `vercel dev` running, open `localhost:3000` and check, in order:
 
 1. **Cold load shows no notes** — only the yellow "Notes 0" button bottom-right. This is the client-facing guarantee; if notes are visible on load, stop and fix it.
+   Also open devtools → Network, hard-reload, and confirm **NO request to `/api/notes` is made on page load.** The fetch must happen only when the layer is opened. A client viewing the pitch must not pay for a feature they never open.
 2. Click **Notes** → the "+ Add" button appears.
 3. Click **+ Add** → cursor becomes a crosshair.
 4. Click the "06 · The wishlist" heading → a sticky appears there and takes focus. **The page must not navigate or open a modal.**
@@ -1703,7 +1704,117 @@ git -c user.email=edtsue@gmail.com commit -m "feat: add notes tray with unanchor
 
 ---
 
-### Task 9: Deploy and verify in production
+### Task 9: Live polling — see other reviewers' notes appear
+
+The wall is shared, so a reviewer must see other people's notes without reloading. Polling, not websockets: Vercel functions are serverless (no long-lived connections) and Upstash's REST API has no pub/sub.
+
+**Files:**
+- Modify: `notes.js` (poll loop + merge)
+
+**Interfaces:**
+- Consumes: `state`, `render`, `api`, `load`, `debounced` (Tasks 6–8); `GET /api/notes` → `{notes, trash}` (Task 4).
+- Produces: `startPolling()`, `stopPolling()`, `anyBusy()`.
+
+**The trap this task exists to avoid:** `render()` does `layer.textContent = ''` and rebuilds every note. If a poll fires while someone is typing, it destroys their caret mid-sentence and can discard text that has not been saved yet. **The poll must stand down while anyone is editing** — correctness beats freshness. A note is "busy" if it holds focus or has a debounced save pending; while any note is busy, skip the cycle entirely and catch up on the next idle one.
+
+- [ ] **Step 1: Add the poll loop**
+
+Add to `notes.js`, before `init()`:
+
+```js
+  /* ── live polling ────────────────────────────────────────────────── */
+  const POLL_MS = 10000;
+  let pollTimer = null, lastSig = '';
+
+  // Cheap change-detector: re-rendering unchanged data every 10s would flicker
+  // the wall and fight with dragging.
+  const sigOf = d => JSON.stringify([
+    d.notes.map(n => [n.id, n.updated]),
+    d.trash.map(t => [t.id, t.deletedAt]),
+  ]);
+
+  // Typing or an unflushed save = busy. Never blow away in-progress work.
+  const anyBusy = () =>
+    debounced.size > 0 || !!document.activeElement?.closest?.('.sn-note');
+
+  async function poll() {
+    if (!state.on || document.hidden || anyBusy()) return;
+    try {
+      const data = await api('GET');
+      const sig = sigOf(data);
+      if (sig === lastSig) return;          // nothing changed — don't re-render
+      lastSig = sig;
+      state.notes = data.notes;
+      state.trash = data.trash;
+      render();
+    } catch {
+      // Polling failures are silent on purpose: a broken tab must not nag the
+      // user every 10 seconds. Real actions (add/edit/delete) still surface errors.
+    }
+  }
+
+  function startPolling() {
+    stopPolling();
+    pollTimer = setInterval(poll, POLL_MS);
+  }
+  function stopPolling() {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+```
+
+- [ ] **Step 2: Keep `lastSig` in step with local changes**
+
+In `load()`, after `state.notes`/`state.trash` are assigned and before `render()`, add:
+
+```js
+      lastSig = sigOf(data);
+```
+
+This stops the first poll after a manual load from re-rendering identical data.
+
+- [ ] **Step 3: Drive the loop from the toggle and tab visibility**
+
+Replace the toggle handler added in Task 6 with:
+
+```js
+    toggle.addEventListener('click', () => {
+      state.on = !state.on;
+      document.body.classList.toggle('sn-on', state.on);
+      if (state.on) { load(); startPolling(); }
+      else { arm(false); stopPolling(); }
+    });
+
+    // A hidden tab must not burn Upstash quota. Resume on return, and poll once
+    // immediately so the wall is current the moment you look at it.
+    document.addEventListener('visibilitychange', () => {
+      if (!state.on) return;
+      if (document.hidden) stopPolling();
+      else { startPolling(); poll(); }
+    });
+```
+
+- [ ] **Step 4: Verify in the browser**
+
+Open `localhost:3000` in **two side-by-side windows** (this needs two clients — one window cannot prove it).
+
+1. Open the notes layer in both. In window A, add a note. Within ~10s it appears in **window B** without a reload.
+2. In window B, delete a note. Within ~10s it disappears from **window A**'s wall and shows in its Graveyard.
+3. **The important one — the busy guard.** In window A, click into a note and type continuously for ~30s. Your text must NOT be wiped, and your caret must NOT jump, even though polls are firing. Confirm in devtools → Network that `/api/notes` GETs pause while you type and resume shortly after you stop.
+4. Switch to another browser tab for ~30s, then come back. Confirm in Network that polling **stopped** while hidden and resumed on return.
+5. Close the notes layer. Confirm polling **stops entirely** — no further `/api/notes` requests.
+6. Cold-load the page and never open the layer. Confirm **zero** `/api/notes` requests, ever. This is the client-facing guarantee.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add notes.js
+git -c user.email=edtsue@gmail.com commit -m "feat: poll for other reviewers' notes while the layer is open"
+```
+
+---
+
+### Task 10: Deploy and verify in production
 
 **Files:** none (verification only)
 
@@ -1737,17 +1848,34 @@ curl -s -o /dev/null -w '%{http_code} %{content_type}\n' https://ytst.mfgpilots.
 
 Expected: `200 text/html` — the middleware rewrote the unauthenticated request to the gate page. **It must NOT return JSON.** If you see `application/json`, the notes API is publicly readable and writable; stop and fix the gate before telling anyone the URL.
 
-- [ ] **Step 5: Verify the pitch is still clean**
+- [ ] **Step 5: Verify the pitch itself is UNBROKEN — this is the top priority**
 
-Open `https://ytst.mfgpilots.com`, enter the gate password. Confirm:
+Set Your Sunday is a client-facing pitch. A working notes feature that damages the pitch is a net loss. Open `https://ytst.mfgpilots.com`, enter the gate password, and confirm **the site behaves exactly as it did before**:
 
 1. The page loads with **no notes visible** — only the "Notes" button bottom-right.
-2. Nothing about the pitch has shifted or broken (hero, mixer, FAQ modal all behave).
-3. Click **Notes** → add a note → reload → it persists.
-4. Delete it → **Graveyard** → **Restore** → it returns.
+2. **Cold load fires ZERO `/api/notes` requests** (devtools → Network, hard reload). Confirm the page's load weight and timing are unchanged.
+3. **Hero:** the SUNDAY flap/slam animation runs, lede fades in, video plays.
+4. **INSIGHT:** stat counters count up, glitch phrase cycles, week rail auto-scrolls.
+5. **Build an asset:** day selector + randomize work; the ad scrubber loops.
+6. **FAQ modal** opens from the footer button and closes.
+7. Devtools → Console: **no new errors** from `notes.js`.
+8. Scroll the full page — no layout shift, no element displaced by the notes layer.
+
+If ANY of these regressed, stop and fix before going further. The notes layer is additive and namespaced (`.sn-*`); nothing here should have moved.
+
+- [ ] **Step 6: Verify burial/restore over REAL HTTP**
+
+This could not be tested locally: `vercel dev` hangs on PATCH/DELETE carrying a body for any route behind `middleware.js` (a dev-emulation bug — it affects the pre-existing `/api/geo` too, and production handles these fine). So the burial and restore round-trip must be confirmed here, in production, over real HTTP.
+
+With the gate password entered in the browser:
+
+1. Click **Notes** → add a note → reload → it persists.
+2. Delete it → confirm it leaves the wall and appears in **Graveyard** with a burial time. **If this hangs or errors, the dev-only diagnosis was wrong — stop and investigate.**
+3. **Restore** it → it returns to the wall.
+4. Add a formatted note (bold + a colour + a paper colour) → reload → formatting survives.
 5. Empty the graveyard to leave production tidy.
 
-- [ ] **Step 6: Verify on a phone viewport**
+- [ ] **Step 7: Verify on a phone viewport**
 
 In devtools, switch to an iPhone viewport and reload. Confirm the note tracks its anchor rather than drifting off-screen — this is the whole reason for fractional offsets, so it is worth seeing with your own eyes.
 
