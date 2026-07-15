@@ -793,7 +793,10 @@ Expected: PASS — 13 tests.
 
 - [ ] **Step 5: Run the whole suite**
 
-Run: `node --test test/`
+Run: `node --test test/*.test.js`
+
+Note the glob: `node --test test/` fails on Node 24 (it tries to resolve the
+directory as a module). Use the glob form.
 Expected: PASS — 34 tests across three files.
 
 - [ ] **Step 6: Commit**
@@ -1692,7 +1695,7 @@ git -c user.email=edtsue@gmail.com commit -m "feat: add notes tray with unanchor
 
 - [ ] **Step 1: Run the full test suite**
 
-Run: `node --test test/`
+Run: `node --test test/*.test.js`
 Expected: PASS, 34 tests. Do not deploy on a red suite.
 
 - [ ] **Step 2: Confirm no secrets are staged**
