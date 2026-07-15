@@ -136,6 +136,59 @@ test('purgeAll empties the graveyard and leaves the wall alone', async () => {
   assert.equal(notes[0].id, live.id);
 });
 
+test('concurrent edits to the same note are last-write-wins (documented behaviour)', async () => {
+  let t = 1000;
+  const store = makeStore(fakeRedis(), () => t);
+  const a = await store.create(seed);
+
+  // Two reviewers both read the same note, then both write — interleaved.
+  // update() is read-modify-write, so whichever write lands second wins
+  // the WHOLE note body, silently discarding the other reviewer's edit.
+  t = 2000;
+  const first = await store.update(a.id, { text: 'reviewer A' });
+  t = 3000;
+  const second = await store.update(a.id, { text: 'reviewer B' });
+
+  assert.equal(first.text, 'reviewer A');
+  assert.equal(second.text, 'reviewer B');
+  const { notes } = await store.list();
+  assert.equal(notes.length, 1);
+  assert.equal(notes[0].text, 'reviewer B', 'the later write wins the whole note');
+});
+
+test('a note present in both hashes self-heals: live wins and the stale trash copy is removed', async () => {
+  const redis = fakeRedis();
+  const store = makeStore(redis, () => 1000);
+  const a = await store.create(seed);
+
+  // Simulate the race: bury() put it in TRASH and hdel'd LIVE, but a
+  // concurrent update() then resurrected it into LIVE (read before the
+  // hdel, wrote after) — leaving the id in BOTH hashes.
+  await store.bury(a.id);
+  redis.db.get('sys:notes').set(a.id, redis.db.get('sys:notes:trash').get(a.id));
+
+  const { notes, trash } = await store.list();
+  assert.equal(notes.length, 1, 'live wins: the note is visible on the wall');
+  assert.equal(notes[0].id, a.id);
+  assert.equal(trash.length, 0, 'the stale trash copy is excluded from the response');
+  assert.equal(redis.db.get('sys:notes:trash').has(a.id), false, 'the stale trash copy is actually deleted, not just hidden');
+});
+
+test('list is unchanged when live and trash do not overlap (no spurious hdel)', async () => {
+  const redis = fakeRedis();
+  const store = makeStore(redis, () => 1000);
+  const live = await store.create(seed);
+  const dead = await store.create(seed);
+  await store.bury(dead.id);
+
+  const { notes, trash } = await store.list();
+  assert.equal(notes.length, 1);
+  assert.equal(notes[0].id, live.id);
+  assert.equal(trash.length, 1);
+  assert.equal(trash[0].id, dead.id);
+  assert.equal(redis.db.get('sys:notes:trash').has(dead.id), true, 'no overlap means no hdel should fire');
+});
+
 test('tolerates values already deserialised by the client', async () => {
   const redis = fakeRedis();
   const store = makeStore(redis, () => 1000);
