@@ -453,10 +453,12 @@
       }
     });
 
-    // styleWithCSS makes execCommand emit spans instead of <font> where the
-    // browser supports it. The server normalises <font> anyway, so this is
-    // belt-and-braces rather than load-bearing.
-    try { document.execCommand('styleWithCSS', false, true); } catch {}
+    // styleWithCSS MUST be false. With it true, execCommand('bold') emits
+    // <span style="font-weight:bold">, and the sanitiser's span allowlist only
+    // permits color/font-size — so bold silently vanished on reload. With it
+    // false, b/i/u emit <b>/<i>/<u> (allowlisted) and colour/size emit <font>,
+    // which the sanitiser normalises into spans. Verified in Chrome.
+    try { document.execCommand('styleWithCSS', false, false); } catch {}
 
     const noteOf = el => state.notes.find(n => n.id === el.dataset.id);
 
