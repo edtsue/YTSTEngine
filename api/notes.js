@@ -69,7 +69,8 @@ export function makeHandler(store) {
 
       return res.status(405).json({ error: 'method' });
     } catch (err) {
-      return res.status(500).json({ error: String(err.message || err) });
+      console.error(`${req.method} error:`, err);
+      return res.status(500).json({ error: 'server error' });
     }
   };
 }

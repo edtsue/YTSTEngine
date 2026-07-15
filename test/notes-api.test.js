@@ -130,3 +130,15 @@ test('responses are marked no-store', async () => {
   const res = await call(newHandler(), 'GET');
   assert.equal(res.headers['Cache-Control'], 'no-store');
 });
+
+test('500 errors log internally but return a generic message', async () => {
+  const throwingStore = {
+    async list() { throw new Error('redis exploded with secret-token-abc'); },
+  };
+  const h = makeHandler(throwingStore);
+  const res = await call(h, 'GET');
+  assert.equal(res.code, 500);
+  assert.equal(res.body.error, 'server error');
+  const serialized = JSON.stringify(res.body);
+  assert(!serialized.includes('secret-token-abc'), 'internal error text must not leak to caller');
+});
