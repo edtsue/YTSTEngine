@@ -1074,3 +1074,47 @@ img[src*="genius-sports"] { cursor: help; }
 @media (prefers-reduced-motion: reduce) {
   .bcard__flash, .bcard--flash-out::before, .bcard--flash-out::after { animation: none; }
 }
+
+/* ── Newsflash mutes the day/board dials ────────────────────────────────
+   A live newsflash runs on an event, not the week's clock, so those dials are
+   no longer driving the ad. Muted, NOT disabled: picking a day is the way out
+   of newsflash mode, so it must stay clickable. */
+/* Mutes via filter: opacity(), NOT the opacity property. The site's
+   scroll-reveal system (.reveal / .reveal.is-in, transition-delay: var(--rd))
+   owns a DELAYED opacity transition on these boxes; a transition parked in its
+   delay phase pins the value and outranks everything — including inline styles.
+   Fighting it for the same property silently does nothing. filter is untouched
+   by the reveal, so it just works. */
+.ctrl.is-muted {
+  filter: grayscale(.85) opacity(.38);
+  /* NO transition. The reveal system's `transition-delay: var(--rd)` applies to
+     this element, so ANY transition declared here parks in that delay phase and
+     pins the start value. Snap instead — it's a state change, not an animation. */
+  transition: none;
+}
+.ctrl.is-muted:hover, .ctrl.is-muted:focus-within { filter: grayscale(.3) opacity(.72); }
+
+/* ── Genius Sports fact + source link ───────────────────────────────── */
+.sig__fact {
+  margin: 10px 0 0; padding: 10px 12px; border-radius: 6px;
+  background: color-mix(in srgb, var(--cyan, #4dd6e8) 8%, transparent);
+  border-left: 2px solid var(--cyan, #4dd6e8);
+  font-size: 13px; line-height: 1.5; color: #c9d4e4;
+}
+.sig__fact b { color: #fff; font-weight: 700; }
+.sig__srclink {
+  display: inline-flex; align-items: center; gap: 10px;
+  text-decoration: none; border-radius: 6px; transition: opacity .15s;
+}
+.sig__srclink:hover { opacity: .75; }
+.sig__srccite {
+  font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .06em;
+  text-transform: uppercase; color: #8fa0b8; white-space: nowrap;
+}
+.sig__srclink:hover .sig__srccite { color: var(--cyan, #4dd6e8); text-decoration: underline; }
+
+/* Section-head accent word — picks out the one word carrying the idea.
+   Not italic: <em> is the right semantic element for emphasis, but these
+   heads are Anton display type and italicising them breaks the face. */
+.section-head h2 .hot,
+h2 .hot { color: var(--red); font-style: normal; }

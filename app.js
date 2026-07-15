@@ -101,7 +101,15 @@ const ICONS = {
 /* ── The three signals (for the explainer cards) ───────────────────── */
 const SIGNALS = [
   { icon: ICONS.data, key: 'data', name: 'Genius Sports data', source: 'Performance projections · usage · matchup grades',
-    job: 'The advantage. Genius Sports projects who’s about to go off — usage, matchup and snap-count signals turned into a start/sit edge, refreshed every day of the week.' },
+    job: 'The advantage. Genius Sports projects who’s about to go off — usage, matchup and snap-count signals turned into a start/sit edge, refreshed every day of the week.',
+    /* Wording tracks the cited ESPN report exactly. It says "exclusive data
+       deal" through 2030 and "play-by-play statistics that pour through the
+       league's Next Gen Stats real-time data platform" — it does NOT say
+       "official partner" or "second-by-second". Don't inflate it: people in
+       the room know the actual deal terms. */
+    fact: 'The NFL’s <b>exclusive data partner</b> — extended through the <b>2030 season</b>. Live <b>play-by-play</b> data pours straight through the league’s <b>Next Gen Stats</b> real-time platform.',
+    factSrc: 'https://www.espn.com/nfl/story/_/id/45493514/nfl-extends-expands-exclusive-data-deal-genius-sports',
+    factSrcLabel: 'ESPN · NFL extends, expands exclusive data deal with Genius Sports' },
   { icon: ICONS.day, key: 'day', name: 'The planning day', source: 'Where you are in the fantasy week',
     job: 'The decision. Waivers, matchups, start/sit, lineup lock — the ad meets you at the exact call you’re making today, from Monday planning to Sunday’s 1:00 lock.' },
   { icon: ICONS.player, key: 'player', name: 'The Top Picks', source: 'Genius Sports top-projected must-starts',
@@ -199,7 +207,12 @@ function buildSignals() {
       <h3>${s.name}${s.key === 'data' ? ' <span class="first-badge first-badge--sm">First time ever</span>' : ''}</h3>
       <div class="sig__src">${s.source}</div>
       <p class="sig__job">${s.job}</p>
-      ${s.key === 'data' ? '<div class="sig__logos"><img class="sig__srclogo" src="assets/genius-sports.svg" alt="Genius Sports" /></div>' : ''}
+      ${s.fact ? `<p class="sig__fact">${s.fact}</p>` : ''}
+      ${s.key === 'data' ? `<div class="sig__logos">
+        <a class="sig__srclink" href="${s.factSrc}" target="_blank" rel="noopener noreferrer" title="${s.factSrcLabel}">
+          <img class="sig__srclogo" src="assets/genius-sports.svg" alt="Genius Sports" />
+          <span class="sig__srccite">Source: ESPN <span aria-hidden="true">↗</span></span>
+        </a></div>` : ''}
     </article>`).join('<div class="sig-x" aria-hidden="true">×</div>');
 }
 
@@ -651,6 +664,10 @@ function renderMixer(opts) {
   document.getElementById('emoNote').textContent = news
     ? `Newsflash — ${d.task} overridden by a live ${news.kind.chyron.toLowerCase()} update.`
     : `${d.task} — ${d.register}.`;
+  // A live newsflash overrides the week's clock, so the day/board dials read as
+  // inactive. Muted only — the Day selector must stay clickable, since choosing
+  // a day is how you leave newsflash mode.
+  document.querySelectorAll('.controls .ctrl').forEach(c => c.classList.toggle('is-muted', !!news));
   document.getElementById('playerNote').innerHTML =
     `<strong>8 top-projected must-starts</strong> · ranked by this week's performance projections.`;
 
