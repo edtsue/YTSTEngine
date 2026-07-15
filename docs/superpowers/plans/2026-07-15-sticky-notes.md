@@ -1,6 +1,6 @@
 # Sticky Notes Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **10 tasks.** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add shared, restorable, rich-text sticky notes that can be dropped anywhere on the Set Your Sunday pitch site and persist server-side.
 
@@ -233,7 +233,7 @@ All Redis logic and every timestamp decision live here. The store takes its Redi
   - `store.list() => Promise<{notes: Note[], trash: Note[]}>`
   - `store.create(data) => Promise<Note>`
   - `store.update(id, patch) => Promise<Note|null>`
-  - `store.bury(id) => Promise<boolean>`
+  - `store.bury(id) => Promise<Note|null>` — returns the buried note (with the server's `deletedAt`) so callers never invent a timestamp
   - `store.restore(id) => Promise<Note|null>`
   - `store.purge(id) => Promise<boolean>`
   - `store.purgeAll() => Promise<boolean>`
@@ -318,7 +318,9 @@ test('bury moves the note to the graveyard with deletedAt', async () => {
   const store = makeStore(fakeRedis(), () => t);
   const a = await store.create(seed);
   t = 3000;
-  assert.equal(await store.bury(a.id), true);
+  const buried = await store.bury(a.id);
+  assert.equal(buried.id, a.id);
+  assert.equal(buried.deletedAt, 3000, 'bury must return the note carrying the server deletedAt');
   const { notes, trash } = await store.list();
   assert.equal(notes.length, 0);
   assert.equal(trash.length, 1);
@@ -351,6 +353,11 @@ test('restore is idempotent when the note is already live', async () => {
 test('restore of an unknown id returns null', async () => {
   const store = makeStore(fakeRedis(), () => 1000);
   assert.equal(await store.restore('nope'), null);
+});
+
+test('bury of a missing id returns null', async () => {
+  const store = makeStore(fakeRedis(), () => 1000);
+  assert.equal(await store.bury('nope'), null);
 });
 
 test('bury is not a hard delete — purge is', async () => {
@@ -473,10 +480,13 @@ export function makeStore(redis, now = () => Date.now()) {
 
     async bury(id) {
       const note = await read(LIVE, id);
-      if (!note) return false;
-      await put(TRASH, { ...note, deletedAt: now() });
+      if (!note) return null;
+      // Return the buried note so the caller renders the SERVER's deletedAt
+      // instead of inventing one from a browser clock.
+      const dead = { ...note, deletedAt: now() };
+      await put(TRASH, dead);
       await redis.hdel(LIVE, id);
-      return true;
+      return dead;
     },
 
     async restore(id) {
@@ -517,7 +527,7 @@ export function getStore() {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `node --test test/notes-store.test.js`
-Expected: PASS — 12 tests.
+Expected: PASS — 13 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -542,7 +552,7 @@ git -c user.email=edtsue@gmail.com commit -m "feat: add notes store with graveya
   - `POST {html, text, anchor, ax, ay, section, color}` → `{note}`
   - `PATCH {id, ...fields}` → `{note}`
   - `PATCH {id, restore: true}` → `{note}`
-  - `DELETE {id}` → `{ok: true}` (burial)
+  - `DELETE {id}` → `{ok: true, note}` (burial; `note` carries the server's `deletedAt`)
   - `DELETE {id, purge: true}` → `{ok: true}`
   - `DELETE {purgeAll: true}` → `{ok: true}`
 
@@ -628,11 +638,13 @@ test('PATCH of a missing note returns 404', async () => {
   assert.equal(res.code, 404);
 });
 
-test('DELETE buries rather than destroys', async () => {
+test('DELETE buries rather than destroys, and echoes the server deletedAt', async () => {
   const h = newHandler();
   const made = await call(h, 'POST', seed);
   const del = await call(h, 'DELETE', { id: made.body.note.id });
   assert.equal(del.code, 200);
+  assert.equal(del.body.note.id, made.body.note.id);
+  assert.equal(del.body.note.deletedAt, 1000, 'client must not have to invent a burial time');
   const list = await call(h, 'GET');
   assert.equal(list.body.notes.length, 0);
   assert.equal(list.body.trash.length, 1, 'the note must still exist in the graveyard');
@@ -700,7 +712,7 @@ Create `api/notes.js`:
      POST   {html,text,anchor,ax,ay,section,color}  → { note }
      PATCH  {id, ...fields}      → { note }
      PATCH  {id, restore:true}   → { note }   graveyard → wall
-     DELETE {id}                 → { ok }     wall → graveyard (NOT a delete)
+     DELETE {id}                 → { ok, note }  wall → graveyard (NOT a delete)
      DELETE {id, purge:true}     → { ok }     gone for good
      DELETE {purgeAll:true}      → { ok }     empty the graveyard
 
@@ -749,9 +761,17 @@ export function makeHandler(store) {
       if (req.method === 'DELETE') {
         if (body.purgeAll) return res.status(200).json({ ok: await store.purgeAll() });
         if (!body.id) return res.status(400).json({ error: 'id required' });
-        const ok = body.purge ? await store.purge(body.id) : await store.bury(body.id);
-        if (!ok) return res.status(404).json({ error: 'not found' });
-        return res.status(200).json({ ok: true });
+
+        if (body.purge) {
+          if (!(await store.purge(body.id))) return res.status(404).json({ error: 'not found' });
+          return res.status(200).json({ ok: true });
+        }
+
+        // Burial echoes the note back so the client can show the server's
+        // deletedAt rather than stamping one from an unreliable browser clock.
+        const note = await store.bury(body.id);
+        if (!note) return res.status(404).json({ error: 'not found' });
+        return res.status(200).json({ ok: true, note });
       }
 
       return res.status(405).json({ error: 'method' });
@@ -773,8 +793,11 @@ Expected: PASS — 13 tests.
 
 - [ ] **Step 5: Run the whole suite**
 
-Run: `node --test test/`
-Expected: PASS — 33 tests across three files.
+Run: `node --test test/*.test.js`
+
+Note the glob: `node --test test/` fails on Node 24 (it tries to resolve the
+directory as a module). Use the glob form.
+Expected: PASS — 34 tests across three files.
 
 - [ ] **Step 6: Commit**
 
@@ -910,7 +933,10 @@ Create `notes.css`:
 .sn-note--green  { background: #b6e8b6; }
 .sn-note--orange { background: #ffcc8f; }
 
-.sn-note__body { min-height: 44px; outline: 0; word-break: break-word; }
+.sn-note__body {
+  min-height: 44px; outline: 0; word-break: break-word;
+  overflow-y: auto; /* a resized note must scroll, not spill past its edge */
+}
 .sn-note__body:empty::before { content: 'Type a note…'; opacity: .45; }
 .sn-note__foot {
   margin-top: 6px; padding-top: 4px; border-top: 1px solid rgba(0,0,0,.14);
@@ -925,6 +951,17 @@ Create `notes.css`:
 .sn-note__grip { cursor: grab; }
 .sn-note--dragging { cursor: grabbing; opacity: .85; }
 .sn-note--unsaved { outline: 2px solid #d92d20; }
+
+/* Resize handle — bottom-right corner, drawn as two diagonal rules. */
+.sn-note__resize {
+  position: absolute; right: 0; bottom: 0; width: 16px; height: 16px;
+  cursor: nwse-resize; opacity: .45;
+  background:
+    linear-gradient(135deg, transparent 0 45%, rgba(0,0,0,.55) 45% 55%, transparent 55%),
+    linear-gradient(135deg, transparent 0 70%, rgba(0,0,0,.55) 70% 80%, transparent 80%);
+}
+.sn-note__resize:hover { opacity: .9; }
+.sn-note--resizing { user-select: none; }
 ```
 
 - [ ] **Step 2: Write the client foundation**
@@ -1030,7 +1067,6 @@ Create `notes.js`:
       if (!place(el, note)) { el.remove(); state.orphans.push(note); }
     }
     countEl.textContent = String(state.notes.length);
-    document.dispatchEvent(new CustomEvent('sn:rendered'));
   }
 
   const reposition = () => {
@@ -1126,11 +1162,13 @@ Create `notes.js`:
     addBtn.setAttribute('aria-pressed', 'false');
     document.body.appendChild(addBtn);
 
+    // Nothing is fetched until the user opens the layer. A client loading the
+    // pitch must not pay a network request for a feature they never open —
+    // cold-load weight on this site is hard-won.
     toggle.addEventListener('click', () => {
       state.on = !state.on;
       document.body.classList.toggle('sn-on', state.on);
-      if (!state.on) arm(false);
-      if (state.on && !state.notes.length) load();
+      if (state.on) load(); else arm(false);
     });
 
     addBtn.addEventListener('click', () => arm(!state.arming));
@@ -1151,13 +1189,12 @@ Create `notes.js`:
     layer.addEventListener('click', async e => {
       const btn = e.target.closest('.sn-note__del');
       if (!btn) return;
-      const el = btn.closest('.sn-note');
-      const id = el.dataset.id;
-      const note = state.notes.find(n => n.id === id);
+      const id = btn.closest('.sn-note').dataset.id;
       try {
-        await api('DELETE', { id });
+        // The response carries the server's deletedAt — never stamp it here.
+        const { note: dead } = await api('DELETE', { id });
         state.notes = state.notes.filter(n => n.id !== id);
-        if (note) state.trash.unshift({ ...note, deletedAt: Date.now() });
+        state.trash.unshift(dead);
         render();
       } catch { banner('Could not delete note.'); }
     });
@@ -1167,10 +1204,6 @@ Create `notes.js`:
     addEventListener('resize', onLayout);
     new ResizeObserver(onLayout).observe(document.body);
     document.fonts?.ready.then(onLayout);
-
-    // Expose for Tasks 7-8 and for browser verification.
-    window.__sn = { state, render, api, load, place, selectorFor, saveNote, banner, fmt };
-    load();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
@@ -1197,6 +1230,7 @@ and the script immediately before `</body>`:
 With `vercel dev` running, open `localhost:3000` and check, in order:
 
 1. **Cold load shows no notes** — only the yellow "Notes 0" button bottom-right. This is the client-facing guarantee; if notes are visible on load, stop and fix it.
+   Also open devtools → Network, hard-reload, and confirm **NO request to `/api/notes` is made on page load.** The fetch must happen only when the layer is opened. A client viewing the pitch must not pay for a feature they never open.
 2. Click **Notes** → the "+ Add" button appears.
 3. Click **+ Add** → cursor becomes a crosshair.
 4. Click the "06 · The wishlist" heading → a sticky appears there and takes focus. **The page must not navigate or open a modal.**
@@ -1213,15 +1247,43 @@ git -c user.email=edtsue@gmail.com commit -m "feat: add sticky notes layer, togg
 
 ---
 
-### Task 7: Rich text, paper colour, drag
+### Task 7: Rich text, paper colour, drag, resize
 
 **Files:**
-- Modify: `notes.js` (extend `noteEl`, add toolbar + drag handlers)
-- Modify: `notes.css` (toolbar styles)
+- Modify: `notes.js` (extend `noteEl`, add toolbar + drag + resize handlers)
+- Modify: `notes.css` (toolbar + resize-handle styles)
+- Modify: `lib/notes-store.js` (allow `w`/`h` through the writable allowlist)
+- Modify: `test/notes-store.test.js` (cover `w`/`h`)
 
 **Interfaces:**
-- Consumes: `state`, `render`, `saveNote`, `place` (Task 6); `PATCH {id, html, text, color, anchor, ax, ay}` (Task 4).
-- Produces: toolbar markup inside `.sn-note`; no new exports.
+- Consumes: `state`, `render`, `saveNote`, `place` (Task 6); `PATCH {id, html, text, color, anchor, ax, ay, w, h}` (Task 4).
+- Produces: toolbar + resize handle markup inside `.sn-note`; no new exports.
+
+- [ ] **Step 0: Let the store persist note size**
+
+A resized note must stay resized after reload, so `w`/`h` need to be writable fields. In `lib/notes-store.js`, extend the allowlist:
+
+```js
+const WRITABLE = ['html', 'text', 'anchor', 'ax', 'ay', 'section', 'color', 'w', 'h'];
+```
+
+Leave everything else in that file alone — `id`/`created`/`updated`/`deletedAt` stay server-owned.
+
+Add this test to `test/notes-store.test.js`:
+
+```js
+test('w and h are writable and survive an update', async () => {
+  const store = makeStore(fakeRedis(), () => 1000);
+  const a = await store.create({ ...seed, w: 240, h: 180 });
+  assert.equal(a.w, 240);
+  assert.equal(a.h, 180);
+  const b = await store.update(a.id, { w: 320 });
+  assert.equal(b.w, 320);
+  assert.equal(b.h, 180, 'unchanged dimensions must survive a partial update');
+});
+```
+
+Run `node --test test/notes-store.test.js` — it must pass, and no existing test may break. Notes created before this change simply have no `w`/`h` and fall back to the CSS default size, which is why the client applies them conditionally in Step 2.
 
 - [ ] **Step 1: Add toolbar styles**
 
@@ -1287,7 +1349,12 @@ toolbar becomes the note's first child, above the body:
       <div class="sn-note__foot">
         <span class="sn-note__grip" title="Drag to move">⠿ <span class="sn-note__time"></span></span>
         <button class="sn-note__del" title="Move to graveyard" aria-label="Delete note">✕</button>
-      </div>`;
+      </div>
+      <div class="sn-note__resize" title="Drag to resize"></div>`;
+    // Applied only when set, so notes saved before resizing existed keep the
+    // CSS default size instead of collapsing to 0.
+    if (note.w) el.style.width = note.w + 'px';
+    if (note.h) el.style.height = note.h + 'px';
     // innerHTML, not textContent: this html is already sanitised server-side.
     el.querySelector('.sn-note__body').innerHTML = note.html || '';
     el.querySelector('.sn-note__time').textContent = stamp(note);
@@ -1301,10 +1368,12 @@ toolbar becomes the note's first child, above the body:
 Append inside `init()` in `notes.js`, after the existing delete handler:
 
 ```js
-    // styleWithCSS makes execCommand emit spans instead of <font> where the
-    // browser supports it. The server normalises <font> anyway, so this is
-    // belt-and-braces rather than load-bearing.
-    try { document.execCommand('styleWithCSS', false, true); } catch {}
+    // styleWithCSS MUST be false. With it true, execCommand('bold') emits
+    // <span style="font-weight:bold">, and the sanitiser's span allowlist only
+    // permits color/font-size — so bold silently vanished on reload. With it
+    // false, b/i/u emit <b>/<i>/<u> (allowlisted) and colour/size emit <font>,
+    // which the sanitiser normalises into spans. Verified in Chrome.
+    try { document.execCommand('styleWithCSS', false, false); } catch {}
 
     const noteOf = el => state.notes.find(n => n.id === el.dataset.id);
     const debounced = new Map();
@@ -1353,6 +1422,20 @@ Append inside `init()` in `notes.js`, after the existing delete handler:
       if (e.target.closest('.sn-note__bar')) e.preventDefault();
     });
 
+    // Cancel a pending debounced save before this note gets buried. Without
+    // this, typing then immediately clicking ✕ puts a PATCH and a DELETE in
+    // flight together, and the late PATCH can resurrect the note into the live
+    // hash while a copy sits in the graveyard. The store self-heals that on
+    // read, but not racing in the first place is better. Capture phase so this
+    // runs before the delete handler registered in Task 6.
+    layer.addEventListener('click', e => {
+      const btn = e.target.closest('.sn-note__del');
+      if (!btn) return;
+      const id = btn.closest('.sn-note').dataset.id;
+      clearTimeout(debounced.get(id));
+      debounced.delete(id);
+    }, true);
+
     layer.addEventListener('click', e => {
       const el = e.target.closest('.sn-note');
       if (!el) return;
@@ -1374,6 +1457,37 @@ Append inside `init()` in `notes.js`, after the existing delete handler:
       if (btn.dataset.fore) document.execCommand('foreColor', false, btn.dataset.fore);
       if (btn.dataset.size) document.execCommand('fontSize', false, btn.dataset.size);
       queueSave(el);
+    });
+
+    // Resize from the bottom-right corner. Size is per-note and persisted, so
+    // a note stays the size you left it at.
+    const MIN_W = 120, MIN_H = 80;
+    let resize = null;
+    layer.addEventListener('mousedown', e => {
+      const h = e.target.closest('.sn-note__resize');
+      if (!h) return;
+      const el = h.closest('.sn-note');
+      const r = el.getBoundingClientRect();
+      resize = { el, x: e.clientX, y: e.clientY, w: r.width, h: r.height };
+      el.classList.add('sn-note--resizing');
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    addEventListener('mousemove', e => {
+      if (!resize) return;
+      resize.el.style.width = Math.max(MIN_W, resize.w + e.clientX - resize.x) + 'px';
+      resize.el.style.height = Math.max(MIN_H, resize.h + e.clientY - resize.y) + 'px';
+    });
+    addEventListener('mouseup', () => {
+      if (!resize) return;
+      const { el } = resize;
+      el.classList.remove('sn-note--resizing');
+      resize = null;
+      const note = noteOf(el);
+      if (!note) return;
+      note.w = Math.round(el.getBoundingClientRect().width);
+      note.h = Math.round(el.getBoundingClientRect().height);
+      saveNote(note, el);
     });
 
     // Drag by the grip; re-anchor to whatever it lands on.
@@ -1425,6 +1539,8 @@ At `localhost:3000`, with a note open:
 6. **Reload → click Notes → all formatting and paper colour survived.** This is the real test: it proves the sanitiser kept what it should.
 7. Copy formatted text from any web page, paste into a note → it arrives as **plain text**.
 8. Drag a note by its grip onto a different heading → release → reload → it comes back anchored to the **new** heading.
+8b. **Resize** a note from its bottom-right corner → it grows/shrinks, stops at the 120×80 minimum, and long text scrolls inside rather than spilling out. Reload → **it comes back the size you left it**.
+8c. Resizing must NOT move the note, and dragging must NOT resize it — the two handles are independent.
 9. Confirm `curl -s localhost:3000/api/notes` shows `html` containing only allowlisted tags — no `<font>`, no `<script>`.
 
 - [ ] **Step 5: Commit**
@@ -1531,11 +1647,12 @@ Add to `notes.js`, before `init()`:
   }
 ```
 
-In `render()`, replace the final `document.dispatchEvent(...)` line with:
+Add `renderTray()` as the final line of `render()`, after `countEl.textContent = ...`:
 
 ```js
+    countEl.textContent = String(state.notes.length);
     renderTray();
-    document.dispatchEvent(new CustomEvent('sn:rendered'));
+  }
 ```
 
 - [ ] **Step 3: Mount the tray and wire its actions**
@@ -1592,11 +1709,10 @@ Add inside `init()`, after `addBtn` is appended:
         return;
       }
       if (act === 'bury') {
-        const note = state.notes.find(n => n.id === id);
         try {
-          await api('DELETE', { id });
+          const { note: dead } = await api('DELETE', { id });
           state.notes = state.notes.filter(n => n.id !== id);
-          if (note) state.trash.unshift({ ...note, deletedAt: Date.now() });
+          state.trash.unshift(dead);
           render();
         } catch { banner('Could not bury note.'); }
         return;
@@ -1670,14 +1786,124 @@ git -c user.email=edtsue@gmail.com commit -m "feat: add notes tray with unanchor
 
 ---
 
-### Task 9: Deploy and verify in production
+### Task 9: Live polling — see other reviewers' notes appear
+
+The wall is shared, so a reviewer must see other people's notes without reloading. Polling, not websockets: Vercel functions are serverless (no long-lived connections) and Upstash's REST API has no pub/sub.
+
+**Files:**
+- Modify: `notes.js` (poll loop + merge)
+
+**Interfaces:**
+- Consumes: `state`, `render`, `api`, `load`, `debounced` (Tasks 6–8); `GET /api/notes` → `{notes, trash}` (Task 4).
+- Produces: `startPolling()`, `stopPolling()`, `anyBusy()`.
+
+**The trap this task exists to avoid:** `render()` does `layer.textContent = ''` and rebuilds every note. If a poll fires while someone is typing, it destroys their caret mid-sentence and can discard text that has not been saved yet. **The poll must stand down while anyone is editing** — correctness beats freshness. A note is "busy" if it holds focus or has a debounced save pending; while any note is busy, skip the cycle entirely and catch up on the next idle one.
+
+- [ ] **Step 1: Add the poll loop**
+
+Add to `notes.js`, before `init()`:
+
+```js
+  /* ── live polling ────────────────────────────────────────────────── */
+  const POLL_MS = 10000;
+  let pollTimer = null, lastSig = '';
+
+  // Cheap change-detector: re-rendering unchanged data every 10s would flicker
+  // the wall and fight with dragging.
+  const sigOf = d => JSON.stringify([
+    d.notes.map(n => [n.id, n.updated]),
+    d.trash.map(t => [t.id, t.deletedAt]),
+  ]);
+
+  // Typing or an unflushed save = busy. Never blow away in-progress work.
+  const anyBusy = () =>
+    debounced.size > 0 || !!document.activeElement?.closest?.('.sn-note');
+
+  async function poll() {
+    if (!state.on || document.hidden || anyBusy()) return;
+    try {
+      const data = await api('GET');
+      const sig = sigOf(data);
+      if (sig === lastSig) return;          // nothing changed — don't re-render
+      lastSig = sig;
+      state.notes = data.notes;
+      state.trash = data.trash;
+      render();
+    } catch {
+      // Polling failures are silent on purpose: a broken tab must not nag the
+      // user every 10 seconds. Real actions (add/edit/delete) still surface errors.
+    }
+  }
+
+  function startPolling() {
+    stopPolling();
+    pollTimer = setInterval(poll, POLL_MS);
+  }
+  function stopPolling() {
+    clearInterval(pollTimer);
+    pollTimer = null;
+  }
+```
+
+- [ ] **Step 2: Keep `lastSig` in step with local changes**
+
+In `load()`, after `state.notes`/`state.trash` are assigned and before `render()`, add:
+
+```js
+      lastSig = sigOf(data);
+```
+
+This stops the first poll after a manual load from re-rendering identical data.
+
+- [ ] **Step 3: Drive the loop from the toggle and tab visibility**
+
+Replace the toggle handler added in Task 6 with:
+
+```js
+    toggle.addEventListener('click', () => {
+      state.on = !state.on;
+      document.body.classList.toggle('sn-on', state.on);
+      if (state.on) { load(); startPolling(); }
+      else { arm(false); stopPolling(); }
+    });
+
+    // A hidden tab must not burn Upstash quota. Resume on return, and poll once
+    // immediately so the wall is current the moment you look at it.
+    document.addEventListener('visibilitychange', () => {
+      if (!state.on) return;
+      if (document.hidden) stopPolling();
+      else { startPolling(); poll(); }
+    });
+```
+
+- [ ] **Step 4: Verify in the browser**
+
+Open `localhost:3000` in **two side-by-side windows** (this needs two clients — one window cannot prove it).
+
+1. Open the notes layer in both. In window A, add a note. Within ~10s it appears in **window B** without a reload.
+2. In window B, delete a note. Within ~10s it disappears from **window A**'s wall and shows in its Graveyard.
+3. **The important one — the busy guard.** In window A, click into a note and type continuously for ~30s. Your text must NOT be wiped, and your caret must NOT jump, even though polls are firing. Confirm in devtools → Network that `/api/notes` GETs pause while you type and resume shortly after you stop.
+4. Switch to another browser tab for ~30s, then come back. Confirm in Network that polling **stopped** while hidden and resumed on return.
+5. Close the notes layer. Confirm polling **stops entirely** — no further `/api/notes` requests.
+6. Cold-load the page and never open the layer. Confirm **zero** `/api/notes` requests, ever. This is the client-facing guarantee.
+
+- [ ] **Step 5: Commit**
+
+```bash
+git add notes.js
+git -c user.email=edtsue@gmail.com commit -m "feat: poll for other reviewers' notes while the layer is open"
+```
+
+---
+
+### Task 10: Deploy and verify in production
 
 **Files:** none (verification only)
 
 - [ ] **Step 1: Run the full test suite**
 
-Run: `node --test test/`
-Expected: PASS, 33 tests. Do not deploy on a red suite.
+Run: `node --test test/*.test.js`
+Expected: PASS, 34 tests. Do not deploy on a red suite.
 
 - [ ] **Step 2: Confirm no secrets are staged**
 
@@ -1704,17 +1930,34 @@ curl -s -o /dev/null -w '%{http_code} %{content_type}\n' https://ytst.mfgpilots.
 
 Expected: `200 text/html` — the middleware rewrote the unauthenticated request to the gate page. **It must NOT return JSON.** If you see `application/json`, the notes API is publicly readable and writable; stop and fix the gate before telling anyone the URL.
 
-- [ ] **Step 5: Verify the pitch is still clean**
+- [ ] **Step 5: Verify the pitch itself is UNBROKEN — this is the top priority**
 
-Open `https://ytst.mfgpilots.com`, enter the gate password. Confirm:
+Set Your Sunday is a client-facing pitch. A working notes feature that damages the pitch is a net loss. Open `https://ytst.mfgpilots.com`, enter the gate password, and confirm **the site behaves exactly as it did before**:
 
 1. The page loads with **no notes visible** — only the "Notes" button bottom-right.
-2. Nothing about the pitch has shifted or broken (hero, mixer, FAQ modal all behave).
-3. Click **Notes** → add a note → reload → it persists.
-4. Delete it → **Graveyard** → **Restore** → it returns.
+2. **Cold load fires ZERO `/api/notes` requests** (devtools → Network, hard reload). Confirm the page's load weight and timing are unchanged.
+3. **Hero:** the SUNDAY flap/slam animation runs, lede fades in, video plays.
+4. **INSIGHT:** stat counters count up, glitch phrase cycles, week rail auto-scrolls.
+5. **Build an asset:** day selector + randomize work; the ad scrubber loops.
+6. **FAQ modal** opens from the footer button and closes.
+7. Devtools → Console: **no new errors** from `notes.js`.
+8. Scroll the full page — no layout shift, no element displaced by the notes layer.
+
+If ANY of these regressed, stop and fix before going further. The notes layer is additive and namespaced (`.sn-*`); nothing here should have moved.
+
+- [ ] **Step 6: Verify burial/restore over REAL HTTP**
+
+This could not be tested locally: `vercel dev` hangs on PATCH/DELETE carrying a body for any route behind `middleware.js` (a dev-emulation bug — it affects the pre-existing `/api/geo` too, and production handles these fine). So the burial and restore round-trip must be confirmed here, in production, over real HTTP.
+
+With the gate password entered in the browser:
+
+1. Click **Notes** → add a note → reload → it persists.
+2. Delete it → confirm it leaves the wall and appears in **Graveyard** with a burial time. **If this hangs or errors, the dev-only diagnosis was wrong — stop and investigate.**
+3. **Restore** it → it returns to the wall.
+4. Add a formatted note (bold + a colour + a paper colour) → reload → formatting survives.
 5. Empty the graveyard to leave production tidy.
 
-- [ ] **Step 6: Verify on a phone viewport**
+- [ ] **Step 7: Verify on a phone viewport**
 
 In devtools, switch to an iPhone viewport and reload. Confirm the note tracks its anchor rather than drifting off-screen — this is the whole reason for fractional offsets, so it is worth seeing with your own eyes.
 

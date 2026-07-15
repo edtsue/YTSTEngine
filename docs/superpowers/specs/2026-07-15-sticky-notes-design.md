@@ -132,7 +132,7 @@ under the Hobby cap of 12. All responses JSON.
 | POST | `{html, text, anchor, ax, ay, section, color}` | `{note}` with new id | `HSET sys:notes` |
 | PATCH | `{id, ...changed fields}` | `{note}` | `HGET` → merge → `HSET` |
 | PATCH | `{id, restore: true}` | `{note}` | trash → `sys:notes`, clear `deletedAt` |
-| DELETE | `{id}` | `{ok: true}` | **soft** — move to `sys:notes:trash`, set `deletedAt` |
+| DELETE | `{id}` | `{ok: true, note}` | **soft** — move to `sys:notes:trash`, set `deletedAt` |
 | DELETE | `{id, purge: true}` | `{ok: true}` | hard — `HDEL sys:notes:trash` |
 | DELETE | `{purgeAll: true}` | `{ok: true}` | `DEL sys:notes:trash` |
 
@@ -141,6 +141,10 @@ opening the tray needs no second request. Volume makes this trivial.
 
 Note ids are generated **server-side** on POST (short random string), so the
 client never invents an id that could collide with another reviewer's.
+
+Burial echoes the buried note back in the response. This is deliberate: it is
+what lets the client show the **server's** `deletedAt` instead of stamping one
+from a browser clock, which would contradict the timestamp rule above.
 
 Errors return `{error: string}` with a 4xx/5xx status. Unknown method → 405.
 Upstash credentials come from the Marketplace-provisioned env vars and never
