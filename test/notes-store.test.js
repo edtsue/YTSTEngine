@@ -199,3 +199,13 @@ test('tolerates values already deserialised by the client', async () => {
   assert.equal(notes.length, 1);
   assert.equal(notes[0].id, a.id);
 });
+
+test('w and h are writable and survive an update', async () => {
+  const store = makeStore(fakeRedis(), () => 1000);
+  const a = await store.create({ ...seed, w: 240, h: 180 });
+  assert.equal(a.w, 240);
+  assert.equal(a.h, 180);
+  const b = await store.update(a.id, { w: 320 });
+  assert.equal(b.w, 320);
+  assert.equal(b.h, 180, 'unchanged dimensions must survive a partial update');
+});

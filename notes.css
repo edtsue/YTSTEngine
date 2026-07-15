@@ -65,3 +65,43 @@
 .sn-note__grip { cursor: grab; }
 .sn-note--dragging { cursor: grabbing; opacity: .85; }
 .sn-note--unsaved { outline: 2px solid #d92d20; }
+
+.sn-note__bar {
+  display: none; gap: 2px; flex-wrap: wrap;
+  margin: -4px -4px 6px; padding: 4px;
+  background: rgba(0,0,0,.06); border-radius: 3px;
+}
+.sn-note--active .sn-note__bar { display: flex; }
+.sn-note__bar button {
+  border: 0; background: none; cursor: pointer; border-radius: 2px;
+  padding: 2px 5px; font: 700 11px/1 'Archivo', system-ui, sans-serif; color: #1a1a1a;
+}
+.sn-note__bar button:hover { background: rgba(0,0,0,.12); }
+.sn-note__bar .sn-i { font-style: italic; }
+.sn-note__bar .sn-u { text-decoration: underline; }
+.sn-note__sw {
+  width: 13px; height: 13px; padding: 0; border-radius: 50%;
+  border: 1px solid rgba(0,0,0,.25) !important;
+}
+.sn-note__sep { width: 1px; margin: 2px 3px; background: rgba(0,0,0,.15); }
+
+/* Resize handle. Not in the Task 7 brief's toolbar CSS block, but the
+   markup and drag-resize JS need it to be interactive: an unstyled
+   `.sn-note__resize` div has zero area and cannot be moused down on.
+   box-sizing:border-box matches the resize JS, which measures the note
+   with getBoundingClientRect() (a border-box measurement) and writes that
+   straight back to style.width/height — with the default content-box the
+   two disagree and the note grows a little on every drag. Overflow is
+   only capped via percentage heights that resolve once a fixed h is set
+   by a resize, so un-resized notes keep growing to fit content as before. */
+.sn-note { box-sizing: border-box; overflow: hidden; }
+.sn-note__body { overflow-y: auto; max-height: 100%; }
+.sn-note__resize {
+  position: absolute; right: 1px; bottom: 1px;
+  width: 14px; height: 14px; cursor: nwse-resize;
+}
+.sn-note__resize::before {
+  content: ''; position: absolute; right: 3px; bottom: 3px;
+  width: 7px; height: 7px;
+  border-right: 2px solid rgba(0,0,0,.3); border-bottom: 2px solid rgba(0,0,0,.3);
+}
