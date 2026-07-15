@@ -232,11 +232,26 @@
     document.body.classList.toggle('sn-arming', on);
   }
 
-  async function drop(x, y) {
+  /* What page element is under (x, y)?
+     Turning off pointer-events on the LAYER alone is not enough: each
+     .sn-note sets `pointer-events: auto`, and a child re-enables them even
+     when the parent has them off. So elementFromPoint kept hitting the note
+     under the cursor — which is always the note you're dragging — and every
+     drop looked like "you dropped on the notes UI", snapping it back.
+     Disable the notes themselves for the duration of the test. */
+  function hitTest(x, y) {
+    const notes = [...layer.children];
     layer.style.pointerEvents = 'none';
+    notes.forEach(n => { n.style.pointerEvents = 'none'; });
     const target = document.elementFromPoint(x, y);
+    notes.forEach(n => { n.style.pointerEvents = ''; });
     layer.style.pointerEvents = '';
-    if (!target || target.closest('.sn-toggle, .sn-add, .sn-note')) return;
+    return target;
+  }
+
+  async function drop(x, y) {
+    const target = hitTest(x, y);
+    if (!target || target.closest('.sn-toggle, .sn-add, .sn-tray, .sn-ask')) return;
 
     const r = target.getBoundingClientRect();
     const draft = {
@@ -258,10 +273,8 @@
   }
 
   async function reanchor(note, x, y) {
-    layer.style.pointerEvents = 'none';
-    const target = document.elementFromPoint(x, y);
-    layer.style.pointerEvents = '';
-    if (!target || target.closest('.sn-toggle, .sn-add, .sn-note, .sn-tray')) return;
+    const target = hitTest(x, y);
+    if (!target || target.closest('.sn-toggle, .sn-add, .sn-tray, .sn-ask')) return;
     const r = target.getBoundingClientRect();
     note.anchor = selectorFor(target);
     note.ax = r.width ? (x - r.left) / r.width : 0.5;
@@ -654,15 +667,16 @@
       drag = null;
       const note = noteOf(el);
       if (!note) return;
-      layer.style.pointerEvents = 'none';
-      const target = document.elementFromPoint(e.clientX, e.clientY);
-      layer.style.pointerEvents = '';
-      // Re-anchor only to page content, never to the notes UI itself.
-      if (!target || target.closest('.sn-note, .sn-toggle, .sn-add')) { place(el, note); return; }
+      // hitTest disables the notes first — otherwise this always found the note
+      // being dragged (it's under the cursor by definition) and snapped back.
+      const target = hitTest(e.clientX, e.clientY);
+      // Only the notes' own chrome is off-limits; anywhere on the page is fair.
+      if (!target || target.closest('.sn-toggle, .sn-add, .sn-tray, .sn-ask')) { place(el, note); return; }
       const r = target.getBoundingClientRect();
       note.anchor = selectorFor(target);
       note.ax = r.width ? (e.clientX - r.left) / r.width : 0.5;
       note.ay = r.height ? (e.clientY - r.top) / r.height : 0.5;
+      note.section = sectionFor(target);
       place(el, note);
       saveNote(note, el);
     });

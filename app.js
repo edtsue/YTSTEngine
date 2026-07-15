@@ -186,7 +186,9 @@ const headline = d => news
 const headlineText = d => headline(d).join(' ');
 
 // eyebrow: this week's top-projected must-starts (Genius Sports)
-const EYEBROW = 'This week’s top-projected must-starts';
+// Kept short so it clears the FPO violator parked top-right. "Top-projected"
+// still carries in the controls note beside the mock, so nothing is lost.
+const EYEBROW = 'This week’s must-starts';
 const surname = name => name.split(' ').slice(1).join(' ');
 
 /* ════════════════════ SECTION 01 — explainer ════════════════════ */
@@ -369,7 +371,9 @@ function setFlash() {
   if (!news) return;
   el.style.setProperty('--flash', news.kind.accent);
   document.getElementById('ctvFlashKind').textContent = news.kind.chyron;
-  document.getElementById('ctvFlashName').textContent = news.player.name;
+  // Surname only: the bug shares the chrome row with the logo, and a full name
+  // pushes the line into an ellipsis at TV sizes.
+  document.getElementById('ctvFlashName').textContent = surname(news.player.name);
   document.getElementById('ctvFlashStatus').textContent = news.kind.status;
 }
 
@@ -383,6 +387,11 @@ function setHeadline(d, instant) {
   const accEl = document.getElementById('ctvHlAccent');
   if (!h) return;
   leadEl.textContent = lead;
+  // Long copy must step DOWN in size, or the bottom-anchored statement stack
+  // overflows upward into the Sunday Ticket logo in the chrome row. This bites
+  // long day headlines too (Friday's is 48 chars), not just newsflashes.
+  leadEl.classList.toggle('is-long', lead.length > 34);
+  leadEl.classList.toggle('is-xlong', lead.length > 44);
   accEl.textContent = accent;
   accEl.dataset.text = accent;                 // feeds the glitch pseudo-elements
   accEl.style.display = accent ? '' : 'none';

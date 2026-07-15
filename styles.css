@@ -369,7 +369,9 @@ em { font-style: normal; color: var(--ink); }
 .ctv__loader .spin { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,.25); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.ctv__chrome { position: absolute; top: 0; left: 0; right: 0; z-index: 4; display: flex; align-items: flex-start; justify-content: flex-start; padding: 3% 3.4%; }
+.ctv__chrome { position: absolute; top: 0; left: 0; right: 0; z-index: 6; display: flex; align-items: center; justify-content: flex-start; gap: 2.2cqw; padding: 3% 3.4%; }
+/* keep the chrome row clear of the FPO violator parked at top-right */
+.ctv__chrome { padding-right: 26cqw; }
 .ctv__stlogo { height: clamp(24px, 8cqw, 52px); width: auto; flex: none; filter: drop-shadow(0 2px 12px rgba(0,0,0,.7)); }
 .st-lockup { display: flex; align-items: center; gap: 8px; }
 .st-lockup__yt { background: var(--red); color: #fff; font-size: 10px; padding: 4px 6px; border-radius: 4px; line-height: 1; }
@@ -386,7 +388,11 @@ em { font-style: normal; color: var(--ink); }
   font-size: 12px; letter-spacing: .12em; color: var(--accent); border: 2px solid var(--accent);
   padding: 5px 10px; border-radius: 6px; transform: rotate(6deg); opacity: .92;
 }
-.ctv__eyebrow { font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .05em; font-size: clamp(6px, 2.02cqw, 12px); line-height: 1.2; color: var(--accent); text-shadow: 0 1px 8px rgba(0,0,0,.95); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctv__eyebrow { font-family: 'Oswald'; text-transform: uppercase; letter-spacing: .05em; font-size: clamp(6px, 2.02cqw, 12px); line-height: 1.2; color: var(--accent); text-shadow: 0 1px 8px rgba(0,0,0,.95); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  /* the FPO violator sits top-right; stop the eyebrow before it rather than
+     letting the sticker cover the copy (46% is where the sticker's left edge
+     lands at the mock's container width) */
+  max-width: 46%; }
 
 /* ── SPLIT BLOCK — bold stacked statement | board of eight ── */
 .ctv__split { position: relative; z-index: 4; flex: 1 1 auto; min-height: 0; display: flex; align-items: stretch; gap: 3%; padding: 1.4% 3.4% 8.4%; }
@@ -957,41 +963,67 @@ img[src*="genius-sports"] { cursor: help; }
 
 /* ── Newsflash — the reactive execution ─────────────────────────────────
    The day headlines run on the week's clock; a newsflash runs on an EVENT.
-   The chyron sits above the headline inside the CTV mock, borrowing the
-   broadcast breaking-news language the audience already reads instantly. */
-.btn--news .btn__ic { color: #ff2d2d; }
-.ctrl__note--news { margin: -2px 0 2px; opacity: .55; font-size: 11px; line-height: 1.35; }
+   The bug sits in the CTV chrome row beside the Sunday Ticket logo, the way a
+   broadcast breaking-news bug does. It must stay OUT of .ctv__statement —
+   that stack is bottom-anchored, so anything added to it overflows upward
+   into the logo. */
+
+/* Bold, unmissable — this is the reactive story, not a secondary control. */
+.btn--news {
+  background: var(--red); border-color: var(--red); color: #fff;
+}
+.btn--news:hover { background: #ff4646; border-color: #ff4646; }
+.btn--news .btn__ic { color: #fff; }
+.ctrl__note--news { margin: -2px 0 2px; opacity: .5; font-size: 11px; line-height: 1.35; }
 
 .ctv__flash {
   --flash: #ff2d2d;
-  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px;
-  margin-bottom: 10px;
+  display: flex; align-items: center; gap: .9cqw;
+  min-width: 0; flex: 0 1 auto;
+  padding: .7cqw 1.2cqw; border-radius: 2px;
+  background: rgba(4, 6, 10, .78);
+  border-left: .5cqw solid var(--flash);
+  backdrop-filter: blur(2px);
   animation: flashIn .45s cubic-bezier(.2, .9, .25, 1) both;
 }
 .ctv__flash[hidden] { display: none; }
 .ctv__flash-tag {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 3px 8px; border-radius: 2px;
-  background: var(--flash); color: #fff;
-  font: 800 10px/1 'Archivo', system-ui, sans-serif;
-  letter-spacing: .12em; text-transform: uppercase;
+  display: inline-flex; align-items: center; gap: .6cqw; flex: none;
+  font-family: 'Oswald', sans-serif; font-weight: 700;
+  font-size: clamp(5px, 1.5cqw, 10px); letter-spacing: .14em;
+  text-transform: uppercase; color: var(--flash);
 }
 .ctv__flash-dot {
-  width: 5px; height: 5px; border-radius: 50%; background: #fff;
+  width: .7cqw; height: .7cqw; min-width: 3px; min-height: 3px;
+  border-radius: 50%; background: var(--flash);
   animation: flashPulse 1s steps(1, end) infinite;
 }
 .ctv__flash-line {
-  font: 800 11px/1 'Archivo', system-ui, sans-serif;
-  letter-spacing: .08em; text-transform: uppercase; color: #fff;
+  min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-family: 'Oswald', sans-serif; font-weight: 600;
+  font-size: clamp(5px, 1.55cqw, 11px); letter-spacing: .06em;
+  text-transform: uppercase; color: #fff;
 }
-.ctv__flash-line b { color: var(--flash); }
+.ctv__flash-line i { font-style: normal; color: var(--flash); }
+.ctv__flash-kind {
+  flex: none; padding: .2cqw .6cqw; border-radius: 2px;
+  background: var(--flash); color: #fff;
+  font-family: 'Oswald', sans-serif; font-weight: 700;
+  font-size: clamp(4px, 1.25cqw, 9px); letter-spacing: .12em; text-transform: uppercase;
+}
 
 @keyframes flashPulse { 0%, 49% { opacity: 1; } 50%, 100% { opacity: .15; } }
 @keyframes flashIn {
-  from { opacity: 0; transform: translateY(-6px) scaleX(.96); transform-origin: left; }
+  from { opacity: 0; transform: translateX(-8px); }
   to   { opacity: 1; transform: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .ctv__flash { animation: none; }
   .ctv__flash-dot { animation: none; }
 }
+
+/* Long headlines step down so the bottom-anchored statement never overflows
+   up into the chrome row's logo. Tiers, not fluid scaling — the type is Anton
+   at a display size and needs to land on deliberate steps. */
+.ctv__hl-lead.is-long  { font-size: clamp(14px, 5.4cqw, 47px); }
+.ctv__hl-lead.is-xlong { font-size: clamp(12px, 4.5cqw, 39px); }

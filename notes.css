@@ -48,7 +48,15 @@
   box-shadow: 0 8px 18px rgba(0,0,0,.4);
   transform: rotate(-1.4deg); transform-origin: top left;
   pointer-events: auto;
+  /* Slightly see-through at rest so the pitch reads through a busy wall of
+     notes — but solid the moment you touch one, so your own text is never
+     competing with a stadium photo behind it. */
+  opacity: .88;
+  transition: opacity .14s ease;
 }
+.sn-note:hover,
+.sn-note:focus-within,
+.sn-note--active { opacity: 1; }
 .sn-note--pink   { background: #ffb3c8; }
 .sn-note--blue   { background: #a8d5ff; }
 .sn-note--green  { background: #b6e8b6; }
@@ -73,7 +81,7 @@
 }
 .sn-note__del:hover { opacity: 1; }
 .sn-note__grip { cursor: grab; }
-.sn-note--dragging { cursor: grabbing; opacity: .85; }
+.sn-note--dragging { cursor: grabbing; opacity: .7; }
 .sn-note--unsaved { outline: 2px solid #d92d20; }
 
 .sn-note__bar {

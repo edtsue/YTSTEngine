@@ -191,6 +191,15 @@
             <div class="ctv__loader" id="ctvLoader" hidden><span class="spin"></span><span id="ctvLoaderTxt">Generating with Gemini…</span></div>
             <header class="ctv__chrome">
               <img class="ctv__stlogo" src="assets/sunday-ticket-logo.webp" alt="NFL Sunday Ticket on YouTube TV" />
+              <!-- Newsflash bug sits in the chrome row beside the logo, the way a
+                   broadcast breaking-news bug does. It must NOT live in
+                   .ctv__statement: that stack is bottom-anchored, so anything added
+                   to it overflows UPWARD into this logo and pushes itself offscreen. -->
+              <div class="ctv__flash" id="ctvFlash" hidden>
+                <span class="ctv__flash-tag"><span class="ctv__flash-dot" aria-hidden="true"></span>Newsflash</span>
+                <span class="ctv__flash-line"><b id="ctvFlashName"></b> <i id="ctvFlashStatus"></i></span>
+                <span class="ctv__flash-kind" id="ctvFlashKind"></span>
+              </div>
             </header>
 
             <!-- ░ :15 spot — brand ident (open) ░ -->
@@ -217,10 +226,6 @@
             </div>
             <div class="ctv__split">
               <div class="ctv__statement">
-                <div class="ctv__flash" id="ctvFlash" hidden>
-                  <span class="ctv__flash-tag"><span class="ctv__flash-dot" aria-hidden="true"></span>Newsflash · <span id="ctvFlashKind"></span></span>
-                  <span class="ctv__flash-line"><b id="ctvFlashName"></b> — <span id="ctvFlashStatus"></span></span>
-                </div>
                 <h3 class="ctv__headline" id="ctvHeadline"><span class="ctv__hl-lead" id="ctvHlLead"></span><span class="ctv__hl-accent" id="ctvHlAccent"></span></h3>
                 <span class="ctv__cta-btn">Sign up now →</span>
               </div>
