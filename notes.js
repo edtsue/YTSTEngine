@@ -10,6 +10,11 @@
    ════════════════════════════════════════════════════════════════════ */
 (() => {
   const state = { on: false, arming: false, notes: [], trash: [], orphans: [] };
+  // Ids whose DELETE is in flight. mousedown on ✕ (which fires before focus
+  // moves off the body, and therefore before focusout's immediate save)
+  // marks a note here; save paths must treat that as a no-op until the
+  // DELETE resolves, or the late PATCH races the DELETE and resurrects it.
+  const burying = new Set();
   let layer, toggle, addBtn, countEl;
 
   /* ── api ─────────────────────────────────────────────────────────── */
@@ -137,6 +142,10 @@
 
   /* ── persistence ─────────────────────────────────────────────────── */
   async function saveNote(note, el) {
+    // Belt and braces: saveNote is called from several places, not just the
+    // debounced path the mousedown guard clears. A note being buried must
+    // never round-trip a save while its DELETE is in flight.
+    if (burying.has(note.id)) return;
     try {
       // w/h added in Task 7 so a resize survives reload. The store applies
       // them via the same conditional-write allowlist as every other field,
@@ -258,8 +267,15 @@
         const { note: dead } = await api('DELETE', { id });
         state.notes = state.notes.filter(n => n.id !== id);
         state.trash.unshift(dead);
+        burying.delete(id);
         render();
-      } catch { banner('Could not delete note.'); }
+      } catch {
+        // A failed delete leaves the note in the DOM (no render() here), so
+        // it must come back out of burying or it's frozen — un-saveable —
+        // forever even though it's still a live, editable note.
+        burying.delete(id);
+        banner('Could not delete note.');
+      }
     });
 
     // styleWithCSS makes execCommand emit spans instead of <font> where the
@@ -269,6 +285,20 @@
 
     const noteOf = el => state.notes.find(n => n.id === el.dataset.id);
     const debounced = new Map();
+
+    // Click order on ✕ is mousedown → focus shifts off the body → focusout
+    // (which saves IMMEDIATELY, not debounced) → mouseup → click. So a click
+    // handler is always too late to stop that focusout save from racing the
+    // DELETE — only mousedown fires early enough. Capture phase so this runs
+    // before anything else can react to the mousedown.
+    layer.addEventListener('mousedown', e => {
+      const btn = e.target.closest('.sn-note__del');
+      if (!btn) return;
+      const id = btn.closest('.sn-note').dataset.id;
+      burying.add(id);
+      clearTimeout(debounced.get(id));
+      debounced.delete(id);
+    }, true);
 
     function queueSave(el) {
       const note = noteOf(el);
@@ -298,7 +328,9 @@
       if (!e.target.classList.contains('sn-note__body')) return;
       const el = e.target.closest('.sn-note');
       const note = noteOf(el);
-      if (note) { clearTimeout(debounced.get(note.id)); saveNote(note, el); }
+      if (!note || burying.has(note.id)) return;
+      clearTimeout(debounced.get(note.id));
+      saveNote(note, el);
     });
 
     // Paste as plain text — stops Word/web pastes dragging in junk markup.
@@ -313,20 +345,6 @@
       // Keep the caret in the body when a toolbar button is pressed.
       if (e.target.closest('.sn-note__bar')) e.preventDefault();
     });
-
-    // Cancel a pending debounced save before this note gets buried. Without
-    // this, typing then immediately clicking ✕ puts a PATCH and a DELETE in
-    // flight together, and the late PATCH can resurrect the note into the live
-    // hash while a copy sits in the graveyard. The store self-heals that on
-    // read, but not racing in the first place is better. Capture phase so this
-    // runs before the delete handler registered in Task 6.
-    layer.addEventListener('click', e => {
-      const btn = e.target.closest('.sn-note__del');
-      if (!btn) return;
-      const id = btn.closest('.sn-note').dataset.id;
-      clearTimeout(debounced.get(id));
-      debounced.delete(id);
-    }, true);
 
     layer.addEventListener('click', e => {
       const el = e.target.closest('.sn-note');
