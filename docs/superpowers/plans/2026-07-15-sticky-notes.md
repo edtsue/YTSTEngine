@@ -1372,6 +1372,20 @@ Append inside `init()` in `notes.js`, after the existing delete handler:
       if (e.target.closest('.sn-note__bar')) e.preventDefault();
     });
 
+    // Cancel a pending debounced save before this note gets buried. Without
+    // this, typing then immediately clicking ✕ puts a PATCH and a DELETE in
+    // flight together, and the late PATCH can resurrect the note into the live
+    // hash while a copy sits in the graveyard. The store self-heals that on
+    // read, but not racing in the first place is better. Capture phase so this
+    // runs before the delete handler registered in Task 6.
+    layer.addEventListener('click', e => {
+      const btn = e.target.closest('.sn-note__del');
+      if (!btn) return;
+      const id = btn.closest('.sn-note').dataset.id;
+      clearTimeout(debounced.get(id));
+      debounced.delete(id);
+    }, true);
+
     layer.addEventListener('click', e => {
       const el = e.target.closest('.sn-note');
       if (!el) return;
