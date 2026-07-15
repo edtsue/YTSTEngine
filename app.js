@@ -150,7 +150,7 @@ const DAY_HEADLINES = {
    surface these outside the gate as if they were reporting. ── */
 const NEWSFLASH = [
   {
-    key: 'out', chyron: 'INJURY', status: 'RULED OUT', accent: '#ff2d2d',
+    key: 'out', chyron: 'INJURY', status: 'RULED OUT', tag: 'OUT', accent: '#ff2d2d',
     lines: [
       p => [`${surname(p.name)} is out. Your league already knows.`, 'Pivot now — every replacement, out of market.'],
       p => ['Your WR1 went down at 11:58.', 'Swap him. Watch the fix pay, in Fantasy View.'],
@@ -158,7 +158,7 @@ const NEWSFLASH = [
     ],
   },
   {
-    key: 'return', chyron: 'RETURN', status: 'CLEARED TO PLAY', accent: '#15803d',
+    key: 'return', chyron: 'RETURN', status: 'CLEARED TO PLAY', tag: 'IN', accent: '#15803d',
     lines: [
       p => [`${surname(p.name)} is active. Nobody else in your chat noticed.`, 'Start him — and watch it land, out of market.'],
       p => ['Cleared this morning. The wire hasn’t caught up.', 'Get him in. Follow every snap in Fantasy View.'],
@@ -166,7 +166,7 @@ const NEWSFLASH = [
     ],
   },
   {
-    key: 'surprise', chyron: 'LINEUP CHANGE', status: 'SURPRISE START', accent: '#1d4ed8',
+    key: 'surprise', chyron: 'LINEUP CHANGE', status: 'SURPRISE START', tag: 'START', accent: '#1d4ed8',
     lines: [
       p => [`${surname(p.name)} is starting. That wasn’t the plan.`, 'Rewrite the lineup — then watch it, out of market.'],
       p => ['Backup’s in. Projections just moved.', 'Start him before the chat does. Every game, live.'],
@@ -668,14 +668,24 @@ function renderMixer(opts) {
 function renderBoard() {
   const el = document.getElementById('ctvBoard');
   if (!el) return;
-  el.innerHTML = BOARD.map(p => `
-    <div class="bcard" style="--team:${(TEAMS[p.team] || {}).glow || '#7a8290'}">
+  // A live newsflash marks the ONE player it's about — the rest of the board is
+  // untouched, so the eye goes straight to what changed. The treatment follows
+  // the news: an injury crosses him out, a return/surprise start lights him up
+  // (a comeback is good news; crossing it out would say the opposite).
+  el.innerHTML = BOARD.map(p => {
+    const hit = news && news.player.pid === p.pid;
+    const cls = 'bcard' + (hit ? ` bcard--flash bcard--flash-${news.kind.key}` : '');
+    const flash = hit ? `<span class="bcard__flash" style="--flash:${news.kind.accent}">${news.kind.tag}</span>` : '';
+    return `
+    <div class="${cls}" style="--team:${(TEAMS[p.team] || {}).glow || '#7a8290'}${hit ? `;--flash:${news.kind.accent}` : ''}">
       <span class="bcard__pos">${p.pos}</span>
       <img class="bcard__face" src="${HEADSHOT(p.pid)}" alt="${p.name}" loading="lazy"
            onerror="this.style.opacity=0" />
       <img class="bcard__logo" src="${ESPN_LOGO(p.team)}" alt="" loading="lazy" />
       <span class="bcard__name">${surname(p.name)}</span>
-    </div>`).join('');
+      ${flash}
+    </div>`;
+  }).join('');
 }
 
 /* client-side cache: re-viewing a backdrop is instant, no re-generation */
