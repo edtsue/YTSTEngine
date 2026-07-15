@@ -21,6 +21,8 @@ shared: anyone who is through the password gate sees the same wall of notes.
 | Visibility | Hidden by default, toggle button always present | Client opening the pitch sees clean creative; notes are one click away for reviewers |
 | Storage | Upstash Redis via Vercel Marketplace | Supabase free tier pauses after ~1wk idle and needs a manual dashboard restore — fatal for a site used in bursts |
 | Editing | Rich text: B/I/U, colour, font size, clear + per-note paper colour | Matches the house rule for editable surfaces |
+| Deleting | **Soft delete → graveyard, restorable** | Feedback is expensive to re-create; a misclick must never destroy someone's note |
+| Timestamps | **`created` + `updated` + `deletedAt`, stamped server-side** | Client clocks are unreliable and skew; the server is the only trustworthy source |
 
 ### Why not Supabase
 
@@ -51,7 +53,8 @@ index.html ──┬── notes.css      presentation only
              api/notes.js       method-dispatched CRUD; holds Upstash creds
                     │
                     ▼
-             Upstash Redis      hash `sys:notes`
+             Upstash Redis      hash `sys:notes`  (live)
+                                hash `sys:notes:trash`  (graveyard)
 ```
 
 `notes.js` stays out of `app.js` (~3000 lines) because the notes layer shares no
@@ -74,7 +77,8 @@ handle:
 
 ## Data model
 
-Redis key `sys:notes`, a hash. Field = note id, value = JSON:
+Two Redis hashes: `sys:notes` (live) and `sys:notes:trash` (graveyard). Field =
+note id, value = JSON. Identical shape in both:
 
 ```json
 {
@@ -86,22 +90,36 @@ Redis key `sys:notes`, a hash. Field = note id, value = JSON:
   "ay": 0.60,
   "section": "06 · The wishlist",
   "color": "yellow",
-  "updated": 1768435200000
+  "created": 1768435200000,
+  "updated": 1768435200000,
+  "deletedAt": null
 }
 ```
 
 - **`html`** — rendered note body. **`text`** — plain-text mirror, used by the
-  orphan tray and any future search. Both stored, per the WCCommand triage
-  editor precedent.
+  tray and any future search. Both stored, per the WCCommand triage editor
+  precedent.
 - **`ax`/`ay`** — offsets as fractions (0–1) of the anchor element's box, *not*
   pixels. This is what survives reflow: a note at 50% across `.wish__title`
   stays at 50% whether that heading is 900px or 320px wide.
-- **`section`** — human-readable section label, captured at drop time so an
-  orphaned note can still say where it came from.
+- **`section`** — human-readable section label, captured at drop time so a note
+  can still say where it came from once orphaned or buried.
+- **`created` / `updated` / `deletedAt`** — epoch ms, all **stamped by the
+  server**, never sent by the client. Client clocks drift and would produce
+  notes "created" in the future or out of order. `deletedAt` is `null` on live
+  notes and set on burial.
 
 A hash (rather than one JSON blob) is the point: `HSET`/`HDEL` are atomic **per
 field**, so two reviewers adding notes simultaneously cannot clobber each other.
 `HGETALL` still lists everything in one round trip.
+
+Keeping the graveyard in a **separate hash** rather than filtering on
+`deletedAt` keeps the live list free of buried notes without a scan, and makes
+burial/restore a two-key move rather than a rewrite.
+
+**The graveyard is not auto-purged.** No TTL: a graveyard that silently empties
+itself is not a graveyard, and it would break the one promise the feature makes.
+Volume is tens of notes; emptying is a deliberate manual action.
 
 ## API — `api/notes.js`
 
@@ -110,10 +128,16 @@ under the Hobby cap of 12. All responses JSON.
 
 | Method | Body | Returns | Redis |
 |---|---|---|---|
-| GET | — | `{notes: [...]}` | `HGETALL sys:notes` |
-| POST | `{html, text, anchor, ax, ay, section, color}` | `{note}` with new id | `HSET` |
+| GET | — | `{notes: [...], trash: [...]}` | `HGETALL` both hashes |
+| POST | `{html, text, anchor, ax, ay, section, color}` | `{note}` with new id | `HSET sys:notes` |
 | PATCH | `{id, ...changed fields}` | `{note}` | `HGET` → merge → `HSET` |
-| DELETE | `{id}` | `{ok: true}` | `HDEL` |
+| PATCH | `{id, restore: true}` | `{note}` | trash → `sys:notes`, clear `deletedAt` |
+| DELETE | `{id}` | `{ok: true}` | **soft** — move to `sys:notes:trash`, set `deletedAt` |
+| DELETE | `{id, purge: true}` | `{ok: true}` | hard — `HDEL sys:notes:trash` |
+| DELETE | `{purgeAll: true}` | `{ok: true}` | `DEL sys:notes:trash` |
+
+GET returns live and buried notes together (two `HGETALL`s, one round trip) so
+opening the tray needs no second request. Volume makes this trivial.
 
 Note ids are generated **server-side** on POST (short random string), so the
 client never invents an id that could collide with another reviewer's.
@@ -138,14 +162,26 @@ bypasses any client-side cleaning. Allowlist:
 
 - **Toggle button**, fixed bottom-right, yellow, with a count badge. Off by
   default → a cold load is a clean pitch.
-- Toggling on reveals the notes layer and an **"+ Add"** button.
+- Toggling on reveals the notes layer, an **"+ Add"** button, and the **tray**
+  button.
 - "+ Add" **arms placement**: crosshair cursor, and page clicks are intercepted
   at the capture phase so the page goes inert. The next click drops a note at
   that point instead of firing a nav link or the FAQ modal. `Escape` cancels.
   One click, one note — no stickies from stray clicks.
 - Each note: a small tilted yellow card (same violator feel as the FPO sticker),
-  a contenteditable body, a formatting toolbar, a colour swatch, and `×` to
-  delete. Drag to reposition, which re-anchors to whatever it lands on.
+  a contenteditable body, a formatting toolbar, a colour swatch, a timestamp
+  footer, and `×` to bury. Drag to reposition, which re-anchors to whatever it
+  lands on.
+
+### Timestamps
+
+Each sticky shows its **created** time in a small muted footer — compact and
+absolute (`Jul 15, 2:14 PM`), with the full date/time in a `title` tooltip.
+Absolute rather than "2h ago": relative time is friendly but ambiguous on a wall
+of feedback read days later.
+
+If `updated > created`, the footer appends `· edited`. The tray shows `created`
+alongside `deletedAt` for buried notes.
 
 ### Rich text
 
@@ -187,12 +223,26 @@ Recalculate on resize, font load, and a `ResizeObserver` on the body, throttled
 through `requestAnimationFrame`. **Not** on scroll — page-coordinate positioning
 makes scrolling free.
 
-### Orphans
+### The tray — one panel, two tabs
 
-If a stored selector no longer resolves (the HTML underneath was edited or
-deleted), the note is **orphaned**. Orphans must never silently vanish: they
-collect in an "unanchored" tray docked bottom-left, showing their text and
-original section, to be re-placed or deleted deliberately.
+A single docked panel (bottom-left) holding every note that isn't on the wall.
+Two trays would clutter a pitch site, and both tabs answer the same question:
+"what notes exist that I can't see?"
+
+**Tab 1 — Unanchored.** Notes whose stored selector no longer resolves, because
+the HTML underneath was edited or deleted. Orphans must never silently vanish:
+they show text, original section, and created time, and can be re-placed (arm a
+click, same as "+ Add") or buried.
+
+**Tab 2 — Graveyard.** Buried notes, newest first, showing text, section,
+created and deleted times. Each offers **Restore**; the panel offers **Empty
+graveyard** behind a confirm, since that is the one genuinely irreversible
+action in the feature.
+
+**Restore is not guaranteed to return a note to its old spot.** If the note was
+buried and the HTML it pointed at has since changed, restore puts it back on the
+live wall but its anchor no longer resolves — so it lands in **Unanchored**
+rather than failing or vanishing. The two tabs feed each other by design.
 
 ## Error handling
 
@@ -200,11 +250,13 @@ original section, to be re-placed or deleted deliberately.
 |---|---|
 | API returns HTML (gate expired) | Banner: session expired, reload. Never parse as notes. |
 | API unreachable / 5xx | Keep the note in the DOM, mark it unsaved, retry on next edit. Never discard typed text. |
-| Anchor selector unresolvable | Note → orphan tray, not deleted. |
+| Anchor selector unresolvable | Note → Unanchored tab, not deleted. |
+| Restore of a note whose anchor is now gone | Restores to the wall, lands in Unanchored. Never errors. |
+| Restore of an id missing from trash (double-click, two reviewers) | Idempotent: succeed if it's already live, else 404. Never duplicate the note. |
 | Note dragged onto the notes UI itself | Ignore; re-anchor only to page content. |
 
 The through-line: **never lose text the user typed**, and never silently drop a
-note.
+note. Burial is reversible; only "Empty graveyard" is not, and it is confirmed.
 
 ## Testing
 
@@ -215,21 +267,27 @@ the real page:
 2. Resize desktop → mobile width → the note tracks its anchor.
 3. Bold/underline/colour/size → reload → formatting survives.
 4. Two browsers add notes at once → both survive (the anti-clobber claim).
-5. Rename an anchor's class in the HTML → the note lands in the orphan tray.
+5. Rename an anchor's class in the HTML → the note lands in Unanchored.
 6. Paste rich text from a web page → arrives as plain text.
 7. Cold load with notes off → no notes visible, only the toggle button.
+8. Delete a note → gone from wall, present in Graveyard with a deleted time.
+9. Restore it → back on the wall, same spot, `deletedAt` cleared.
+10. Delete → change its anchor's HTML → restore → lands in Unanchored, not lost.
+11. Timestamps: create → footer shows created; edit → footer shows `· edited`.
+12. Empty graveyard → confirms first; buried notes gone, live wall untouched.
 
 ## Files
 
 | File | Change |
 |---|---|
-| `api/notes.js` | new — CRUD dispatcher |
-| `notes.js` | new — client layer |
+| `api/notes.js` | new — CRUD dispatcher, soft delete, restore, purge |
+| `notes.js` | new — client layer, tray, editor |
 | `notes.css` | new — sticky/toolbar/tray styles |
 | `index.html` | 2 lines — link + script |
 | `package.json` | add `@upstash/redis` |
 
 ## Out of scope
 
-Author names, per-user permissions, real login, threaded replies, resolve/archive
-workflow, note search, export. Revisit only if the wall is actually used.
+Author names, per-user permissions, real login, threaded replies, note search,
+export, auto-purge/TTL on the graveyard. Revisit only if the wall is actually
+used.
