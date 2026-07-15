@@ -131,6 +131,7 @@
       if (!place(el, note)) { el.remove(); state.orphans.push(note); }
     }
     countEl.textContent = String(state.notes.length);
+    renderTray();
   }
 
   const reposition = () => {
@@ -205,6 +206,21 @@
     }
   }
 
+  async function reanchor(note, x, y) {
+    layer.style.pointerEvents = 'none';
+    const target = document.elementFromPoint(x, y);
+    layer.style.pointerEvents = '';
+    if (!target || target.closest('.sn-toggle, .sn-add, .sn-note, .sn-tray')) return;
+    const r = target.getBoundingClientRect();
+    note.anchor = selectorFor(target);
+    note.ax = r.width ? (x - r.left) / r.width : 0.5;
+    note.ay = r.height ? (y - r.top) / r.height : 0.5;
+    note.section = sectionFor(target);
+    render();
+    try { await api('PATCH', { id: note.id, anchor: note.anchor, ax: note.ax, ay: note.ay, section: note.section }); }
+    catch { banner('Could not re-place note.'); }
+  }
+
   /* ── boot ────────────────────────────────────────────────────────── */
   async function load() {
     try {
@@ -215,6 +231,40 @@
     } catch (err) {
       banner(err.message === 'gate' ? 'Session expired — reload.' : 'Could not load notes.');
     }
+  }
+
+  /* ── tray ────────────────────────────────────────────────────────── */
+  let tray, tab = 'orphans';
+
+  function trayItem(note, kind) {
+    const when = kind === 'trash'
+      ? `${fmt(note.created)} · buried ${fmt(note.deletedAt)}`
+      : `${fmt(note.created)} · ${note.section || 'unknown section'}`;
+    return `
+      <div class="sn-tray__item" data-id="${note.id}">
+        <span class="sn-tray__txt">${(note.text || '(empty note)').slice(0, 90)}</span>
+        <span class="sn-tray__meta">${when}</span>
+        ${kind === 'trash'
+          ? `<button data-act="restore">Restore</button>
+             <button data-act="purge" class="sn-ghost">Delete forever</button>`
+          : `<button data-act="replace">Re-place</button>
+             <button data-act="bury" class="sn-ghost">Bury</button>`}
+      </div>`;
+  }
+
+  function renderTray() {
+    if (!tray) return;
+    const items = tab === 'trash' ? state.trash : state.orphans;
+    const empty = tab === 'trash' ? 'The graveyard is empty.' : 'Every note is anchored.';
+    tray.querySelector('[data-tab="orphans"]').textContent = `Unanchored ${state.orphans.length}`;
+    tray.querySelector('[data-tab="trash"]').textContent = `Graveyard ${state.trash.length}`;
+    for (const t of tray.querySelectorAll('.sn-tray__tab')) {
+      t.setAttribute('aria-selected', String(t.dataset.tab === tab));
+    }
+    tray.querySelector('.sn-tray__list').innerHTML =
+      items.length ? items.map(n => trayItem(n, tab === 'trash' ? 'trash' : 'orphans')).join('')
+                   : `<div class="sn-tray__empty">${empty}</div>`;
+    tray.querySelector('.sn-tray__foot').style.display = tab === 'trash' ? '' : 'none';
   }
 
   function init() {
@@ -234,6 +284,72 @@
     addBtn.setAttribute('aria-pressed', 'false');
     document.body.appendChild(addBtn);
 
+    tray = document.createElement('div');
+    tray.className = 'sn-tray';
+    tray.innerHTML = `
+      <div class="sn-tray__tabs">
+        <button class="sn-tray__tab" data-tab="orphans" aria-selected="true">Unanchored 0</button>
+        <button class="sn-tray__tab" data-tab="trash" aria-selected="false">Graveyard 0</button>
+      </div>
+      <div class="sn-tray__list"></div>
+      <div class="sn-tray__foot" style="display:none">
+        <button data-act="purgeAll">Empty graveyard</button>
+      </div>`;
+    document.body.appendChild(tray);
+
+    tray.addEventListener('click', async e => {
+      const t = e.target.closest('.sn-tray__tab');
+      if (t) { tab = t.dataset.tab; renderTray(); return; }
+
+      const btn = e.target.closest('button[data-act]');
+      if (!btn) return;
+      const act = btn.dataset.act;
+
+      if (act === 'purgeAll') {
+        // The only irreversible action in the feature — confirm it.
+        if (!confirm(`Permanently delete ${state.trash.length} buried note(s)? This cannot be undone.`)) return;
+        try { await api('DELETE', { purgeAll: true }); state.trash = []; renderTray(); }
+        catch { banner('Could not empty the graveyard.'); }
+        return;
+      }
+
+      const id = btn.closest('.sn-tray__item').dataset.id;
+
+      if (act === 'restore') {
+        try {
+          const { note } = await api('PATCH', { id, restore: true });
+          state.trash = state.trash.filter(n => n.id !== id);
+          state.notes.push(note);
+          // If its anchor died while buried, render() drops it into Unanchored
+          // rather than losing it.
+          render();
+        } catch { banner('Could not restore note.'); }
+        return;
+      }
+      if (act === 'purge') {
+        if (!confirm('Delete this note forever?')) return;
+        try { await api('DELETE', { id, purge: true }); state.trash = state.trash.filter(n => n.id !== id); renderTray(); }
+        catch { banner('Could not delete note.'); }
+        return;
+      }
+      if (act === 'bury') {
+        try {
+          const { note: dead } = await api('DELETE', { id });
+          state.notes = state.notes.filter(n => n.id !== id);
+          state.trash.unshift(dead);
+          render();
+        } catch { banner('Could not bury note.'); }
+        return;
+      }
+      if (act === 'replace') {
+        const note = state.notes.find(n => n.id === id);
+        if (!note) return;
+        arm(true);
+        // Next page click re-anchors this orphan instead of creating a new note.
+        pendingReplace = note;
+      }
+    });
+
     // Nothing is fetched until the user opens the layer. A client loading the
     // pitch must not pay a network request for a feature they never open —
     // cold-load weight on this site is hard-won.
@@ -248,11 +364,17 @@
     // Capture phase: while arming, the page must not react to the click.
     document.addEventListener('click', e => {
       if (!state.arming) return;
-      if (e.target.closest('.sn-add, .sn-toggle')) return;
+      if (e.target.closest('.sn-add, .sn-toggle, .sn-tray')) return;
       e.preventDefault();
       e.stopPropagation();
       arm(false);
-      drop(e.clientX, e.clientY);
+      if (pendingReplace) {
+        const note = pendingReplace;
+        pendingReplace = null;
+        reanchor(note, e.clientX, e.clientY);
+      } else {
+        drop(e.clientX, e.clientY);
+      }
     }, true);
 
     document.addEventListener('keydown', e => { if (e.key === 'Escape') arm(false); });
@@ -402,6 +524,9 @@
 
     // Drag by the grip; re-anchor to whatever it lands on.
     let drag = null;
+    // Set by the tray's Re-place button; the next arming click re-anchors
+    // this orphan instead of drop()-ing a brand-new note.
+    let pendingReplace = null;
     layer.addEventListener('mousedown', e => {
       const grip = e.target.closest('.sn-note__grip');
       if (!grip) return;
