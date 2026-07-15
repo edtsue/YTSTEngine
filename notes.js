@@ -662,7 +662,7 @@
     });
     addEventListener('mouseup', e => {
       if (!drag) return;
-      const { el } = drag;
+      const { el, dx, dy } = drag;
       el.classList.remove('sn-note--dragging');
       drag = null;
       const note = noteOf(el);
@@ -673,9 +673,16 @@
       // Only the notes' own chrome is off-limits; anywhere on the page is fair.
       if (!target || target.closest('.sn-toggle, .sn-add, .sn-tray, .sn-ask')) { place(el, note); return; }
       const r = target.getBoundingClientRect();
+      // Anchor from where the NOTE actually sits, not where the cursor is. You
+      // grab the note by its grip (near the bottom), so the note's top-left is
+      // offset from the pointer by dx/dy. Measuring from the cursor made place()
+      // yank the corner under the pointer — the note visibly jumped on release.
+      // ax/ay may fall outside 0–1 when the note overhangs its anchor; that's
+      // fine, place() is pure arithmetic and keeps it exactly where you left it.
+      const left = e.clientX - dx, top = e.clientY - dy;
       note.anchor = selectorFor(target);
-      note.ax = r.width ? (e.clientX - r.left) / r.width : 0.5;
-      note.ay = r.height ? (e.clientY - r.top) / r.height : 0.5;
+      note.ax = r.width ? (left - r.left) / r.width : 0.5;
+      note.ay = r.height ? (top - r.top) / r.height : 0.5;
       note.section = sectionFor(target);
       place(el, note);
       saveNote(note, el);

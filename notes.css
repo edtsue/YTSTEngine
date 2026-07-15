@@ -37,7 +37,7 @@
 .sn-arming, .sn-arming * { cursor: crosshair !important; }
 
 .sn-note {
-  position: absolute; width: 190px; min-height: 96px;
+  position: absolute; width: 250px; min-height: 150px;
   /* Flex column so the footer (timestamp + ✕) pins to the BOTTOM edge at any
      height. As a plain block it sat directly under the text, which stranded it
      mid-note with dead space below once a note was resized taller. */
@@ -62,7 +62,7 @@
 .sn-note--green  { background: #b6e8b6; }
 .sn-note--orange { background: #ffcc8f; }
 
-.sn-note__body { flex: 1 1 auto; min-height: 44px; outline: 0; word-break: break-word; }
+.sn-note__body { flex: 1 1 auto; min-height: 76px; outline: 0; word-break: break-word; }
 .sn-note__body:empty::before { content: 'Type a note…'; opacity: .45; }
 .sn-note__foot {
   /* padding-right clears the resize handle's 14px hit box (bottom-right,
