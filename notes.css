@@ -1,0 +1,67 @@
+/* ════════════════════════════════════════════════════════════════════
+   Sticky notes — overlay layer, toggle, and the notes themselves.
+   Off by default: a cold load must look like a clean pitch.
+   ════════════════════════════════════════════════════════════════════ */
+.sn-layer {
+  position: absolute; inset: 0 auto auto 0;
+  width: 100%; height: 100%;
+  pointer-events: none; z-index: 9000;
+  display: none;
+}
+.sn-on .sn-layer { display: block; }
+
+.sn-toggle {
+  position: fixed; right: 18px; bottom: 18px; z-index: 9100;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 14px; border: 0; border-radius: 999px;
+  background: #ffd400; color: #1a1a1a; cursor: pointer;
+  font: 700 13px/1 'Archivo', system-ui, sans-serif; letter-spacing: .04em;
+  box-shadow: 0 6px 20px rgba(0,0,0,.45);
+}
+.sn-toggle__count {
+  min-width: 18px; padding: 2px 5px; border-radius: 999px;
+  background: rgba(0,0,0,.28); font-size: 11px;
+}
+.sn-add {
+  position: fixed; right: 18px; bottom: 66px; z-index: 9100;
+  padding: 8px 12px; border: 0; border-radius: 999px;
+  background: #1a1a1a; color: #fff; cursor: pointer;
+  font: 700 12px/1 'Archivo', system-ui, sans-serif;
+  display: none;
+}
+.sn-on .sn-add { display: inline-block; }
+.sn-add[aria-pressed="true"] { background: #d92d20; }
+
+/* Arming placement: the page goes inert so the next click lands a note
+   instead of firing a nav link or the FAQ modal. */
+.sn-arming, .sn-arming * { cursor: crosshair !important; }
+
+.sn-note {
+  position: absolute; width: 190px; min-height: 96px;
+  padding: 10px 10px 6px; border-radius: 2px;
+  background: #ffe94d; color: #1a1a1a;
+  font: 400 14px/1.35 'Archivo', system-ui, sans-serif;
+  box-shadow: 0 8px 18px rgba(0,0,0,.4);
+  transform: rotate(-1.4deg); transform-origin: top left;
+  pointer-events: auto;
+}
+.sn-note--pink   { background: #ffb3c8; }
+.sn-note--blue   { background: #a8d5ff; }
+.sn-note--green  { background: #b6e8b6; }
+.sn-note--orange { background: #ffcc8f; }
+
+.sn-note__body { min-height: 44px; outline: 0; word-break: break-word; }
+.sn-note__body:empty::before { content: 'Type a note…'; opacity: .45; }
+.sn-note__foot {
+  margin-top: 6px; padding-top: 4px; border-top: 1px solid rgba(0,0,0,.14);
+  font-size: 10px; letter-spacing: .02em; opacity: .6;
+  display: flex; justify-content: space-between; gap: 6px;
+}
+.sn-note__del {
+  border: 0; background: none; cursor: pointer;
+  font-size: 13px; line-height: 1; opacity: .5; padding: 0 2px;
+}
+.sn-note__del:hover { opacity: 1; }
+.sn-note__grip { cursor: grab; }
+.sn-note--dragging { cursor: grabbing; opacity: .85; }
+.sn-note--unsaved { outline: 2px solid #d92d20; }
