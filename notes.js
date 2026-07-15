@@ -16,6 +16,9 @@
   // DELETE resolves, or the late PATCH races the DELETE and resurrects it.
   const burying = new Set();
   let layer, toggle, addBtn, countEl;
+  // Pending debounced save timers, keyed by note id. Declared here (not
+  // inside init()) so anyBusy() below — used by the poll loop — can see it.
+  const debounced = new Map();
 
   /* ── api ─────────────────────────────────────────────────────────── */
   async function api(method, body) {
@@ -227,6 +230,7 @@
       const data = await api('GET');
       state.notes = data.notes;
       state.trash = data.trash;
+      lastSig = sigOf(data);
       render();
     } catch (err) {
       banner(err.message === 'gate' ? 'Session expired — reload.' : 'Could not load notes.');
@@ -265,6 +269,46 @@
       items.length ? items.map(n => trayItem(n, tab === 'trash' ? 'trash' : 'orphans')).join('')
                    : `<div class="sn-tray__empty">${empty}</div>`;
     tray.querySelector('.sn-tray__foot').style.display = tab === 'trash' ? '' : 'none';
+  }
+
+  /* ── live polling ────────────────────────────────────────────────── */
+  const POLL_MS = 10000;
+  let pollTimer = null, lastSig = '';
+
+  // Cheap change-detector: re-rendering unchanged data every 10s would flicker
+  // the wall and fight with dragging.
+  const sigOf = d => JSON.stringify([
+    d.notes.map(n => [n.id, n.updated]),
+    d.trash.map(t => [t.id, t.deletedAt]),
+  ]);
+
+  // Typing or an unflushed save = busy. Never blow away in-progress work.
+  const anyBusy = () =>
+    debounced.size > 0 || !!document.activeElement?.closest?.('.sn-note');
+
+  async function poll() {
+    if (!state.on || document.hidden || anyBusy()) return;
+    try {
+      const data = await api('GET');
+      const sig = sigOf(data);
+      if (sig === lastSig) return;          // nothing changed — don't re-render
+      lastSig = sig;
+      state.notes = data.notes;
+      state.trash = data.trash;
+      render();
+    } catch {
+      // Polling failures are silent on purpose: a broken tab must not nag the
+      // user every 10 seconds. Real actions (add/edit/delete) still surface errors.
+    }
+  }
+
+  function startPolling() {
+    stopPolling();
+    pollTimer = setInterval(poll, POLL_MS);
+  }
+  function stopPolling() {
+    clearInterval(pollTimer);
+    pollTimer = null;
   }
 
   function init() {
@@ -356,7 +400,16 @@
     toggle.addEventListener('click', () => {
       state.on = !state.on;
       document.body.classList.toggle('sn-on', state.on);
-      if (state.on) load(); else arm(false);
+      if (state.on) { load(); startPolling(); }
+      else { arm(false); stopPolling(); }
+    });
+
+    // A hidden tab must not burn Upstash quota. Resume on return, and poll once
+    // immediately so the wall is current the moment you look at it.
+    document.addEventListener('visibilitychange', () => {
+      if (!state.on) return;
+      if (document.hidden) stopPolling();
+      else { startPolling(); poll(); }
     });
 
     addBtn.addEventListener('click', () => arm(!state.arming));
@@ -406,7 +459,6 @@
     try { document.execCommand('styleWithCSS', false, true); } catch {}
 
     const noteOf = el => state.notes.find(n => n.id === el.dataset.id);
-    const debounced = new Map();
 
     // Click order on ✕ is mousedown → focus shifts off the body → focusout
     // (which saves IMMEDIATELY, not debounced) → mouseup → click. So a click
@@ -429,7 +481,10 @@
       note.html = body.innerHTML;
       note.text = body.textContent;
       clearTimeout(debounced.get(note.id));
-      debounced.set(note.id, setTimeout(() => saveNote(note, el), 500));
+      // Delete on fire, not just clear: anyBusy() (Task 9) treats any entry
+      // left in this map as an unflushed save. Leaving a fired timer's id
+      // behind would wedge the poll loop "busy" forever after one edit.
+      debounced.set(note.id, setTimeout(() => { debounced.delete(note.id); saveNote(note, el); }, 500));
     }
 
     // Toolbar only on the focused note, so the wall stays quiet.
@@ -452,6 +507,7 @@
       const note = noteOf(el);
       if (!note || burying.has(note.id)) return;
       clearTimeout(debounced.get(note.id));
+      debounced.delete(note.id); // this save is happening now, not later
       saveNote(note, el);
     });
 
