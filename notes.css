@@ -38,6 +38,10 @@
 
 .sn-note {
   position: absolute; width: 190px; min-height: 96px;
+  /* Flex column so the footer (timestamp + ✕) pins to the BOTTOM edge at any
+     height. As a plain block it sat directly under the text, which stranded it
+     mid-note with dead space below once a note was resized taller. */
+  display: flex; flex-direction: column;
   padding: 10px 10px 6px; border-radius: 2px;
   background: #ffe94d; color: #1a1a1a;
   font: 400 14px/1.35 'Archivo', system-ui, sans-serif;
@@ -50,12 +54,13 @@
 .sn-note--green  { background: #b6e8b6; }
 .sn-note--orange { background: #ffcc8f; }
 
-.sn-note__body { min-height: 44px; outline: 0; word-break: break-word; }
+.sn-note__body { flex: 1 1 auto; min-height: 44px; outline: 0; word-break: break-word; }
 .sn-note__body:empty::before { content: 'Type a note…'; opacity: .45; }
 .sn-note__foot {
   /* padding-right clears the resize handle's 14px hit box (bottom-right,
      border-box) so it can't sit under the ✕ button and steal its clicks. */
-  margin-top: 6px; padding: 4px 16px 0 0; border-top: 1px solid rgba(0,0,0,.14);
+  margin-top: auto; /* pin to the bottom edge, never mid-note */
+  padding: 4px 16px 0 0; border-top: 1px solid rgba(0,0,0,.14);
   font-size: 10px; letter-spacing: .02em; opacity: .6;
   display: flex; justify-content: space-between; gap: 6px;
 }
@@ -100,7 +105,7 @@
    only capped via percentage heights that resolve once a fixed h is set
    by a resize, so un-resized notes keep growing to fit content as before. */
 .sn-note { box-sizing: border-box; overflow: hidden; }
-.sn-note__body { overflow-y: auto; max-height: 100%; }
+.sn-note__body { overflow-y: auto; min-height: 0; }
 .sn-note__resize {
   position: absolute; right: 1px; bottom: 1px;
   width: 14px; height: 14px; cursor: nwse-resize;
@@ -148,3 +153,30 @@
   background: rgba(217,45,32,.18); color: #ff8b83;
   font: 700 10px/1 'Archivo', system-ui, sans-serif;
 }
+
+/* ── in-site confirm ────────────────────────────────────────────────────
+   Replaces native confirm(). Native dialogs are a browser chrome popup, not
+   part of the site — they break the visual language of a pitch page (and
+   block automation). This is the same dark card language as the tray. */
+.sn-ask {
+  position: fixed; inset: 0; z-index: 9300;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.55); backdrop-filter: blur(2px);
+}
+.sn-ask.is-open { display: flex; }
+.sn-ask__card {
+  width: min(340px, calc(100vw - 32px));
+  padding: 18px; border-radius: 10px;
+  background: #14161a; color: #e8edf5;
+  border: 1px solid rgba(255,255,255,.16);
+  box-shadow: 0 18px 50px rgba(0,0,0,.6);
+  font: 400 13px/1.45 'Archivo', system-ui, sans-serif;
+}
+.sn-ask__msg { margin: 0 0 14px; }
+.sn-ask__row { display: flex; gap: 8px; justify-content: flex-end; }
+.sn-ask__row button {
+  border: 0; border-radius: 5px; cursor: pointer; padding: 7px 12px;
+  font: 700 11px/1 'Archivo', system-ui, sans-serif; letter-spacing: .03em;
+}
+.sn-ask__no  { background: rgba(255,255,255,.12); color: #e8edf5; }
+.sn-ask__yes { background: #d92d20; color: #fff; }

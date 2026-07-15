@@ -182,6 +182,49 @@
     b.textContent = msg;
   }
 
+  /* ── in-site confirm ─────────────────────────────────────────────────
+     Replaces native confirm(). A browser confirm is chrome, not part of the
+     site — it breaks the pitch's visual language (and blocks automation).
+     Returns a promise resolving true/false. Esc and the backdrop cancel,
+     because the destructive answer must never be the accidental one. */
+  let ask;
+  function snConfirm(msg, yesLabel = 'Delete') {
+    if (!ask) {
+      ask = document.createElement('div');
+      ask.className = 'sn-ask';
+      ask.innerHTML = `
+        <div class="sn-ask__card" role="alertdialog" aria-modal="true">
+          <p class="sn-ask__msg"></p>
+          <div class="sn-ask__row">
+            <button class="sn-ask__no">Cancel</button>
+            <button class="sn-ask__yes"></button>
+          </div>
+        </div>`;
+      document.body.appendChild(ask);
+    }
+    ask.querySelector('.sn-ask__msg').textContent = msg;
+    ask.querySelector('.sn-ask__yes').textContent = yesLabel;
+    ask.classList.add('is-open');
+
+    return new Promise(resolve => {
+      const done = v => {
+        ask.classList.remove('is-open');
+        ask.removeEventListener('click', onClick);
+        document.removeEventListener('keydown', onKey);
+        resolve(v);
+      };
+      const onClick = e => {
+        if (e.target.closest('.sn-ask__yes')) return done(true);
+        // Backdrop click (outside the card) cancels, as does Cancel.
+        if (e.target.closest('.sn-ask__no') || !e.target.closest('.sn-ask__card')) return done(false);
+      };
+      const onKey = e => { if (e.key === 'Escape') done(false); };
+      ask.addEventListener('click', onClick);
+      document.addEventListener('keydown', onKey);
+      ask.querySelector('.sn-ask__no').focus();
+    });
+  }
+
   /* ── placing ─────────────────────────────────────────────────────── */
   function arm(on) {
     state.arming = on;
@@ -356,7 +399,7 @@
 
       if (act === 'purgeAll') {
         // The only irreversible action in the feature — confirm it.
-        if (!confirm(`Permanently delete ${state.trash.length} buried note(s)? This cannot be undone.`)) return;
+        if (!await snConfirm(`Permanently delete ${state.trash.length} buried note(s)? This cannot be undone.`, 'Empty graveyard')) return;
         try { await api('DELETE', { purgeAll: true }); state.trash = []; renderTray(); }
         catch { banner('Could not empty the graveyard.'); }
         return;
@@ -376,7 +419,7 @@
         return;
       }
       if (act === 'purge') {
-        if (!confirm('Delete this note forever?')) return;
+        if (!await snConfirm('Delete this note forever? This cannot be undone.', 'Delete forever')) return;
         try { await api('DELETE', { id, purge: true }); state.trash = state.trash.filter(n => n.id !== id); renderTray(); }
         catch { banner('Could not delete note.'); }
         return;

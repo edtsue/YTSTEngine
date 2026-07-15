@@ -135,8 +135,54 @@ const DAY_HEADLINES = {
   'sat': () => ['Set the lineup that wins the group chat.', 'Screenshots ready for Sunday.'],
   'sun': () => ['Rosters lock at 1:00. Winners flex, losers cope.', 'Watch every player, every game.'],
 };
-// the single best [lead, payoff] pair for the selected day
-const headline = d => (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])();
+/* ── Newsflash — the reactive execution ──────────────────────────────────
+   The day headlines run on the week's CLOCK. A newsflash runs on an EVENT:
+   Genius data moves mid-week and the ad rewrites itself the same hour. It is
+   the sharpest proof that the data drives reactive creative, not a schedule.
+
+   Three kinds × three [lead, payoff] variants = nine executions. Same voice as
+   the day headlines: social stake in the lead, Sunday Ticket utility in the
+   payoff. Headlines take the player so the copy can name him.
+
+   NOTE: real player names are used for continuity with the Top Picks board.
+   These are fabricated, illustrative injury lines on a gated internal pitch —
+   the CTV mock carries the FPO "Work in progress creative" violator. Do not
+   surface these outside the gate as if they were reporting. ── */
+const NEWSFLASH = [
+  {
+    key: 'out', chyron: 'INJURY', status: 'RULED OUT', accent: '#ff2d2d',
+    lines: [
+      p => [`${surname(p.name)} is out. Your league already knows.`, 'Pivot now — every replacement, out of market.'],
+      p => ['Your WR1 went down at 11:58.', 'Swap him. Watch the fix pay, in Fantasy View.'],
+      p => ['The chat’s already screenshotting your dead lineup.', 'Two minutes to pivot. Every game, live.'],
+    ],
+  },
+  {
+    key: 'return', chyron: 'RETURN', status: 'CLEARED TO PLAY', accent: '#15803d',
+    lines: [
+      p => [`${surname(p.name)} is active. Nobody else in your chat noticed.`, 'Start him — and watch it land, out of market.'],
+      p => ['Cleared this morning. The wire hasn’t caught up.', 'Get him in. Follow every snap in Fantasy View.'],
+      p => ['Back from IR, and still on your bench.', 'Move him. Watch the payoff, every game.'],
+    ],
+  },
+  {
+    key: 'surprise', chyron: 'LINEUP CHANGE', status: 'SURPRISE START', accent: '#1d4ed8',
+    lines: [
+      p => [`${surname(p.name)} is starting. That wasn’t the plan.`, 'Rewrite the lineup — then watch it, out of market.'],
+      p => ['Backup’s in. Projections just moved.', 'Start him before the chat does. Every game, live.'],
+      p => ['Unexpected start, 40 minutes to lock.', 'Fix it, then follow him in Fantasy View.'],
+    ],
+  },
+];
+
+// The live newsflash, or null when the ad is running on the day clock.
+// Set by the Newsflash button; cleared by any day change or Randomize.
+let news = null;
+
+// the single best [lead, payoff] pair — a live newsflash overrides the day
+const headline = d => news
+  ? news.kind.lines[news.variant](news.player)
+  : (DAY_HEADLINES[d.id] || DAY_HEADLINES['sun'])();
 const headlineText = d => headline(d).join(' ');
 
 // eyebrow: this week's top-projected must-starts (Genius Sports)
@@ -242,7 +288,10 @@ function buildMixer() {
 
   document.getElementById('selDay').value = beatForToday();
 
-  document.getElementById('selDay').addEventListener('change', () => { stopSpot(); renderMixer(); });
+  // Choosing a day means "run the week's clock" — so it drops any live
+  // newsflash and returns the ad to that day's headline.
+  document.getElementById('selDay').addEventListener('change', () => { news = null; stopSpot(); renderMixer(); });
+  document.getElementById('newsBtn').addEventListener('click', () => { stopSpot(); rollNews(); renderMixer(); });
   document.getElementById('genBtn').addEventListener('click', async () => {
     if (spotPlaying) { stopSpot(); return; }   // playing → this click stops it
     stopSpot();
@@ -261,6 +310,7 @@ let spinning = false;
 function randomize() {
   if (spinning) return;
   stopSpot();
+  news = null;   // randomizing the DAY means back to the week's clock
   const dEl = document.getElementById('selDay');
   const finalD = pick(DAYS).id;
 
@@ -293,6 +343,34 @@ function randomize() {
     spinning = false;
     renderMixer();                // final settle, with the headline retype
   }, 900);
+}
+
+/* ── newsflash: roll a fresh execution ───────────────────────────────
+   kind × player from the Top Picks board × headline variant. Never repeats
+   the previous execution back-to-back — a demo where the button appears to
+   do nothing on the second press reads as broken. ── */
+function rollNews() {
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const sig = n => `${n.kind.key}:${n.variant}:${n.player.pid}`;
+  const prev = news ? sig(news) : '';
+  let next;
+  do {
+    const kind = pick(NEWSFLASH);
+    next = { kind, variant: Math.floor(Math.random() * kind.lines.length), player: pick(BOARD) };
+  } while (sig(next) === prev);
+  news = next;
+}
+
+/* ── newsflash chyron on the CTV mock ─────────────────────────────── */
+function setFlash() {
+  const el = document.getElementById('ctvFlash');
+  if (!el) return;
+  el.hidden = !news;
+  if (!news) return;
+  el.style.setProperty('--flash', news.kind.accent);
+  document.getElementById('ctvFlashKind').textContent = news.kind.chyron;
+  document.getElementById('ctvFlashName').textContent = news.player.name;
+  document.getElementById('ctvFlashStatus').textContent = news.kind.status;
 }
 
 /* ── headline: a caps LEAD (the setup) + an accent-italic PUNCH ───────
@@ -548,15 +626,22 @@ function renderMixer(opts) {
   const instant = opts === true || (opts && opts.instant === true);
   const { d } = currentSel();
   const ctv = document.getElementById('ctv');
-  ctv.style.setProperty('--accent', d.accent);
-  ctv.style.setProperty('--team', d.accent);
+  // A live newsflash drives the accent, so the whole mock reacts to the event
+  // rather than the day.
+  const accent = news ? news.kind.accent : d.accent;
+  ctv.classList.toggle('is-flash', !!news);
+  ctv.style.setProperty('--accent', accent);
+  ctv.style.setProperty('--team', accent);
+  setFlash();
   const room = document.getElementById('room');
   if (room) {
     room.style.setProperty('--accent', d.accent);
     room.style.setProperty('--team', d.accent);
   }
 
-  document.getElementById('emoNote').textContent = `${d.task} — ${d.register}.`;
+  document.getElementById('emoNote').textContent = news
+    ? `Newsflash — ${d.task} overridden by a live ${news.kind.chyron.toLowerCase()} update.`
+    : `${d.task} — ${d.register}.`;
   document.getElementById('playerNote').innerHTML =
     `<strong>8 top-projected must-starts</strong> · ranked by this week's performance projections.`;
 

@@ -153,6 +153,8 @@
       <!-- controls -->
       <aside class="controls">
         <button class="btn btn--ghost btn--rand" id="randBtn"><svg class="btn__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.1" fill="currentColor" stroke="none"/><circle cx="9" cy="15" r="1.1" fill="currentColor" stroke="none"/><circle cx="15" cy="15" r="1.1" fill="currentColor" stroke="none"/></svg>Randomize the day</button>
+        <button class="btn btn--ghost btn--news" id="newsBtn"><svg class="btn__ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11l-1 8.5 8.5-11.5H12l1-8.5z"/></svg>Newsflash</button>
+        <p class="ctrl__note ctrl__note--news" id="newsNote">Genius data moves mid-week — the ad rewrites itself the same hour.</p>
         <div class="ctrl">
           <span class="ctrl__sig ctrl__sig--day"><svg class="ctrl__sig-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3.5v3M16 3.5v3"/><circle cx="12" cy="14" r="1.2" fill="currentColor" stroke="none"/></svg>Planning day</span>
           <label>Day
@@ -215,6 +217,10 @@
             </div>
             <div class="ctv__split">
               <div class="ctv__statement">
+                <div class="ctv__flash" id="ctvFlash" hidden>
+                  <span class="ctv__flash-tag"><span class="ctv__flash-dot" aria-hidden="true"></span>Newsflash · <span id="ctvFlashKind"></span></span>
+                  <span class="ctv__flash-line"><b id="ctvFlashName"></b> — <span id="ctvFlashStatus"></span></span>
+                </div>
                 <h3 class="ctv__headline" id="ctvHeadline"><span class="ctv__hl-lead" id="ctvHlLead"></span><span class="ctv__hl-accent" id="ctvHlAccent"></span></h3>
                 <span class="ctv__cta-btn">Sign up now →</span>
               </div>
