@@ -233,7 +233,7 @@ All Redis logic and every timestamp decision live here. The store takes its Redi
   - `store.list() => Promise<{notes: Note[], trash: Note[]}>`
   - `store.create(data) => Promise<Note>`
   - `store.update(id, patch) => Promise<Note|null>`
-  - `store.bury(id) => Promise<boolean>`
+  - `store.bury(id) => Promise<Note|null>` — returns the buried note (with the server's `deletedAt`) so callers never invent a timestamp
   - `store.restore(id) => Promise<Note|null>`
   - `store.purge(id) => Promise<boolean>`
   - `store.purgeAll() => Promise<boolean>`
@@ -318,7 +318,9 @@ test('bury moves the note to the graveyard with deletedAt', async () => {
   const store = makeStore(fakeRedis(), () => t);
   const a = await store.create(seed);
   t = 3000;
-  assert.equal(await store.bury(a.id), true);
+  const buried = await store.bury(a.id);
+  assert.equal(buried.id, a.id);
+  assert.equal(buried.deletedAt, 3000, 'bury must return the note carrying the server deletedAt');
   const { notes, trash } = await store.list();
   assert.equal(notes.length, 0);
   assert.equal(trash.length, 1);
@@ -351,6 +353,11 @@ test('restore is idempotent when the note is already live', async () => {
 test('restore of an unknown id returns null', async () => {
   const store = makeStore(fakeRedis(), () => 1000);
   assert.equal(await store.restore('nope'), null);
+});
+
+test('bury of a missing id returns null', async () => {
+  const store = makeStore(fakeRedis(), () => 1000);
+  assert.equal(await store.bury('nope'), null);
 });
 
 test('bury is not a hard delete — purge is', async () => {
@@ -473,10 +480,13 @@ export function makeStore(redis, now = () => Date.now()) {
 
     async bury(id) {
       const note = await read(LIVE, id);
-      if (!note) return false;
-      await put(TRASH, { ...note, deletedAt: now() });
+      if (!note) return null;
+      // Return the buried note so the caller renders the SERVER's deletedAt
+      // instead of inventing one from a browser clock.
+      const dead = { ...note, deletedAt: now() };
+      await put(TRASH, dead);
       await redis.hdel(LIVE, id);
-      return true;
+      return dead;
     },
 
     async restore(id) {
@@ -517,7 +527,7 @@ export function getStore() {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `node --test test/notes-store.test.js`
-Expected: PASS — 12 tests.
+Expected: PASS — 13 tests.
 
 - [ ] **Step 5: Commit**
 
@@ -542,7 +552,7 @@ git -c user.email=edtsue@gmail.com commit -m "feat: add notes store with graveya
   - `POST {html, text, anchor, ax, ay, section, color}` → `{note}`
   - `PATCH {id, ...fields}` → `{note}`
   - `PATCH {id, restore: true}` → `{note}`
-  - `DELETE {id}` → `{ok: true}` (burial)
+  - `DELETE {id}` → `{ok: true, note}` (burial; `note` carries the server's `deletedAt`)
   - `DELETE {id, purge: true}` → `{ok: true}`
   - `DELETE {purgeAll: true}` → `{ok: true}`
 
@@ -628,11 +638,13 @@ test('PATCH of a missing note returns 404', async () => {
   assert.equal(res.code, 404);
 });
 
-test('DELETE buries rather than destroys', async () => {
+test('DELETE buries rather than destroys, and echoes the server deletedAt', async () => {
   const h = newHandler();
   const made = await call(h, 'POST', seed);
   const del = await call(h, 'DELETE', { id: made.body.note.id });
   assert.equal(del.code, 200);
+  assert.equal(del.body.note.id, made.body.note.id);
+  assert.equal(del.body.note.deletedAt, 1000, 'client must not have to invent a burial time');
   const list = await call(h, 'GET');
   assert.equal(list.body.notes.length, 0);
   assert.equal(list.body.trash.length, 1, 'the note must still exist in the graveyard');
@@ -700,7 +712,7 @@ Create `api/notes.js`:
      POST   {html,text,anchor,ax,ay,section,color}  → { note }
      PATCH  {id, ...fields}      → { note }
      PATCH  {id, restore:true}   → { note }   graveyard → wall
-     DELETE {id}                 → { ok }     wall → graveyard (NOT a delete)
+     DELETE {id}                 → { ok, note }  wall → graveyard (NOT a delete)
      DELETE {id, purge:true}     → { ok }     gone for good
      DELETE {purgeAll:true}      → { ok }     empty the graveyard
 
@@ -749,9 +761,17 @@ export function makeHandler(store) {
       if (req.method === 'DELETE') {
         if (body.purgeAll) return res.status(200).json({ ok: await store.purgeAll() });
         if (!body.id) return res.status(400).json({ error: 'id required' });
-        const ok = body.purge ? await store.purge(body.id) : await store.bury(body.id);
-        if (!ok) return res.status(404).json({ error: 'not found' });
-        return res.status(200).json({ ok: true });
+
+        if (body.purge) {
+          if (!(await store.purge(body.id))) return res.status(404).json({ error: 'not found' });
+          return res.status(200).json({ ok: true });
+        }
+
+        // Burial echoes the note back so the client can show the server's
+        // deletedAt rather than stamping one from an unreliable browser clock.
+        const note = await store.bury(body.id);
+        if (!note) return res.status(404).json({ error: 'not found' });
+        return res.status(200).json({ ok: true, note });
       }
 
       return res.status(405).json({ error: 'method' });
@@ -774,7 +794,7 @@ Expected: PASS — 13 tests.
 - [ ] **Step 5: Run the whole suite**
 
 Run: `node --test test/`
-Expected: PASS — 33 tests across three files.
+Expected: PASS — 34 tests across three files.
 
 - [ ] **Step 6: Commit**
 
@@ -1030,7 +1050,6 @@ Create `notes.js`:
       if (!place(el, note)) { el.remove(); state.orphans.push(note); }
     }
     countEl.textContent = String(state.notes.length);
-    document.dispatchEvent(new CustomEvent('sn:rendered'));
   }
 
   const reposition = () => {
@@ -1151,13 +1170,12 @@ Create `notes.js`:
     layer.addEventListener('click', async e => {
       const btn = e.target.closest('.sn-note__del');
       if (!btn) return;
-      const el = btn.closest('.sn-note');
-      const id = el.dataset.id;
-      const note = state.notes.find(n => n.id === id);
+      const id = btn.closest('.sn-note').dataset.id;
       try {
-        await api('DELETE', { id });
+        // The response carries the server's deletedAt — never stamp it here.
+        const { note: dead } = await api('DELETE', { id });
         state.notes = state.notes.filter(n => n.id !== id);
-        if (note) state.trash.unshift({ ...note, deletedAt: Date.now() });
+        state.trash.unshift(dead);
         render();
       } catch { banner('Could not delete note.'); }
     });
@@ -1168,8 +1186,6 @@ Create `notes.js`:
     new ResizeObserver(onLayout).observe(document.body);
     document.fonts?.ready.then(onLayout);
 
-    // Expose for Tasks 7-8 and for browser verification.
-    window.__sn = { state, render, api, load, place, selectorFor, saveNote, banner, fmt };
     load();
   }
 
@@ -1531,11 +1547,12 @@ Add to `notes.js`, before `init()`:
   }
 ```
 
-In `render()`, replace the final `document.dispatchEvent(...)` line with:
+Add `renderTray()` as the final line of `render()`, after `countEl.textContent = ...`:
 
 ```js
+    countEl.textContent = String(state.notes.length);
     renderTray();
-    document.dispatchEvent(new CustomEvent('sn:rendered'));
+  }
 ```
 
 - [ ] **Step 3: Mount the tray and wire its actions**
@@ -1592,11 +1609,10 @@ Add inside `init()`, after `addBtn` is appended:
         return;
       }
       if (act === 'bury') {
-        const note = state.notes.find(n => n.id === id);
         try {
-          await api('DELETE', { id });
+          const { note: dead } = await api('DELETE', { id });
           state.notes = state.notes.filter(n => n.id !== id);
-          if (note) state.trash.unshift({ ...note, deletedAt: Date.now() });
+          state.trash.unshift(dead);
           render();
         } catch { banner('Could not bury note.'); }
         return;
@@ -1677,7 +1693,7 @@ git -c user.email=edtsue@gmail.com commit -m "feat: add notes tray with unanchor
 - [ ] **Step 1: Run the full test suite**
 
 Run: `node --test test/`
-Expected: PASS, 33 tests. Do not deploy on a red suite.
+Expected: PASS, 34 tests. Do not deploy on a red suite.
 
 - [ ] **Step 2: Confirm no secrets are staged**
 
