@@ -25,6 +25,38 @@ test('keeps span colour within the allowlist', () => {
   );
 });
 
+test('strips a non-palette hex colour', () => {
+  const out = sanitizeNoteHtml('<span style="color:#123456">x</span>');
+  assert.equal(out, '<span>x</span>');
+});
+
+test('strips a non-palette rgb colour', () => {
+  const out = sanitizeNoteHtml('<span style="color:rgb(1, 2, 3)">x</span>');
+  assert.equal(out, '<span>x</span>');
+});
+
+const PALETTE = [
+  { name: 'ink', hex: '#1a1a1a', rgb: [26, 26, 26] },
+  { name: 'red', hex: '#d92d20', rgb: [217, 45, 32] },
+  { name: 'blue', hex: '#1d4ed8', rgb: [29, 78, 216] },
+  { name: 'green', hex: '#15803d', rgb: [21, 128, 61] },
+];
+
+for (const { name, hex } of PALETTE) {
+  test(`keeps palette colour ${name} in hex form`, () => {
+    const out = sanitizeNoteHtml(`<span style="color:${hex}">x</span>`);
+    assert.equal(out, `<span style="color:${hex}">x</span>`);
+  });
+}
+
+for (const { name, rgb } of PALETTE) {
+  test(`keeps palette colour ${name} in rgb form, including with spaces after commas`, () => {
+    const [r, g, b] = rgb;
+    const out = sanitizeNoteHtml(`<span style="color:rgb(${r}, ${g}, ${b})">x</span>`);
+    assert.ok(out.includes(`rgb(${r}, ${g}, ${b})`), `expected colour preserved, got: ${out}`);
+  });
+}
+
 test('drops disallowed style properties', () => {
   const out = sanitizeNoteHtml('<span style="position:fixed;color:#1a1a1a">x</span>');
   assert.ok(!out.includes('position'));
