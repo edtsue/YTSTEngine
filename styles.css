@@ -9,6 +9,9 @@
   --ink-dim: #9aa6b8;
   --ink-faint: #5e6a7d;
   --red: #ff2d2d;
+  /* control colours: Randomize = green, Newsflash = yellow (both white text) */
+  --rand-green: #15803d;   /* 5.02:1 on white text */
+  --news-orange: #c2410c;  /* 5.18:1 on white text — yellow can't pass with white */
   --red-soft: #ff5a4d;
   /* the two-tone system: red = stakes / emotion, cyan = data / edge */
   --cyan: #00e6ff;
@@ -519,11 +522,10 @@ body.mockup-open { overflow: hidden; }
 
 /* randomize button */
 .btn--rand {
-  width: 100%; justify-content: center; border-style: dashed;
-  border-color: var(--blue); color: var(--blue);
-  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  width: 100%; justify-content: center; border-style: solid;
+  background: var(--rand-green); border-color: var(--rand-green); color: #fff;
 }
-.btn--rand:hover { background: var(--blue); border-color: var(--blue); color: #0a0e16; }
+.btn--rand:hover { background: #1a9c4b; border-color: #1a9c4b; color: #fff; }
 
 /* ── geo toggle (feature 1) ── */
 .geo { background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
@@ -969,10 +971,14 @@ img[src*="genius-sports"] { cursor: help; }
    into the logo. */
 
 /* Bold, unmissable — this is the reactive story, not a secondary control. */
+/* Deep orange, not yellow: no colour that still reads as yellow clears 4.5:1
+   under white text (pure #ffd400 is 1.43:1). Orange keeps the urgency, passes
+   at 5.18:1, and stays distinct from both the site red and the green above. */
 .btn--news {
-  background: var(--red); border-color: var(--red); color: #fff;
+  width: 100%; justify-content: center;
+  background: var(--news-orange); border-color: var(--news-orange); color: #fff;
 }
-.btn--news:hover { background: #ff4646; border-color: #ff4646; }
+.btn--news:hover { background: #dc4f10; border-color: #dc4f10; color: #fff; }
 .btn--news .btn__ic { color: #fff; }
 .ctrl__note--news { margin: -2px 0 2px; opacity: .5; font-size: 11px; line-height: 1.35; }
 
