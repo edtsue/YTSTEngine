@@ -28,9 +28,13 @@
       body: body ? JSON.stringify(body) : undefined,
     });
     const ct = res.headers.get('content-type') || '';
-    // The gate REWRITES unauthenticated requests to gate.html: HTML, status
-    // 200. Parsing that as JSON would throw a confusing error, so name it.
-    if (!ct.includes('application/json')) throw new Error('gate');
+    if (!ct.includes('application/json')) {
+      // Two very different things arrive as non-JSON, and conflating them sends
+      // you hunting the wrong bug (it did once):
+      //   200 + HTML  → the gate rewrote us to gate.html; the session really did expire.
+      //   4xx/5xx     → the endpoint itself is broken (crashed on import, missing, etc).
+      throw new Error(res.ok ? 'gate' : 'endpoint ' + res.status);
+    }
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'request failed');
     return data;
@@ -161,7 +165,8 @@
     } catch (err) {
       // Never discard typed text: mark it and let the next edit retry.
       el?.classList.add('sn-note--unsaved');
-      if (err.message === 'gate') banner('Session expired — reload to keep saving.');
+      banner(err.message === 'gate' ? 'Session expired — reload to keep saving.'
+                                     : 'Could not save (' + err.message + ') — your text is still here.');
     }
   }
 
@@ -205,7 +210,7 @@
       render();
       layer.querySelector(`[data-id="${note.id}"] .sn-note__body`)?.focus();
     } catch (err) {
-      banner(err.message === 'gate' ? 'Session expired — reload.' : 'Could not save note.');
+      banner(err.message === 'gate' ? 'Session expired — reload.' : 'Could not add note: ' + err.message);
     }
   }
 
@@ -233,7 +238,7 @@
       lastSig = sigOf(data);
       render();
     } catch (err) {
-      banner(err.message === 'gate' ? 'Session expired — reload.' : 'Could not load notes.');
+      banner(err.message === 'gate' ? 'Session expired — reload.' : 'Could not load notes: ' + err.message);
     }
   }
 
