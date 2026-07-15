@@ -933,7 +933,10 @@ Create `notes.css`:
 .sn-note--green  { background: #b6e8b6; }
 .sn-note--orange { background: #ffcc8f; }
 
-.sn-note__body { min-height: 44px; outline: 0; word-break: break-word; }
+.sn-note__body {
+  min-height: 44px; outline: 0; word-break: break-word;
+  overflow-y: auto; /* a resized note must scroll, not spill past its edge */
+}
 .sn-note__body:empty::before { content: 'Type a note…'; opacity: .45; }
 .sn-note__foot {
   margin-top: 6px; padding-top: 4px; border-top: 1px solid rgba(0,0,0,.14);
@@ -948,6 +951,17 @@ Create `notes.css`:
 .sn-note__grip { cursor: grab; }
 .sn-note--dragging { cursor: grabbing; opacity: .85; }
 .sn-note--unsaved { outline: 2px solid #d92d20; }
+
+/* Resize handle — bottom-right corner, drawn as two diagonal rules. */
+.sn-note__resize {
+  position: absolute; right: 0; bottom: 0; width: 16px; height: 16px;
+  cursor: nwse-resize; opacity: .45;
+  background:
+    linear-gradient(135deg, transparent 0 45%, rgba(0,0,0,.55) 45% 55%, transparent 55%),
+    linear-gradient(135deg, transparent 0 70%, rgba(0,0,0,.55) 70% 80%, transparent 80%);
+}
+.sn-note__resize:hover { opacity: .9; }
+.sn-note--resizing { user-select: none; }
 ```
 
 - [ ] **Step 2: Write the client foundation**
@@ -1233,15 +1247,43 @@ git -c user.email=edtsue@gmail.com commit -m "feat: add sticky notes layer, togg
 
 ---
 
-### Task 7: Rich text, paper colour, drag
+### Task 7: Rich text, paper colour, drag, resize
 
 **Files:**
-- Modify: `notes.js` (extend `noteEl`, add toolbar + drag handlers)
-- Modify: `notes.css` (toolbar styles)
+- Modify: `notes.js` (extend `noteEl`, add toolbar + drag + resize handlers)
+- Modify: `notes.css` (toolbar + resize-handle styles)
+- Modify: `lib/notes-store.js` (allow `w`/`h` through the writable allowlist)
+- Modify: `test/notes-store.test.js` (cover `w`/`h`)
 
 **Interfaces:**
-- Consumes: `state`, `render`, `saveNote`, `place` (Task 6); `PATCH {id, html, text, color, anchor, ax, ay}` (Task 4).
-- Produces: toolbar markup inside `.sn-note`; no new exports.
+- Consumes: `state`, `render`, `saveNote`, `place` (Task 6); `PATCH {id, html, text, color, anchor, ax, ay, w, h}` (Task 4).
+- Produces: toolbar + resize handle markup inside `.sn-note`; no new exports.
+
+- [ ] **Step 0: Let the store persist note size**
+
+A resized note must stay resized after reload, so `w`/`h` need to be writable fields. In `lib/notes-store.js`, extend the allowlist:
+
+```js
+const WRITABLE = ['html', 'text', 'anchor', 'ax', 'ay', 'section', 'color', 'w', 'h'];
+```
+
+Leave everything else in that file alone — `id`/`created`/`updated`/`deletedAt` stay server-owned.
+
+Add this test to `test/notes-store.test.js`:
+
+```js
+test('w and h are writable and survive an update', async () => {
+  const store = makeStore(fakeRedis(), () => 1000);
+  const a = await store.create({ ...seed, w: 240, h: 180 });
+  assert.equal(a.w, 240);
+  assert.equal(a.h, 180);
+  const b = await store.update(a.id, { w: 320 });
+  assert.equal(b.w, 320);
+  assert.equal(b.h, 180, 'unchanged dimensions must survive a partial update');
+});
+```
+
+Run `node --test test/notes-store.test.js` — it must pass, and no existing test may break. Notes created before this change simply have no `w`/`h` and fall back to the CSS default size, which is why the client applies them conditionally in Step 2.
 
 - [ ] **Step 1: Add toolbar styles**
 
@@ -1307,7 +1349,12 @@ toolbar becomes the note's first child, above the body:
       <div class="sn-note__foot">
         <span class="sn-note__grip" title="Drag to move">⠿ <span class="sn-note__time"></span></span>
         <button class="sn-note__del" title="Move to graveyard" aria-label="Delete note">✕</button>
-      </div>`;
+      </div>
+      <div class="sn-note__resize" title="Drag to resize"></div>`;
+    // Applied only when set, so notes saved before resizing existed keep the
+    // CSS default size instead of collapsing to 0.
+    if (note.w) el.style.width = note.w + 'px';
+    if (note.h) el.style.height = note.h + 'px';
     // innerHTML, not textContent: this html is already sanitised server-side.
     el.querySelector('.sn-note__body').innerHTML = note.html || '';
     el.querySelector('.sn-note__time').textContent = stamp(note);
@@ -1410,6 +1457,37 @@ Append inside `init()` in `notes.js`, after the existing delete handler:
       queueSave(el);
     });
 
+    // Resize from the bottom-right corner. Size is per-note and persisted, so
+    // a note stays the size you left it at.
+    const MIN_W = 120, MIN_H = 80;
+    let resize = null;
+    layer.addEventListener('mousedown', e => {
+      const h = e.target.closest('.sn-note__resize');
+      if (!h) return;
+      const el = h.closest('.sn-note');
+      const r = el.getBoundingClientRect();
+      resize = { el, x: e.clientX, y: e.clientY, w: r.width, h: r.height };
+      el.classList.add('sn-note--resizing');
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    addEventListener('mousemove', e => {
+      if (!resize) return;
+      resize.el.style.width = Math.max(MIN_W, resize.w + e.clientX - resize.x) + 'px';
+      resize.el.style.height = Math.max(MIN_H, resize.h + e.clientY - resize.y) + 'px';
+    });
+    addEventListener('mouseup', () => {
+      if (!resize) return;
+      const { el } = resize;
+      el.classList.remove('sn-note--resizing');
+      resize = null;
+      const note = noteOf(el);
+      if (!note) return;
+      note.w = Math.round(el.getBoundingClientRect().width);
+      note.h = Math.round(el.getBoundingClientRect().height);
+      saveNote(note, el);
+    });
+
     // Drag by the grip; re-anchor to whatever it lands on.
     let drag = null;
     layer.addEventListener('mousedown', e => {
@@ -1459,6 +1537,8 @@ At `localhost:3000`, with a note open:
 6. **Reload → click Notes → all formatting and paper colour survived.** This is the real test: it proves the sanitiser kept what it should.
 7. Copy formatted text from any web page, paste into a note → it arrives as **plain text**.
 8. Drag a note by its grip onto a different heading → release → reload → it comes back anchored to the **new** heading.
+8b. **Resize** a note from its bottom-right corner → it grows/shrinks, stops at the 120×80 minimum, and long text scrolls inside rather than spilling out. Reload → **it comes back the size you left it**.
+8c. Resizing must NOT move the note, and dragging must NOT resize it — the two handles are independent.
 9. Confirm `curl -s localhost:3000/api/notes` shows `html` containing only allowlisted tags — no `<font>`, no `<script>`.
 
 - [ ] **Step 5: Commit**
